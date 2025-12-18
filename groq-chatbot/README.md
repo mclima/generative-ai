@@ -1,6 +1,11 @@
 # AI Chatbot - Powered by Groq
 
-A fast, modern AI chatbot built with Next.js and powered by Groq's Llama 3 model.
+A general-purpose AI chatbot that leverages Groq's ultra-fast inference platform to deliver real-time responses from Meta's Llama 3.3 70B model. Features include:
+
+Conversational memory within sessions
+Modern, responsive UI
+Server-side API route for secure API key handling
+Zero-cost deployment on Vercel
 
 ## Features
 
