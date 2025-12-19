@@ -79,4 +79,4 @@ Deployment — Vercel, GitHub
 https://groq-chatbot-eta.vercel.app/
 
 ## SERPER API integration
-1. Test with a question that triggers search: Ask something like "What happened in the news today?" or "What's the current weather?"
+1. Test with a question that triggers search: Ask something like "What happened in the news today?" or "What's the current weather in Fairfax, VA?"
