@@ -74,3 +74,6 @@ LLM Integration — Groq API, Llama 4 Scout
 Frontend — React, Next.js 14, Tailwind CSS
 Backend — Next.js API Routes
 Deployment — Vercel, GitHub
+
+## URL
+https://groq-chatbot-eta.vercel.app/

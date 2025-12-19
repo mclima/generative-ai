@@ -11,8 +11,8 @@ export default function Home() {
           Powered by Groq & Llama 4 Scout
         </p>
         <p className="text-gray-500 text-sm text-center mb-6">
-          Knowledge cutoff: August 2024
-        </p>
+  Knowledge cutoff: August 2024 • Web search enabled for current info
+</p>
         <Chat />
       </div>
     </main>
