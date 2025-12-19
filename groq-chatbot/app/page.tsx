@@ -8,10 +8,10 @@ export default function Home() {
           AI Chatbot
         </h1>
         <p className="text-gray-400 text-center mb-2">
-          Powered by Groq & Llama 3.3
+          Powered by Groq & Llama 4 Scout
         </p>
         <p className="text-gray-500 text-sm text-center mb-6">
-          Knowledge cutoff: December 2023
+          Knowledge cutoff: August 2024
         </p>
         <Chat />
       </div>

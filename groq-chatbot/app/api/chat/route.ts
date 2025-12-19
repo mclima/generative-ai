@@ -17,7 +17,8 @@ export async function POST(request: Request) {
         },
         ...messages,
       ],
-      model: 'llama-3.3-70b-versatile',
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',  // Updated to Llama 4 Scout
+      // model: 'meta-llama/llama-4-maverick-17b-128e-instruct',  // Uncomment for Maverick (better quality, slightly slower/higher cost)
       temperature: 0.7,
       max_tokens: 1024,
     })

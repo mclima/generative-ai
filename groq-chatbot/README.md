@@ -1,6 +1,6 @@
 # AI Chatbot - Powered by Groq
 
-A general-purpose AI chatbot that leverages Groq's ultra-fast inference platform to deliver real-time responses from Meta's Llama 3.3 70B model. Features include:
+A general-purpose AI chatbot that leverages Groq's ultra-fast inference platform to deliver real-time responses from Meta's Llama 4 Scout model. Features include:
 
 Conversational memory within sessions
 Modern, responsive UI
@@ -58,7 +58,7 @@ Your chatbot will be live in about 1 minute!
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
-- **AI**: Groq API with Llama 3
+- **AI**: Groq API with Llama 4 Scout
 - **Styling**: Tailwind CSS
 - **Language**: TypeScript
 
@@ -68,3 +68,9 @@ Your chatbot will be live in about 1 minute!
 - **Vercel Hosting**: Free tier
 
 Total cost: **$0/month** for portfolio use
+
+## Skills Demonstrated
+LLM Integration — Groq API, Llama 4 Scout
+Frontend — React, Next.js 14, Tailwind CSS
+Backend — Next.js API Routes
+Deployment — Vercel, GitHub
