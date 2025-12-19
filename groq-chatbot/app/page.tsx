@@ -7,10 +7,10 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-white text-center mb-2">
           AI Chatbot
         </h1>
-        <p className="text-gray-400 text-center mb-2">
+        <p className="text-gray-400 text-white text-center mb-2">
           Powered by Groq & Llama 4 Scout
         </p>
-        <p className="text-gray-500 text-sm text-center mb-6">
+        <p className="text-gray-500 text-white text-sm text-center mb-6">
   Knowledge cutoff: August 2024 • Web search enabled for current info
 </p>
         <Chat />

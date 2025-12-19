@@ -54,11 +54,11 @@ export default function Chat() {
   }
 
   return (
-    <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden">
+    <div className="bg-gray-900/50 rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden">
       <div className="h-[500px] overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500 text-center">
+            <p className="text-white text-center">
               Start a conversation! Ask me anything.
             </p>
           </div>
@@ -72,8 +72,8 @@ export default function Chat() {
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                 message.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-700 text-gray-100'
+                  ? 'bg-purple-800 text-white'
+                  : 'bg-gray-700 text-white'
               }`}
             >
               <p className="whitespace-pre-wrap">{message.content}</p>
@@ -103,13 +103,13 @@ export default function Chat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 bg-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+            className="flex-1 bg-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-700 placeholder-white"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-xl px-6 py-3 font-medium transition-colors"
+            className="bg-purple-800 hover:bg-purple-900 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-xl px-6 py-3 font-medium transition-colors"
           >
             Send
           </button>
