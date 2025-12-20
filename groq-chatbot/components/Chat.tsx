@@ -96,20 +96,20 @@ export default function Chat() {
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSubmit} className="border-t border-gray-700/50 p-4">
-        <div className="flex space-x-3">
+      <form onSubmit={handleSubmit} className="border-t border-gray-700/50 p-3 sm:p-4">
+        <div className="flex space-x-2 sm:space-x-3">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 bg-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-700 placeholder-white"
+            className="flex-1 min-w-0 bg-gray-800 text-white rounded-xl px-3 sm:px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-700 placeholder-white"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-purple-800 hover:bg-purple-900 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-xl px-6 py-3 font-medium transition-colors"
+            className="bg-purple-800 hover:bg-purple-900 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-xl px-4 sm:px-6 py-3 font-medium transition-colors flex-shrink-0"
           >
             Send
           </button>
