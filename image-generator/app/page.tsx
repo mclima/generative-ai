@@ -93,7 +93,7 @@ export default function Home() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <span className="text-4xl">🎨</span>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl md:leading-normal font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 bg-clip-text text-transparent">
               AI Image Generator
             </h1>
           </div>
