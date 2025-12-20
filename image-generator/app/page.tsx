@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Download, Loader2, ImageIcon } from 'lucide-react';
+import { Sparkles, Download, Loader2, ImageIcon, X } from 'lucide-react';
 
 const examplePrompts = [
   'A dramatic poster for a mystery series set in Victorian London with fog and gas lamps',
@@ -48,6 +48,12 @@ export default function Home() {
 
   const handleExampleClick = (examplePrompt: string) => {
     setPrompt(examplePrompt);
+  };
+
+  const handleClear = () => {
+    setPrompt('');
+    setImageUrl(null);
+    setError(null);
   };
 
   const handleDownload = async () => {
@@ -135,6 +141,16 @@ export default function Home() {
                   </>
                 )}
               </button>
+              {(prompt.trim() || imageUrl) && (
+                <button
+                  onClick={handleClear}
+                  disabled={isLoading}
+                  className="mt-3 w-full py-3 px-6 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-gray-300 font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  Clear
+                </button>
+              )}
             </div>
 
             {/* Example Prompts */}
