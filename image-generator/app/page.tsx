@@ -199,7 +199,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="mt-12 text-center text-gray-600 text-sm">
-          Powered by OpenAI DALL-E
+          Powered by OpenAI DALL-E 2
         </footer>
       </div>
     </main>
