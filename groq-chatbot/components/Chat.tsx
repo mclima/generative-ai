@@ -55,7 +55,7 @@ export default function Chat() {
 
   return (
     <div className="bg-gray-900/50 rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden">
-      <div className="h-[500px] overflow-y-auto p-4 space-y-4">
+      <div className="h-[300px] sm:h-[400px] md:h-[500px] overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
             <p className="text-white text-center">
