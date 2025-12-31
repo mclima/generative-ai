@@ -1,12 +1,4 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  // Suppress Node.js deprecation warnings in production logs
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals = [...(config.externals || []), 'punycode']
-    }
-    return config
-  },
-}
+const nextConfig = {}
 
 module.exports = nextConfig
