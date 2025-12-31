@@ -20,6 +20,7 @@ Zero-cost deployment on Vercel
 
 - Node.js 18+ installed
 - Groq API key (get one free at [console.groq.com](https://console.groq.com))
+- Serper API key for web search (get one free at [serper.dev](https://serper.dev) - 100 searches/month)
 
 ### Installation
 
@@ -30,7 +31,11 @@ Zero-cost deployment on Vercel
 
 2. Set up your environment variables:
    - Open `.env.local`
-   - Replace `your_groq_api_key_here` with your actual Groq API key
+   - Add your API keys:
+     ```
+     GROQ_API_KEY=your_groq_api_key_here
+     SERPER_API_KEY=your_serper_api_key_here
+     ```
 
 3. Run the development server:
    ```bash
@@ -47,9 +52,9 @@ Zero-cost deployment on Vercel
 
 3. Click "New Project" and import your repository
 
-4. Add your environment variable:
-   - Name: `GROQ_API_KEY`
-   - Value: Your Groq API key
+4. Add your environment variables:
+   - Name: `GROQ_API_KEY`, Value: Your Groq API key
+   - Name: `SERPER_API_KEY`, Value: Your Serper API key
 
 5. Click "Deploy"
 

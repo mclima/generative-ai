@@ -8,8 +8,11 @@ const groq = new Groq({
 
 async function searchWeb(query: string): Promise<string> {
   if (!process.env.SERPER_API_KEY) {
+    console.error('❌ SERPER_API_KEY is not configured in .env.local')
     return 'Search unavailable: Missing SERPER_API_KEY'
   }
+
+  console.log('🔍 Searching web for:', query)
 
   try {
     const response = await fetch('https://google.serper.dev/search', {
@@ -21,9 +24,19 @@ async function searchWeb(query: string): Promise<string> {
       body: JSON.stringify({ q: query }),
     })
 
-    if (!response.ok) throw new Error('Search failed')
+    console.log('📡 Serper API response status:', response.status)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('❌ Serper API error:', response.status, errorText)
+      throw new Error(`Search failed with status ${response.status}`)
+    }
 
     const data = await response.json()
+    console.log('✅ Serper API returned data:', { 
+      hasOrganic: !!data.organic, 
+      resultCount: data.organic?.length || 0 
+    })
 
     // Check if organic results exist
     if (!data.organic || data.organic.length === 0) {
@@ -38,7 +51,7 @@ async function searchWeb(query: string): Promise<string> {
       )
       .join('\n\n')
   } catch (error) {
-    console.error('Serper search error:', error)
+    console.error('❌ Serper search error:', error)
     return 'Search failed. Please try again or rephrase your question.'
   }
 }
