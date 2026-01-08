@@ -6,6 +6,8 @@ RUN set -ex && \
     for line in '[project]' \
                 'name = "task_maistro"' \
                 'version = "0.1"' \
+                '[tool.setuptools]' \
+                'py-modules = ["task_maistro", "configuration"]' \
                 '[tool.setuptools.package-data]' \
                 '"*" = ["**/*"]'; do \
         echo "$line" >> /deps/task_maistro/pyproject.toml; \
