@@ -13,7 +13,8 @@ RUN set -ex && \
         echo "$line" >> /deps/task_maistro/pyproject.toml; \
     done
 
-RUN PYTHONDONTWRITEBYTECODE=1 pip install --no-cache-dir -c /api/constraints.txt -e /deps/*
+RUN PYTHONDONTWRITEBYTECODE=1 pip install --no-cache-dir -r /deps/task_maistro/requirements.txt && \
+    pip install --no-cache-dir -c /api/constraints.txt -e /deps/*
 
 ENV LANGSERVE_GRAPHS='{"task_maistro": "/deps/task_maistro/task_maistro.py:graph"}'
 
