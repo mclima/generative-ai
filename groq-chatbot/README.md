@@ -1,6 +1,6 @@
 # AI Chatbot - Powered by Groq
 
-A general-purpose AI chatbot that leverages Groq's ultra-fast inference platform to deliver real-time responses from Meta's Llama 4 Scout model. Features include:
+A general-purpose AI chatbot that leverages Groq's ultra-fast inference platform to deliver real-time responses from Meta's Llama 4 Scout model with short-term conversational memory. Features include:
 
 Conversational memory within sessions
 Modern, responsive UI
@@ -10,7 +10,9 @@ Zero-cost deployment on Vercel
 ## Features
 
 - ⚡ Lightning-fast responses using Groq's inference engine
-- 💬 Conversation history with context
+- 🧠 Short-term memory to maintain conversation context
+- 🔍 Real-time web search for current events and up-to-date information
+- 💬 Conversation history within sessions
 - 🎨 Modern, responsive UI with Tailwind CSS
 - 🚀 Ready for Vercel deployment
 
@@ -29,13 +31,12 @@ Zero-cost deployment on Vercel
    npm install
    ```
 
-2. Set up your environment variables:
-   - Open `.env.local`
-   - Add your API keys:
-     ```
-     GROQ_API_KEY=your_groq_api_key_here
-     SERPER_API_KEY=your_serper_api_key_here
-     ```
+2. Create a `.env.local` file in the project root and add your API keys:
+   ```
+   GROQ_API_KEY=your_groq_api_key_here
+   SERPER_API_KEY=your_serper_api_key_here
+   ```
+   Note: `SERPER_API_KEY` is optional but required for web search functionality
 
 3. Run the development server:
    ```bash
@@ -64,7 +65,9 @@ Your chatbot will be live in about 1 minute!
 
 - **Framework**: Next.js 14 (App Router)
 - **AI**: Groq API with Llama 4 Scout
+- **Web Search**: Serper API
 - **Styling**: Tailwind CSS
+- **Icons**: React Icons
 - **Language**: TypeScript
 
 ## Cost
@@ -80,8 +83,5 @@ Frontend — React, Next.js 14, Tailwind CSS
 Backend — Next.js API Routes
 Deployment — Vercel, GitHub
 
-## URL
+## Live Demo
 https://groq-chatbot-eta.vercel.app/
-
-## SERPER API integration
-1. Test with a question that triggers search: Ask something like "What happened in the news today?" or "What's the current weather in Fairfax, VA?"
