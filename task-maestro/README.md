@@ -1,0 +1,1 @@
+https://generative-ai-production.up.railway.app/docs

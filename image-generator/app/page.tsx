@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Sparkles, Download, Loader2, ImageIcon, X } from 'lucide-react';
+import { MdEmail } from 'react-icons/md';
 
 const examplePrompts = [
   'A dramatic poster for a mystery series set in Victorian London with fog and gas lamps',
@@ -99,8 +100,9 @@ export default function Home() {
           </div>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
             Transform your creative ideas into stunning visual images. 
-            Enter a detailed text prompt to generate bespoke images for banners and posters.
+            Enter a detailed text prompt to generate bespoke images for banners and posters. 
           </p>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">Powered by OpenAI DALL-E 2.</p>
         </div>
 
         {/* Main Content - Side by Side */}
@@ -215,7 +217,17 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="mt-12 text-center text-gray-600 text-sm">
-          Powered by OpenAI DALL-E 2
+          <p className="flex items-center justify-center gap-2">
+            © {new Date().getFullYear()} maria c. lima |
+            <a 
+              href="mailto:maria.lima.hub@gmail.com"
+              className="flex items-center gap-1 hover:text-gray-400 transition-colors"
+              aria-label="Email maria.lima.hub@gmail.com"
+            >
+              <MdEmail size={16} />
+              maria.lima.hub@gmail.com
+            </a>
+          </p>
         </footer>
       </div>
     </main>

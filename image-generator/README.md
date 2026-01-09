@@ -8,7 +8,7 @@ https://image-generator-roan-three.vercel.app/
 
 - 🎬 Generate bespoke images for banners and posters
 - 🎨 Powered by OpenAI DALL-E 2
-- ⚡ Built with Next.js 14, React, TypeScript, and Tailwind CSS
+- ⚡ Built with Next.js 16, React, TypeScript, and Tailwind CSS
 - 📱 Responsive design
 - 💾 Download generated images
 
@@ -56,9 +56,11 @@ npm run dev
 
 ## Tech Stack
 
-- **Frontend**: React, Next.js 14, Tailwind CSS, TypeScript
+- **Frontend**: React, Next.js 16, Tailwind CSS, TypeScript
+- **UI Components**: Lucide React (icons)
 - **Backend**: Next.js API Routes
 - **AI**: OpenAI DALL-E 2
+- **Styling**: Tailwind CSS, PostCSS, Autoprefixer
 - **Deployment**: Vercel
 
 ## Project Structure
