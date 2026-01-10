@@ -20,16 +20,7 @@ async function initializeRAG() {
     throw new Error('OPENAI_API_KEY not configured');
   }
 
-  // Try both public folder (dev) and .next/static (production)
-  let pdfPath = path.join(process.cwd(), 'public', 'constitution.pdf');
-  
-  if (!fs.existsSync(pdfPath)) {
-    pdfPath = path.join(process.cwd(), '.next', 'static', 'constitution.pdf');
-  }
-  
-  if (!fs.existsSync(pdfPath)) {
-    throw new Error(`constitution.pdf not found in public or .next/static`);
-  }
+  const pdfPath = path.join(process.cwd(), 'public', 'constitution.pdf');
   
   const loader = new PDFLoader(pdfPath);
   const rawDocs = await loader.load();
