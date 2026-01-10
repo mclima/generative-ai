@@ -21,13 +21,28 @@ async function initializeRAG() {
   }
 
   // Try multiple paths for Vercel monorepo compatibility
+  const cwd = process.cwd();
   const possiblePaths = [
-    path.join(process.cwd(), 'public', 'constitution.pdf'),
-    path.join(process.cwd(), '..', 'public', 'constitution.pdf'),
+    path.join(cwd, 'public', 'constitution.pdf'),
+    path.join(cwd, '.next', 'server', 'public', 'constitution.pdf'),
+    path.join(cwd, '..', 'public', 'constitution.pdf'),
     path.join('/var/task', 'public', 'constitution.pdf'),
+    path.join('/var/task', '.next', 'server', 'public', 'constitution.pdf'),
   ];
   
   let pdfPath = null;
+  let existingFiles = [];
+  
+  // Debug: list what files actually exist
+  try {
+    const publicDir = path.join(cwd, 'public');
+    if (fs.existsSync(publicDir)) {
+      existingFiles = fs.readdirSync(publicDir);
+    }
+  } catch (e) {
+    // Ignore
+  }
+  
   for (const testPath of possiblePaths) {
     if (fs.existsSync(testPath)) {
       pdfPath = testPath;
@@ -36,7 +51,7 @@ async function initializeRAG() {
   }
   
   if (!pdfPath) {
-    throw new Error(`constitution.pdf not found. Tried: ${possiblePaths.join(', ')}. CWD: ${process.cwd()}`);
+    throw new Error(`constitution.pdf not found. Tried: ${possiblePaths.join(', ')}. CWD: ${cwd}. Files in public: ${existingFiles.join(', ')}`);
   }
   
   const loader = new PDFLoader(pdfPath);
