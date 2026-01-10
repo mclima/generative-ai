@@ -20,11 +20,23 @@ async function initializeRAG() {
     throw new Error('OPENAI_API_KEY not configured');
   }
 
-  // PDF is in public folder for Vercel compatibility
-  const pdfPath = path.join(process.cwd(), 'public', 'constitution.pdf');
+  // Try multiple paths for Vercel monorepo compatibility
+  const possiblePaths = [
+    path.join(process.cwd(), 'public', 'constitution.pdf'),
+    path.join(process.cwd(), '..', 'public', 'constitution.pdf'),
+    path.join('/var/task', 'public', 'constitution.pdf'),
+  ];
   
-  if (!fs.existsSync(pdfPath)) {
-    throw new Error(`constitution.pdf not found at ${pdfPath}`);
+  let pdfPath = null;
+  for (const testPath of possiblePaths) {
+    if (fs.existsSync(testPath)) {
+      pdfPath = testPath;
+      break;
+    }
+  }
+  
+  if (!pdfPath) {
+    throw new Error(`constitution.pdf not found. Tried: ${possiblePaths.join(', ')}. CWD: ${process.cwd()}`);
   }
   
   const loader = new PDFLoader(pdfPath);
