@@ -13,6 +13,7 @@ async function initializeRAG() {
   const { RunnableSequence } = await import('@langchain/core/runnables');
   const { PDFLoader } = await import('langchain/document_loaders/fs/pdf');
   const path = await import('path');
+  const fs = await import('fs');
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
