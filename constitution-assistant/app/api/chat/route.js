@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 
 let ragChain = null;
 
@@ -12,7 +13,6 @@ async function initializeRAG() {
   const { StringOutputParser } = await import('@langchain/core/output_parsers');
   const { RunnableSequence } = await import('@langchain/core/runnables');
   const { PDFLoader } = await import('langchain/document_loaders/fs/pdf');
-  const { WebPDFLoader } = await import('langchain/document_loaders/web/pdf');
   const path = await import('path');
   const fs = await import('fs');
 
@@ -21,7 +21,7 @@ async function initializeRAG() {
     throw new Error('OPENAI_API_KEY not configured');
   }
 
-  // Prefer local file from public/ in dev; fall back to a URL in production
+  // Prefer local file from public/ in dev; fall back to a URL in production by downloading
   const localPdfPath = path.join(process.cwd(), 'public', 'constitution.pdf');
   const pdfUrl = process.env.PDF_URL; // e.g. https://your-domain.vercel.app/constitution.pdf
 
@@ -29,7 +29,16 @@ async function initializeRAG() {
   if (fs.existsSync(localPdfPath)) {
     loader = new PDFLoader(localPdfPath);
   } else if (pdfUrl) {
-    loader = new WebPDFLoader(pdfUrl);
+    // Download remote PDF to the writable temp directory and load from there
+    const res = await fetch(pdfUrl);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch PDF from PDF_URL: ${pdfUrl} (status ${res.status})`);
+    }
+    // In Node runtime, use arrayBuffer() directly
+    const ab = await res.arrayBuffer();
+    const tmpPath = path.join('/tmp', 'constitution.pdf');
+    await fs.promises.writeFile(tmpPath, Buffer.from(ab));
+    loader = new PDFLoader(tmpPath);
   } else {
     throw new Error('constitution.pdf not found locally and PDF_URL is not set. Set PDF_URL to your deployed URL, e.g. https://<project>.vercel.app/constitution.pdf');
   }
