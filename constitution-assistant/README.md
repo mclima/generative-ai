@@ -89,7 +89,7 @@ git push -u origin main
 ## Project Structure
 
 ```
-rag-assistant/
+constitution-assistant/
 ├── app/
 │   ├── api/
 │   │   └── chat/
@@ -97,7 +97,8 @@ rag-assistant/
 │   ├── globals.css            # Global styles
 │   ├── layout.js              # Root layout
 │   └── page.js                # Main chat interface
-├── constitution.pdf           # Source document
+├── public/
+│   └── constitution.pdf       # Source document
 ├── .env.example               # Environment variables template
 ├── .gitignore                 # Git ignore rules
 ├── next.config.js             # Next.js configuration
@@ -121,7 +122,7 @@ rag-assistant/
 
 ### Change the PDF Document
 
-Replace `constitution.pdf` with your own PDF document. The application will automatically process it.
+Replace `public/constitution.pdf` with your own PDF document. The application will automatically process it.
 
 ### Adjust Chunk Size
 
@@ -162,7 +163,7 @@ const llm = new ChatOpenAI({
 - Check that `.env` file exists with valid `OPENAI_API_KEY`
 
 **Issue: PDF not loading**
-- Verify `constitution.pdf` exists in the project root
+- Verify `constitution.pdf` exists in the `public/` directory
 - Check file permissions
 
 **Issue: Slow responses**
