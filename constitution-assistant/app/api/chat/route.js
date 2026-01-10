@@ -19,7 +19,24 @@ async function initializeRAG() {
     throw new Error('OPENAI_API_KEY not configured');
   }
 
-  const pdfPath = path.join(process.cwd(), 'constitution.pdf');
+  // Try multiple paths for Vercel compatibility
+  const possiblePaths = [
+    path.join(process.cwd(), 'constitution.pdf'),
+    path.join(process.cwd(), 'constitution-assistant', 'constitution.pdf'),
+    '/var/task/constitution.pdf'
+  ];
+  
+  let pdfPath = possiblePaths[0];
+  for (const testPath of possiblePaths) {
+    if (fs.existsSync(testPath)) {
+      pdfPath = testPath;
+      break;
+    }
+  }
+  
+  if (!fs.existsSync(pdfPath)) {
+    throw new Error(`constitution.pdf not found. Tried: ${possiblePaths.join(', ')}`);
+  }
   
   const loader = new PDFLoader(pdfPath);
   const rawDocs = await loader.load();
