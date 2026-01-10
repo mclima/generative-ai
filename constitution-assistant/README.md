@@ -175,4 +175,4 @@ MIT
 
 ## Credits
 
-Based on the HR_Assistant_Chatbot.ipynb notebook, adapted for Next.js and Vercel deployment.
+Based on the HR_Assistant_Chatbot.ipynb notebook, adapted for Next.js and Vercel deployment. 
