@@ -20,38 +20,15 @@ async function initializeRAG() {
     throw new Error('OPENAI_API_KEY not configured');
   }
 
-  // Try multiple paths for Vercel monorepo compatibility
-  const cwd = process.cwd();
-  const possiblePaths = [
-    path.join(cwd, 'public', 'constitution.pdf'),
-    path.join(cwd, '.next', 'server', 'public', 'constitution.pdf'),
-    path.join(cwd, '..', 'public', 'constitution.pdf'),
-    path.join('/var/task', 'public', 'constitution.pdf'),
-    path.join('/var/task', '.next', 'server', 'public', 'constitution.pdf'),
-  ];
+  // Try both public folder (dev) and .next/static (production)
+  let pdfPath = path.join(process.cwd(), 'public', 'constitution.pdf');
   
-  let pdfPath = null;
-  let existingFiles = [];
-  
-  // Debug: list what files actually exist
-  try {
-    const publicDir = path.join(cwd, 'public');
-    if (fs.existsSync(publicDir)) {
-      existingFiles = fs.readdirSync(publicDir);
-    }
-  } catch (e) {
-    // Ignore
+  if (!fs.existsSync(pdfPath)) {
+    pdfPath = path.join(process.cwd(), '.next', 'static', 'constitution.pdf');
   }
   
-  for (const testPath of possiblePaths) {
-    if (fs.existsSync(testPath)) {
-      pdfPath = testPath;
-      break;
-    }
-  }
-  
-  if (!pdfPath) {
-    throw new Error(`constitution.pdf not found. Tried: ${possiblePaths.join(', ')}. CWD: ${cwd}. Files in public: ${existingFiles.join(', ')}`);
+  if (!fs.existsSync(pdfPath)) {
+    throw new Error(`constitution.pdf not found in public or .next/static`);
   }
   
   const loader = new PDFLoader(pdfPath);
