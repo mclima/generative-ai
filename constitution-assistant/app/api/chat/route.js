@@ -12,6 +12,7 @@ async function initializeRAG() {
   const { StringOutputParser } = await import('@langchain/core/output_parsers');
   const { RunnableSequence } = await import('@langchain/core/runnables');
   const { PDFLoader } = await import('langchain/document_loaders/fs/pdf');
+  const { WebPDFLoader } = await import('langchain/document_loaders/web/pdf');
   const path = await import('path');
   const fs = await import('fs');
 
@@ -20,9 +21,19 @@ async function initializeRAG() {
     throw new Error('OPENAI_API_KEY not configured');
   }
 
-  const pdfPath = path.join(process.cwd(), 'public', 'constitution.pdf');
-  
-  const loader = new PDFLoader(pdfPath);
+  // Prefer local file from public/ in dev; fall back to a URL in production
+  const localPdfPath = path.join(process.cwd(), 'public', 'constitution.pdf');
+  const pdfUrl = process.env.PDF_URL; // e.g. https://your-domain.vercel.app/constitution.pdf
+
+  let loader;
+  if (fs.existsSync(localPdfPath)) {
+    loader = new PDFLoader(localPdfPath);
+  } else if (pdfUrl) {
+    loader = new WebPDFLoader(pdfUrl);
+  } else {
+    throw new Error('constitution.pdf not found locally and PDF_URL is not set. Set PDF_URL to your deployed URL, e.g. https://<project>.vercel.app/constitution.pdf');
+  }
+
   const rawDocs = await loader.load();
   
   const textSplitter = new RecursiveCharacterTextSplitter({
