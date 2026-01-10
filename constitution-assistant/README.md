@@ -172,7 +172,3 @@ const llm = new ChatOpenAI({
 ## License
 
 MIT
-
-## Credits
-
-Based on the HR_Assistant_Chatbot.ipynb notebook, adapted for Next.js and Vercel deployment. 
