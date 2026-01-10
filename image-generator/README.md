@@ -85,3 +85,19 @@ image-generator/
 ## License
 
 MIT
+
+## Example
+User asks: "What are the main principles?"
+    ↓
+1. MemoryVectorStore retrieves relevant constitution chunks
+2. Conversation Memory provides chat history (empty on first question)
+3. Both are sent to GPT-4o-mini to generate response
+    ↓
+User asks: "Can you explain the first one?"
+    ↓
+1. MemoryVectorStore retrieves relevant chunks about "first principle"
+2. Conversation Memory provides previous Q&A so AI knows what "first one" means
+3. Both are sent to GPT-4o-mini to generate contextual response
+
+MemoryVectorStore = Your knowledge base (the book)
+Conversation Memory = Your conversation context (what we've been talking about)
