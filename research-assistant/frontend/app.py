@@ -69,8 +69,11 @@ st.markdown(
     f"""
     <div style="text-align: center; color: #9CA3AF; font-size: 0.875rem; padding: 1rem 0;">
         © {2026} maria c. lima | 
-        <a href="mailto:maria.lima.hub@gmail.com" style="color: #9CA3AF; text-decoration: none;">
-            📧 maria.lima.hub@gmail.com
+        <a href="mailto:maria.lima.hub@gmail.com" style="color: #9CA3AF; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+            <svg style="width: 1rem; height: 1rem; vertical-align: middle;" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+            maria.lima.hub@gmail.com
         </a>
     </div>
     """,
