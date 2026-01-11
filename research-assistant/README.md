@@ -71,7 +71,9 @@ TAVILY_API_KEY=your_tavily_api_key_here
 ```bash
 cd backend
 python3 -m venv .venv
-export $(cat .env | xargs) && .venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+source .venv/bin/activate
+pip install -r requirements.txt
+export $(cat .env | xargs) && uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 **Expected output:**
@@ -98,6 +100,8 @@ cd frontend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+
+source .venv/bin/activate
 streamlit run app.py
 ```
 
@@ -128,19 +132,23 @@ INFO: 127.0.0.1:59399 - "POST /research HTTP/1.1" 200 OK
 
 ## 🔧 Configuration
 
-### Local vs Production
+### Backend URL Configuration
+
+The frontend needs to know where to find the backend API:
 
 **Local Development:**
 ```python
-# frontend/app.py
-"http://0.0.0.0:8000/research"
+# frontend/app.py - Update the backend URL to:
+BACKEND_URL = "http://0.0.0.0:8000/research"
 ```
 
 **Railway Deployment:**
 ```python
-# frontend/app.py
-"http://backend:8000/research"
+# frontend/app.py - Update the backend URL to:
+BACKEND_URL = "http://backend:8000/research"
 ```
+
+Railway uses internal networking, so `backend` resolves to your backend service automatically.
 
 ## 🎯 Features
 
