@@ -36,10 +36,10 @@ with st.form(key=f"research_form_{st.session_state.form_key}"):
 if submit_button and topic:
     with st.spinner("Running multi-agent research..."):
         # Local development
-        backend_url = "http://0.0.0.0:8000"
+        # backend_url = "http://0.0.0.0:8000"
         
         # Railway deployment (uncomment for Railway)
-        # backend_url = os.getenv("BACKEND_URL", "http://backend:8000")
+        backend_url = os.getenv("BACKEND_URL", "http://backend:8000")
         
         res = requests.post(
             f"{backend_url}/research",
