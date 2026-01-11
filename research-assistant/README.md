@@ -20,11 +20,17 @@ OpenAI API + Tavily Search
 
 ### Agent Workflow
 
+**Process Type: Sequential**
+
+The system uses a **sequential process** where each agent completes its task before the next one begins. There is no parallel execution, hierarchical supervision, or consensus-based decision making.
+
 1. **Search Agent** - Finds relevant sources using Tavily
 2. **Scraper Agent** - Extracts content from discovered URLs
 3. **Note Taker** - Consolidates scraped content
 4. **Writer Agent** - Creates structured outline with summaries
 5. **Editor Agent** - Polishes and refines the final output
+
+Each agent passes its output to the next agent in a linear chain: `search → scrape → notes → write → edit`
 
 ## 📁 Project Structure
 
