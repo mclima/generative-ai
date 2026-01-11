@@ -62,3 +62,17 @@ if st.session_state.outline:
         st.session_state.outline = None
         st.session_state.form_key += 1
         st.rerun()
+
+# Footer
+st.markdown("---")
+st.markdown(
+    f"""
+    <div style="text-align: center; color: #9CA3AF; font-size: 0.875rem; padding: 1rem 0;">
+        © {2026} maria c. lima | 
+        <a href="mailto:maria.lima.hub@gmail.com" style="color: #9CA3AF; text-decoration: none;">
+            📧 maria.lima.hub@gmail.com
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
