@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+langgraph
+langchain
+langchain-community
+langchain-tavily
+langchain-experimental
+langchain-openai
+python-dotenv
+requests
+beautifulsoup4
