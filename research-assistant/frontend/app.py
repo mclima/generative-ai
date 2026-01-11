@@ -11,6 +11,9 @@ st.markdown(
     """
     <style>
     body { background-color: black; color: white; }
+    button[kind="formSubmit"] {
+        display: none;
+    }
     </style>
     """,
     unsafe_allow_html=True
@@ -31,7 +34,7 @@ if "form_key" not in st.session_state:
 
 with st.form(key=f"research_form_{st.session_state.form_key}"):
     topic = st.text_input("Enter research topic")
-    submit_button = st.form_submit_button("Generate Outline", label_visibility="hidden")
+    submit_button = st.form_submit_button("Submit")
 
 if submit_button and topic:
     with st.spinner("Running multi-agent research..."):
