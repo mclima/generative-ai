@@ -29,8 +29,14 @@ Click "Deploy" and Vercel will build and deploy your frontend.
 1. Go to [railway.app](https://railway.app) and sign in
 2. Click "New Project"
 3. Select "Deploy from GitHub repo"
-4. Choose your repository
-5. Select the `backend` folder as the root directory
+4. Choose your repository (generative-ai)
+5. **Important:** After the project is created, configure the root directory:
+   - Click on your service in the Railway dashboard
+   - Go to **Settings** tab
+   - Scroll to **Root Directory**
+   - Set it to: `backend`
+   - Click **Save**
+6. Go to **Deployments** tab and click **Redeploy** to rebuild with correct directory
 
 ### 2. Add PostgreSQL Database
 1. In your Railway project, click "New"
