@@ -48,7 +48,7 @@ export default function JobFilter({ onFilterChange, selectedRole }: FilterProps)
               color: selectedRole === category.value ? "#93c5fd" : "#ccc",
               cursor: "pointer",
               fontSize: "0.875rem",
-              fontWeight: selectedRole === category.value ? "600" : "400",
+              fontWeight: "500",
               transition: "all 0.2s",
               whiteSpace: "nowrap",
             }}
