@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+langgraph
+langchain-openai
+langchain-anthropic
+pydantic
+sqlmodel
+psycopg2-binary
+requests
+beautifulsoup4
+python-dotenv
+pypdf2
+python-docx
+python-multipart
