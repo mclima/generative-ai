@@ -86,7 +86,7 @@ export default function MatchPage() {
       let response;
       
       if (inputMode === "paste") {
-        response = await fetch("http://localhost:8000/jobs/match", {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://generative-ai-production-621e.up.railway.app"}/jobs/match`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -97,7 +97,7 @@ export default function MatchPage() {
         const formData = new FormData();
         formData.append("file", selectedFile!);
         
-        response = await fetch("http://localhost:8000/jobs/match/upload", {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://generative-ai-production-621e.up.railway.app"}/jobs/match/upload`, {
           method: "POST",
           body: formData,
         });
