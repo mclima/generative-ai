@@ -25,7 +25,7 @@ export default function JobsClient({ jobs }: JobsClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [sortByDate, setSortByDate] = useState<"newest" | "oldest" | null>(null);
+  const [sortByDate, setSortByDate] = useState<"newest" | "oldest" | null>("newest");
 
   // Initialize from URL params
   useEffect(() => {
