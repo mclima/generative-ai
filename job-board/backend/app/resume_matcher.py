@@ -117,10 +117,19 @@ def match_jobs_to_resume(resume_data: Dict, jobs: List[Dict]) -> List[Dict]:
                 mismatch_reasons.append("requires leadership experience")
                 score -= 25
         
-        # Skill matching - count unique skill matches
+        # Skill matching - count unique skill matches (case-insensitive and flexible)
         skill_match_count = 0
+        description_lower = description.lower()
+        title_lower = title.lower()
+        
         for skill in skills:
-            if skill in description or skill in title:
+            skill_lower = skill.lower()
+            # Extract core skill name (remove parentheses, versions, etc.)
+            core_skill = skill_lower.split('(')[0].strip()
+            
+            # Check if skill or core skill appears in description/title
+            if (skill_lower in description_lower or skill_lower in title_lower or
+                core_skill in description_lower or core_skill in title_lower):
                 skill_match_count += 1
                 matched_skills.append(skill)
         
@@ -143,7 +152,8 @@ def match_jobs_to_resume(resume_data: Dict, jobs: List[Dict]) -> List[Dict]:
             "backend": ["backend", "back-end", "api", "server"],
             "fullstack": ["fullstack", "full-stack", "full stack"],
             "devops": ["devops", "sre", "infrastructure", "cloud"],
-            "data": ["data engineer", "data engineering", "etl", "pipeline"]
+            "data": ["data engineer", "data engineering", "etl", "pipeline"],
+            "engineering": ["software engineer", "engineer", "developer", "programmer"]  # Generic engineering
         }
         
         # Check if any preferred role matches the job role category
@@ -156,6 +166,12 @@ def match_jobs_to_resume(resume_data: Dict, jobs: List[Dict]) -> List[Dict]:
             if job_role == pref_role_lower:
                 role_match_bonus = 50 if idx == 0 else 30  # Primary role gets more points
                 break
+            
+            # Special case: "engineering" jobs should match with most software roles
+            if job_role == "engineering":
+                if pref_role_lower in ["fullstack", "backend", "frontend", "devops"]:
+                    role_match_bonus = 40 if idx == 0 else 25  # Slightly lower bonus for generic match
+                    break
             
             # Check role mappings
             for category, variations in role_mappings.items():

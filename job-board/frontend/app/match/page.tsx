@@ -242,7 +242,7 @@ export default function MatchPage() {
             backgroundColor: "#1a1a1a",
             border: "2px dashed #333",
             borderRadius: "8px",
-            textAlign: "center",
+            textAlign: "left",
           }}>
             <input
               type="file"
@@ -442,6 +442,8 @@ export default function MatchPage() {
                     <div style={{ flex: 1, minWidth: "200px" }}>
                       <Link
                         href={`/job/${job.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         style={{ 
                           fontSize: "1.25rem", 
                           fontWeight: "600", 
