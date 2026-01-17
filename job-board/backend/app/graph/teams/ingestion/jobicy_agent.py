@@ -44,9 +44,31 @@ def ingest_jobicy(state: GraphState) -> dict:
             # Extract full job description (HTML format)
             job_description_html = job.get("jobDescription", "")
             
-            # Convert HTML to formatted plain text
-            description_text = format_html_description(job_description_html)
-            description_preview = description_text[:500] if description_text else ""
+            # Convert HTML to plain text with better formatting
+            if job_description_html:
+                soup = BeautifulSoup(job_description_html, 'html.parser')
+                
+                # Add line breaks after block elements for better readability
+                for br in soup.find_all('br'):
+                    br.replace_with('\n')
+                for p in soup.find_all(['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
+                    p.insert_after('\n\n')
+                for li in soup.find_all('li'):
+                    li.insert_before('• ')
+                    li.insert_after('\n')
+                
+                # Get text with preserved line breaks
+                description_text = soup.get_text(separator=' ')
+                
+                # Clean up excessive whitespace while preserving line breaks
+                lines = [line.strip() for line in description_text.split('\n')]
+                description_text = '\n'.join(line for line in lines if line)
+                
+                # Limit to first 500 chars for content field
+                description_preview = description_text[:500] if description_text else ""
+            else:
+                description_text = ""
+                description_preview = ""
             
             # Extract salary information if available
             salary_min = job.get("salaryMin")
