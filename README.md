@@ -38,6 +38,39 @@ These settings ensure that:
 - Changes to other apps in the monorepo won't trigger unnecessary deployments
 - Build times and deployment costs are optimized
 
+### 3. Custom Domain Setup (Spaceship)
+
+To add a custom subdomain for your Vercel-deployed apps:
+
+#### In Spaceship (DNS Provider)
+
+1. Log in to your Spaceship account
+2. Navigate to **Domains** → Select your domain → **DNS Settings**
+3. Click **Add Record**
+4. Configure the CNAME record:
+   - **Type**: CNAME
+   - **Name/Host**: Your subdomain (e.g., `stock-agent`, `chatbot`, `tasks`)
+   - **Value/Points to**: `cname.vercel-dns.com`
+   - **TTL**: Auto or 3600 (1 hour)
+5. Click **Save**
+
+#### In Vercel
+
+1. Go to your project → **Settings** → **Domains**
+2. Click **Add Domain**
+3. Enter your full subdomain (e.g., `stock-agent.yourdomain.com`)
+4. Click **Add**
+5. If you see **"DNS Change Recommended"**, click it to get the exact CNAME value
+6. Use the value provided by Vercel (usually `cname.vercel-dns.com` or a project-specific value)
+7. Update your Spaceship CNAME record with this value if different
+8. Wait 5-30 minutes for DNS propagation
+9. SSL certificate will be automatically provisioned
+
+**Example subdomains:**
+- `stock-agent.yourdomain.com` → Stock Agent app
+- `chatbot.yourdomain.com` → Groq Chatbot
+- `tasks.yourdomain.com` → Task Maestro
+
 ## Getting Started
 
 Each project has its own README with specific setup instructions. Navigate to the individual project directories for more details.
