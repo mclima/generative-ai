@@ -70,7 +70,7 @@ export default function Home() {
       <header className="border-b border-gray-800 p-6">
         <div className="max-w-3xl mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">Constitution Assistant</h1>
+            <h1 className="text-2xl font-bold">US Constitution Assistant</h1>
             <p className="text-gray-400 mt-2">Ask questions about the Constitution of the United States</p>
           </div>
           {messages.length > 0 && (
