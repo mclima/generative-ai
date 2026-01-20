@@ -188,8 +188,9 @@ PORT=8000
      ```
      NEXT_PUBLIC_API_URL=https://your-backend-url.railway.app
      ```
-   - Replace `your-backend-url.railway.app` with your actual Railway backend URL
-   - **Important**: Make sure to deploy your backend first to get the URL
+   - **Replace with your actual Railway URL** from Step 7 of the Backend deployment
+   - Example: `NEXT_PUBLIC_API_URL=https://stock-agent-production.up.railway.app`
+   - **Important**: Deploy your backend to Railway FIRST to get this URL
 
 5. **Deploy**
    - Click "Deploy"
@@ -267,12 +268,22 @@ PORT=8000
    - Railway automatically deploys on first setup
    - Monitor the deployment logs in real-time
    - Deployment typically takes 2-5 minutes
-   - Once complete, your API will be live at `https://your-project.railway.app`
+   - Wait for the build to complete successfully
 
-7. **Get Your Backend URL**
-   - Go to Settings → Domains
-   - Copy the generated Railway domain (e.g., `https://stock-agent-production.up.railway.app`)
-   - You'll need this URL for your Vercel frontend's `NEXT_PUBLIC_API_URL` environment variable
+7. **Get Your Backend URL** ⭐
+   - After successful deployment, go to **Settings** → **Networking** (or **Domains**)
+   - If no public domain exists, click **Generate Domain** to create one
+   - Railway will generate a public URL like:
+     ```
+     https://stock-agent-production.up.railway.app
+     ```
+   - **Copy this URL** - you'll need it for your Vercel frontend
+   - Test your API by visiting: `https://your-railway-url.railway.app/docs`
+   - You should see the FastAPI Swagger documentation
+
+8. **Important: Save Your Backend URL**
+   - You'll use this URL as `NEXT_PUBLIC_API_URL` in your Vercel frontend deployment
+   - Example: `NEXT_PUBLIC_API_URL=https://stock-agent-production.up.railway.app`
 
 #### Post-Deployment
 

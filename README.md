@@ -7,6 +7,7 @@ This repository contains multiple AI-powered applications:
 - **image-generator** - AI image generation tool
 - **job-board** - Job board application
 - **research-assistant** - Research assistance tool
+- **stock-agent** - AI-powered stock analysis dashboard
 - **task-maestro** - Task management application
 
 ## Vercel Deployment Configuration
