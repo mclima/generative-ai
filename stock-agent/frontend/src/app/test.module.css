@@ -1,0 +1,4 @@
+/* Test file to verify CSS is loading */
+.test {
+  background-color: red;
+}

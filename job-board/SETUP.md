@@ -63,8 +63,6 @@ OPENAI_API_KEY=your_key_here
 ANTHROPIC_API_KEY=your_key_here  # Optional
 
 # Job Sources
-USAJOBS_EMAIL=your_email@example.com
-USAJOBS_API_KEY=your_key_here
 ADZUNA_APP_ID=your_app_id
 ADZUNA_API_KEY=your_key_here
 ```
