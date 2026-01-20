@@ -154,16 +154,167 @@ PORT=8000
 ## 🚢 Deployment
 
 ### Frontend (Vercel)
-1. Push to GitHub
-2. Import to Vercel
-3. Set environment variables
-4. Deploy
+
+#### Prerequisites
+- GitHub account
+- Vercel account (sign up at [vercel.com](https://vercel.com))
+- Your backend API URL (Railway deployment URL)
+
+#### Step-by-Step Deployment
+
+1. **Push your code to GitHub**
+   ```bash
+   git add .
+   git commit -m "Prepare for Vercel deployment"
+   git push origin main
+   ```
+
+2. **Import to Vercel**
+   - Go to [vercel.com/new](https://vercel.com/new)
+   - Click "Import Project"
+   - Select your GitHub repository
+   - Choose the `stock-agent/frontend` directory as the root directory
+
+3. **Configure Build Settings**
+   - **Framework Preset**: Next.js (auto-detected)
+   - **Root Directory**: `stock-agent/frontend`
+   - **Build Command**: `npm run build` (default)
+   - **Output Directory**: `.next` (default)
+   - **Install Command**: `npm install` (default)
+
+4. **Set Environment Variables**
+   - Click "Environment Variables"
+   - Add the following variable:
+     ```
+     NEXT_PUBLIC_API_URL=https://your-backend-url.railway.app
+     ```
+   - Replace `your-backend-url.railway.app` with your actual Railway backend URL
+   - **Important**: Make sure to deploy your backend first to get the URL
+
+5. **Deploy**
+   - Click "Deploy"
+   - Wait 2-3 minutes for the build to complete
+   - Your app will be live at `https://your-project-name.vercel.app`
+
+6. **Configure Custom Domain (Optional)**
+   - Go to Project Settings → Domains
+   - Add your custom domain
+   - Follow DNS configuration instructions
+
+#### Post-Deployment
+
+- **Automatic Deployments**: Every push to `main` branch will trigger a new deployment
+- **Preview Deployments**: Pull requests automatically get preview URLs
+- **Logs**: View build and runtime logs in the Vercel dashboard
+- **Analytics**: Enable Vercel Analytics for performance insights
+
+#### Troubleshooting
+
+- **Build fails**: Check that `package.json` and `next.config.mjs` are in the frontend directory
+- **API connection fails**: Verify `NEXT_PUBLIC_API_URL` is set correctly and backend is running
+- **CORS errors**: Ensure your backend allows requests from your Vercel domain
 
 ### Backend (Railway)
-1. Push to GitHub
-2. Create Railway project
-3. Set environment variables
-4. Deploy from GitHub
+
+#### Prerequisites
+- GitHub account
+- Railway account (sign up at [railway.app](https://railway.app))
+- Polygon.io API key ([Get free tier](https://polygon.io/))
+- OpenAI API key ([Get one here](https://platform.openai.com/))
+
+#### Step-by-Step Deployment
+
+1. **Push your code to GitHub**
+   ```bash
+   git add .
+   git commit -m "Prepare for Railway deployment"
+   git push origin main
+   ```
+
+2. **Create Railway Project**
+   - Go to [railway.app/new](https://railway.app/new)
+   - Click "Deploy from GitHub repo"
+   - Authorize Railway to access your GitHub account
+   - Select your `generative-ai` repository
+   - Railway will scan for services
+
+3. **Configure Service Settings**
+   - **Root Directory**: Click "Settings" → "Service" → Set to `stock-agent/backend`
+   - Railway will auto-detect Python using `nixpacks.toml` and `requirements.txt`
+   - **Start Command**: Automatically configured via `nixpacks.toml`
+   - If Railway doesn't auto-detect, manually set:
+     - **Build Command**: `pip install -r requirements.txt`
+     - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+
+4. **Set Environment Variables**
+   - In your Railway project dashboard, go to the **Variables** tab
+   - Click "New Variable" and add each of the following:
+     ```
+     POLYGON_API_KEY=your_actual_polygon_api_key
+     OPENAI_API_KEY=your_actual_openai_api_key
+     ENVIRONMENT=production
+     PORT=8000
+     ```
+   - **Important**: Replace placeholder values with your actual API keys
+   - Railway will automatically redeploy when you add variables
+
+5. **Configure CORS (Important)**
+   - After deployment, note your Railway URL (e.g., `https://your-app.railway.app`)
+   - Update your backend CORS settings to allow your Vercel frontend domain
+   - In `backend/main.py`, ensure CORS allows your Vercel domain
+
+6. **Deploy**
+   - Railway automatically deploys on first setup
+   - Monitor the deployment logs in real-time
+   - Deployment typically takes 2-5 minutes
+   - Once complete, your API will be live at `https://your-project.railway.app`
+
+7. **Get Your Backend URL**
+   - Go to Settings → Domains
+   - Copy the generated Railway domain (e.g., `https://stock-agent-production.up.railway.app`)
+   - You'll need this URL for your Vercel frontend's `NEXT_PUBLIC_API_URL` environment variable
+
+#### Post-Deployment
+
+- **Automatic Deployments**: Every push to `main` branch triggers a new deployment
+- **Logs**: View real-time logs in the Railway dashboard
+- **Metrics**: Monitor CPU, memory, and network usage
+- **Custom Domain**: Add your own domain in Settings → Domains
+- **Scaling**: Railway auto-scales based on traffic (paid plans)
+
+#### Troubleshooting
+
+- **"Railpack could not determine how to build the app"**:
+  - Ensure `nixpacks.toml` and `requirements.txt` are in the `backend` directory
+  - Verify the root directory is set to `stock-agent/backend` in Railway settings
+  - Try manually setting the start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+  - Check that you've committed and pushed all files to GitHub
+
+- **Build fails**: 
+  - Check that `requirements.txt` is in the `backend` directory
+  - Verify Python version compatibility (3.11+)
+  - Check build logs for missing dependencies
+
+- **App crashes on startup**:
+  - Verify all environment variables are set correctly
+  - Check that `PORT` variable is set to `8000`
+  - Review runtime logs for error messages
+
+- **API not responding**:
+  - Ensure the start command is correct: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+  - Check that Railway assigned a public domain
+  - Verify CORS settings allow requests from your frontend
+
+- **ChromaDB persistence issues**:
+  - Railway provides ephemeral storage by default
+  - For persistent vector storage, consider adding a Railway volume
+  - Or use a managed vector database service
+
+#### Cost Considerations
+
+- **Free Tier**: Railway offers $5/month free credit
+- **Usage**: This backend typically uses ~$3-5/month on Railway
+- **Monitoring**: Track usage in the Railway dashboard to avoid overages
 
 ## 📈 Portfolio Highlights
 
