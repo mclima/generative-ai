@@ -34,14 +34,15 @@ self.refresh_interval_hours = 3
 **Per-source tracking** to avoid unnecessary API calls.
 
 ### How It Works
-- Each job source (JSearch, Jobicy, Company) has its own refresh interval
+- Each job source (LinkedIn Jobs API, Jobicy) has its own refresh interval
 - Sources are only fetched when their interval expires
 - State persisted to `.source_state.json` to survive server restarts
 
 ### Source Intervals
-- **JSearch**: 3 hours (high-frequency)
+- **LinkedIn Jobs API**: 3 hours (high-frequency, rate limited to 1 call/second)
 - **Jobicy**: 3 hours (high-frequency)
-- **Company Pages**: 6 hours (medium-frequency)
+- **JSearch**: Disabled (not returning results)
+- **Company Pages**: Disabled (manual scraping not reliable)
 
 ### Benefits
 - **Reduced API costs**: Only fetch from sources that need refresh
@@ -54,9 +55,10 @@ self.refresh_interval_hours = 3
 
 ### Example Output
 ```
-🔄 Jsearch: needs refresh (interval: 3h)
+🔄 LinkedIn Jobs API: needs refresh (interval: 3h)
 🔄 Jobicy: needs refresh (interval: 3h)
-✓ Company: skipping (last refresh: 14:23:15)
+✓ JSearch: skipping (disabled)
+✓ Company: skipping (disabled)
 ```
 
 ---
@@ -139,19 +141,24 @@ curl http://localhost:8000/jobs/refresh/status
   "should_refresh": false,
   "refresh_interval_hours": 3,
   "sources": {
-    "jsearch": {
+    "jobs_api": {
       "last_refresh": "2026-01-21T17:30:00",
       "jobs_fetched": 20,
       "should_refresh": false
     },
     "jobicy": {
       "last_refresh": "2026-01-21T17:30:00",
-      "jobs_fetched": 35,
+      "jobs_fetched": 18,
+      "should_refresh": false
+    },
+    "jsearch": {
+      "last_refresh": "2026-01-21T14:15:00",
+      "jobs_fetched": 0,
       "should_refresh": false
     },
     "company": {
       "last_refresh": "2026-01-21T14:15:00",
-      "jobs_fetched": 12,
+      "jobs_fetched": 0,
       "should_refresh": false
     }
   },
@@ -193,14 +200,20 @@ curl http://localhost:8000/jobs/refresh/status
 ### New Files
 - `backend/app/source_tracker.py` - Per-source refresh tracking
 - `backend/app/cache.py` - Redis cache implementation
+- `backend/app/graph/teams/ingestion/jobs_api_agent.py` - LinkedIn Jobs API integration
+- `backend/app/graph/teams/ingestion/description_formatter.py` - HTML description formatting
 - `PERFORMANCE.md` - This documentation
 
 ### Modified Files
 - `backend/app/job_refresh.py` - Changed interval to 3 hours
-- `backend/app/job_graph.py` - Added incremental fetching logic
+- `backend/app/job_graph.py` - Added incremental fetching logic, disabled JSearch and Company agents
 - `backend/app/main.py` - Integrated cache layer
+- `backend/app/graph/teams/ingestion/jobicy_agent.py` - Enhanced headers to bypass Cloudflare, removed URL extraction
 - `backend/requirements.txt` - Added `redis` dependency
 - `backend/.env.example` - Added `REDIS_URL` configuration
+
+### Removed Files
+- `backend/app/graph/teams/ingestion/adzuna_agent.py` - Removed from codebase
 
 ---
 

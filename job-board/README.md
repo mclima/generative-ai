@@ -24,9 +24,10 @@ backend/
 │   │   ├── state.py              # TypedDict state definitions
 │   │   └── teams/
 │   │       └── ingestion/        # Parallel ingestion agents
-│   │           ├── usajobs_agent.py
-│   │           ├── themuse_agent.py
-│   │           └── company_agent.py
+│   │           ├── jobs_api_agent.py    # LinkedIn Jobs API
+│   │           ├── jobicy_agent.py      # Jobicy API
+│   │           ├── jsearch_agent.py     # JSearch (disabled)
+│   │           └── company_agent.py     # Company pages (disabled)
 │   ├── agents/                   # Processing agents
 │   │   ├── classifier.py
 │   │   ├── validator.py
@@ -38,7 +39,10 @@ backend/
 │   ├── api/
 │   │   ├── schemas.py
 │   │   └── adapter.py
-│   ├── graph.py                  # LangGraph pipeline
+│   ├── cache.py                  # Redis caching layer
+│   ├── source_tracker.py         # Per-source refresh tracking
+│   ├── job_graph.py              # LangGraph pipeline
+│   ├── job_refresh.py            # Refresh manager
 │   └── main.py                   # FastAPI application
 ├── db.py                         # Database models
 ├── repository.py                 # Data access layer
@@ -89,19 +93,32 @@ frontend/
 ## 📡 Job Sources
 
 ### Active Sources
-- **JSearch**: Global job search API via RapidAPI (currently rate-limited due to free tier) with HTML entity decoding
-- **Jobicy**: Remote-first developer jobs with full descriptions and HTML entity decoding
-- **Company Pages**: Vercel careers via Greenhouse job board with HTML entity decoding
+- **LinkedIn Jobs API** (via RapidAPI): Remote tech jobs with full descriptions
+  - Fetches from LinkedIn's job database
+  - Full job descriptions via detail endpoint
+  - Rate limited: 1 call per second
+  - Refresh interval: 3 hours
+  
+- **Jobicy**: Remote-first developer jobs with full descriptions
+  - Specialized in remote tech positions
+  - Full HTML job descriptions
+  - Enhanced browser headers to bypass Cloudflare
+  - Refresh interval: 3 hours
+
+### Disabled Sources
+- **JSearch**: Disabled (not returning results)
+- **Company Pages**: Disabled (manual scraping not reliable)
 
 ### Removed Sources
 - **Adzuna**: Removed from codebase
-- **LinkedIn Job Search API**: Removed due to API authentication issues (403/429 errors)
 
 ### Notes
 - All sources focus on remote tech positions
 - Parallel ingestion for faster job collection
-- Automatic deduplication across sources
-- HTML entity decoding applied at ingestion time across all sources for clean job titles and company names (e.g., `–` instead of `&#8211;`, `&` instead of `&amp;`)
+- Automatic deduplication across sources via job hashing
+- HTML entity decoding applied at ingestion time for clean job titles and company names
+- Per-source refresh tracking with incremental updates
+- Redis caching (15-min TTL) for fast API responses
 
 ## 🏗️ LangGraph Multi-Agent Pipeline
 
@@ -114,7 +131,7 @@ LangGraph orchestrates the multi-agent workflow for fetching, processing, classi
 
 The graph defines a sequential pipeline with these nodes:
 
-1. **ingest** - Parallel job fetching from multiple sources (JSearch, Jobicy, Vercel)
+1. **ingest** - Parallel job fetching from multiple sources (LinkedIn Jobs API, Jobicy)
 2. **process** - Normalize raw job data into standardized format
 3. **classify** - Categorize jobs by role (AI, data, frontend, backend, etc.)
 4. **validate** - Filter out non-tech jobs
@@ -142,9 +159,8 @@ The LangGraph pipeline is invoked in:
 ┌──────────────▼──────────────────────┐
 │     Ingestion Team (Parallel)       │
 │  ┌────────────────────────────────┐ │
-│  │ JSearch Agent                  │ │
+│  │ LinkedIn Jobs API Agent        │ │
 │  │ Jobicy Agent                   │ │
-│  │ Company Agent                  │ │
 │  └────────────────────────────────┘ │
 └──────────────┬──────────────────────┘
                │
