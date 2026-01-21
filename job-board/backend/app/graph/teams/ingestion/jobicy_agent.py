@@ -1,9 +1,12 @@
 from app.graph.state import RawJob, GraphState
 from app.graph.teams.ingestion.job_filters import is_tech_job
 from app.graph.teams.ingestion.html_formatter import format_html_description
+from app.graph.teams.ingestion.description_formatter import format_description_to_html
 import requests
 import os
+import html
 from dotenv import load_dotenv
+from bs4 import BeautifulSoup
 
 load_dotenv()
 
@@ -15,8 +18,15 @@ def ingest_jobicy(state: GraphState) -> dict:
         # Add headers to mimic a browser request
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "application/json",
-            "Referer": "https://jobicy.com/"
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Referer": "https://jobicy.com/",
+            "Origin": "https://jobicy.com",
+            "Connection": "keep-alive",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin"
         }
         
         params = {
@@ -35,8 +45,13 @@ def ingest_jobicy(state: GraphState) -> dict:
         job_list = data.get("jobs", [])
         
         for job in job_list:
-            title = job.get("jobTitle", "")
-            company = job.get("companyName", "")
+            raw_title = job.get("jobTitle", "")
+            title = html.unescape(raw_title)
+            # Debug: print first job title to see encoding
+            if job_list.index(job) == 0:
+                print(f"DEBUG - Raw title from API: {raw_title}")
+                print(f"DEBUG - After html.unescape: {title}")
+            company = html.unescape(job.get("companyName", ""))
             location = job.get("jobGeo", "Remote")
             job_url = job.get("url", "")
             posted_date = job.get("pubDate", "")
@@ -63,6 +78,9 @@ def ingest_jobicy(state: GraphState) -> dict:
                 # Clean up excessive whitespace while preserving line breaks
                 lines = [line.strip() for line in description_text.split('\n')]
                 description_text = '\n'.join(line for line in lines if line)
+                
+                # Format description with HTML tags
+                description_text = format_description_to_html(description_text)
                 
                 # Limit to first 500 chars for content field
                 description_preview = description_text[:500] if description_text else ""

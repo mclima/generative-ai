@@ -29,3 +29,4 @@ class GraphState(TypedDict):
     normalized_jobs: List[NormalizedJob]
     jobs: List[dict]  # Processed jobs for classification/validation/ranking
     role: Optional[str]
+    force_refresh: Optional[bool]  # Force refresh all sources, bypassing intervals

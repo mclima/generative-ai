@@ -1,0 +1,18 @@
+{
+  "jsearch": {
+    "last_refresh": "2026-01-21T14:11:49.535440",
+    "jobs_fetched": 0
+  },
+  "jobicy": {
+    "last_refresh": "2026-01-21T17:04:54.631584",
+    "jobs_fetched": 49
+  },
+  "company": {
+    "last_refresh": "2026-01-21T13:58:12.254340",
+    "jobs_fetched": 100
+  },
+  "jobs_api": {
+    "last_refresh": "2026-01-21T17:05:33.089649",
+    "jobs_fetched": 20
+  }
+}

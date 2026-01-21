@@ -6,6 +6,8 @@ from app.job_graph import job_graph
 from app.schemas import Job
 from app.llm import llm_config
 from app.job_refresh import refresh_manager
+from app.source_tracker import source_tracker
+from app.cache import job_cache
 from app.resume_matcher import extract_skills_from_resume, match_jobs_to_resume, generate_match_explanation
 from app.file_parser import parse_resume_file
 from fastapi import UploadFile, File, Form
@@ -60,6 +62,10 @@ def _refresh_jobs_background():
             
             save_jobs(result["jobs"])
             refresh_manager.mark_refreshed()
+            
+            # Invalidate cache after new jobs are added
+            job_cache.invalidate_all()
+            
         print(f"[{job_id}] Background job refresh completed: {len(result.get('jobs', []))} jobs")
     except Exception as e:
         print(f"[{job_id}] Error in background job refresh: {e}")
@@ -74,16 +80,21 @@ def list_jobs(
     sort_by: str = Query("score"),
     order: str = Query("desc"),
 ):
-    # Auto-refresh jobs once per day in background
+    # Auto-refresh jobs in background if needed
     if refresh_manager.should_refresh():
         with refresh_manager.refresh_lock:
             # Double-check after acquiring lock
             if refresh_manager.should_refresh():
-                print("Triggering daily job refresh in background...")
+                print("Triggering job refresh in background...")
                 thread = threading.Thread(target=_refresh_jobs_background, daemon=True)
                 thread.start()
 
-    # Return paginated, sorted results from database (fast)
+    # Try to get from cache first
+    cached_jobs = job_cache.get_jobs(role, remote, limit, offset, sort_by, order)
+    if cached_jobs is not None:
+        return cached_jobs
+
+    # Cache miss - query database
     jobs = get_jobs(
         role=role,
         remote=remote,
@@ -100,6 +111,9 @@ def list_jobs(
         if job.responsibilities:
             job.responsibilities = json.loads(job.responsibilities)
     
+    # Cache the results for 15 minutes (900 seconds)
+    job_cache.set_jobs(jobs, role, remote, limit, offset, sort_by, order, ttl=900)
+    
     return jobs
 
 
@@ -110,12 +124,14 @@ def get_refresh_status():
     return {
         "last_refresh": last_refresh.isoformat() if last_refresh else None,
         "should_refresh": refresh_manager.should_refresh(),
-        "refresh_interval_hours": refresh_manager.refresh_interval_hours
+        "refresh_interval_hours": refresh_manager.refresh_interval_hours,
+        "sources": source_tracker.get_all_sources_status(),
+        "cache": job_cache.get_stats()
     }
 
 
 @app.post("/jobs/refresh")
-def refresh_jobs():
+def refresh_jobs(force: bool = Query(False, description="Force refresh all sources, bypassing intervals")):
     """Manually trigger job ingestion from all active sources"""
     try:
         # Run LangGraph ingestion + processing
@@ -123,7 +139,8 @@ def refresh_jobs():
             "raw_jobs": [],
             "normalized_jobs": [],
             "role": None,
-            "jobs": []
+            "jobs": [],
+            "force_refresh": force
         })
 
         # Persist deduplicated jobs
@@ -138,6 +155,9 @@ def refresh_jobs():
             save_jobs(result["jobs"])
         
         refresh_manager.mark_refreshed()
+        
+        # Invalidate cache after refresh
+        job_cache.invalidate_all()
         
         return {
             "status": "success",

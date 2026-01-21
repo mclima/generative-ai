@@ -26,7 +26,6 @@ backend/
 │   │       └── ingestion/        # Parallel ingestion agents
 │   │           ├── usajobs_agent.py
 │   │           ├── themuse_agent.py
-│   │           ├── adzuna_agent.py
 │   │           └── company_agent.py
 │   ├── agents/                   # Processing agents
 │   │   ├── classifier.py
@@ -90,22 +89,19 @@ frontend/
 ## 📡 Job Sources
 
 ### Active Sources
-- **Jobicy**: Remote-first developer jobs with full descriptions
-- **Adzuna**: Aggregated tech job listings
-- **JSearch**: Global job search API
-- **RemoteOK**: Remote tech positions
-- **AI/ML Jobs**: Specialized AI/ML roles
-- **Remotive**: Remote tech jobs
+- **JSearch**: Global job search API via RapidAPI (currently rate-limited due to free tier) with HTML entity decoding
+- **Jobicy**: Remote-first developer jobs with full descriptions and HTML entity decoding
+- **Company Pages**: Vercel careers via Greenhouse job board with HTML entity decoding
 
-### Disabled Sources
-- **Arbeitnow**: Temporarily disabled
-- **USAJobs**: Government positions (disabled for faster loading)
-- **TheMuse**: Tech company jobs (disabled for faster loading)
+### Removed Sources
+- **Adzuna**: Removed from codebase
+- **LinkedIn Job Search API**: Removed due to API authentication issues (403/429 errors)
 
-### Excluded Sources
-- LinkedIn (requires authentication)
-- Indeed (rate limiting)
-- Glassdoor (restricted API)
+### Notes
+- All sources focus on remote tech positions
+- Parallel ingestion for faster job collection
+- Automatic deduplication across sources
+- HTML entity decoding applied at ingestion time across all sources for clean job titles and company names (e.g., `–` instead of `&#8211;`, `&` instead of `&amp;`)
 
 ## 🏗️ LangGraph Multi-Agent Pipeline
 
@@ -118,7 +114,7 @@ LangGraph orchestrates the multi-agent workflow for fetching, processing, classi
 
 The graph defines a sequential pipeline with these nodes:
 
-1. **ingest** - Parallel job fetching from multiple APIs (Adzuna, JSearch, Arbeitnow)
+1. **ingest** - Parallel job fetching from multiple sources (JSearch, Jobicy, Vercel)
 2. **process** - Normalize raw job data into standardized format
 3. **classify** - Categorize jobs by role (AI, data, frontend, backend, etc.)
 4. **validate** - Filter out non-tech jobs
@@ -127,8 +123,8 @@ The graph defines a sequential pipeline with these nodes:
 ### Graph Execution
 
 The LangGraph pipeline is invoked in:
-- `backend/app/main.py` (lines 41-46) - Background refresh (automatic every 6 hours)
-- `backend/app/main.py` (lines 101-107) - Manual refresh endpoint
+- `backend/app/main.py` - Background refresh (automatic every 3 hours, request-triggered)
+- `backend/app/main.py` - Manual refresh endpoint (`POST /jobs/refresh`)
 
 ### Key LangGraph Features
 
@@ -146,9 +142,9 @@ The LangGraph pipeline is invoked in:
 ┌──────────────▼──────────────────────┐
 │     Ingestion Team (Parallel)       │
 │  ┌────────────────────────────────┐ │
-│  │ Adzuna Agent                   │ │
 │  │ JSearch Agent                  │ │
-│  │ Arbeitnow Agent                │ │
+│  │ Jobicy Agent                   │ │
+│  │ Company Agent                  │ │
 │  └────────────────────────────────┘ │
 └──────────────┬──────────────────────┘
                │
@@ -220,7 +216,7 @@ pip install -r requirements.txt
 cp .env.example .env  # Configure your API keys
 
 # Create database
-createdb jobsdb
+createdb jobboard
 
 # Start server
 uvicorn app.main:app --reload
@@ -234,13 +230,31 @@ cp .env.local.example .env.local
 npm run dev
 ```
 
+### Database Management
+```bash
+# Clear database (useful for testing or removing stale data)
+psql jobboard -c "TRUNCATE TABLE jobdb CASCADE;"
+
+# Trigger manual refresh (fetches fresh jobs from all sources)
+curl -X POST "http://localhost:8000/jobs/refresh?force=true"
+```
+
 ## 📊 Features
 
 ### 1. Multi-Agent Architecture
-- **Ingestion Team**: Parallel job fetching from Jobicy, Adzuna, JSearch, RemoteOK, and more
+- **Ingestion Team**: Parallel job fetching from JSearch, Jobicy, and Vercel (Company Pages)
 - **Understanding Team**: LLM-powered job classification and extraction
 - **Ranking Team**: Relevance scoring and prioritization
 - **Publishing Team**: Deduplication and persistence
+
+**Cost-Optimized Refresh Strategy:**
+- ✅ **Request-triggered refresh** (no APScheduler) - saves API costs on Railway/production
+- ✅ **3-hour refresh interval** - balances freshness with API usage
+- ✅ **Per-source tracking** - only fetches from sources that need refresh (40-60% fewer API calls)
+- ✅ **Redis caching** (15-min TTL) - reduces database queries by 80-90%
+- ✅ **Zero cost when idle** - no background jobs, refreshes only happen when users visit the site
+
+**How it works:** Jobs refresh automatically when someone visits `/jobs` AND 3 hours have passed since last refresh. No traffic = no API calls = no costs. See `PERFORMANCE.md` for details.
 
 ### 2. AI-Powered Resume Matcher
 Match your resume with relevant jobs using advanced AI:
@@ -287,6 +301,38 @@ OPENAI_API_KEY=sk-...
 
 API Docs: `http://localhost:8000/docs`
 
+## 🗄️ Database Management
+
+### Reset Jobs Table
+To clear all jobs and start fresh:
+```bash
+psql jobboard -c "DROP TABLE IF EXISTS jobs CASCADE;"
+```
+
+### Drop and Recreate Database
+```bash
+dropdb jobboard
+createdb jobboard
+```
+
+### Check Database Status
+```bash
+# List all databases
+psql -l
+
+# Connect to database
+psql jobboard
+
+# View tables
+psql jobboard -c "\dt"
+
+# Count jobs
+psql jobboard -c "SELECT COUNT(*) FROM jobs;"
+
+# View job sources and counts
+curl -s http://127.0.0.1:8000/jobs?limit=150 | python3 -c "import sys, json; data = json.load(sys.stdin); print(f'Total jobs: {len(data)}'); sources = {}; [sources.update({job['source']: sources.get(job['source'], 0) + 1}) for job in data]; [print(f'{k}: {v}') for k, v in sorted(sources.items())]"
+```
+
 ## 🔧 Configuration
 
 ### Environment Variables
@@ -297,8 +343,6 @@ DATABASE_URL=postgresql://user:pass@localhost:5432/jobboard
 LLM_MODEL=gpt-4o-mini
 LLM_TEMPERATURE=0.3
 OPENAI_API_KEY=sk-...
-USAJOBS_API_KEY=...
-ADZUNA_API_KEY=...
 ```
 
 **Frontend** (`.env.local`):

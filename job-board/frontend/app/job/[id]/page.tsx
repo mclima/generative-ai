@@ -101,9 +101,10 @@ export default async function JobDetailPage({
               <h2 className="job-detail-section-title">
                 Full Job Description
               </h2>
-              <div className="job-detail-description">
-                {job.description}
-              </div>
+              <div 
+                className="job-detail-description"
+                dangerouslySetInnerHTML={{ __html: job.description }}
+              />
             </section>
           )}
 

@@ -12,3 +12,4 @@ python-dotenv
 pypdf2
 python-docx
 python-multipart
+redis

@@ -4,28 +4,32 @@ from app.agents.classifier import classify_jobs
 from app.agents.validator import validate_jobs
 from app.agents.ranker import rank_jobs
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from app.source_tracker import source_tracker
 
 # Note: Using 'graph' module name to access the graph package subdirectory
 import app.graph.state as graph_state
-import app.graph.teams.ingestion.adzuna_agent as adzuna_module
 import app.graph.teams.ingestion.jsearch_agent as jsearch_module
 import app.graph.teams.ingestion.jobicy_agent as jobicy_module
+import app.graph.teams.ingestion.company_agent as company_module
+import app.graph.teams.ingestion.jobs_api_agent as jobs_api_module
 from app.graph.teams.ingestion.role_classifier import infer_role
 
 GraphState = graph_state.GraphState
 RawJob = graph_state.RawJob
 ingest_jsearch = jsearch_module.ingest_jsearch
-ingest_adzuna = adzuna_module.ingest_adzuna
 ingest_jobicy = jobicy_module.ingest_jobicy
+ingest_company = company_module.ingest_company_pages
+ingest_jobs_api = jobs_api_module.ingest_jobs_api
 
 def process_raw_jobs(state: GraphState):
     """Convert raw jobs to normalized format"""
+    import html
     raw_jobs = state.get("raw_jobs", [])
     print(f"Processing {len(raw_jobs)} raw jobs")
     
     jobs = []
     for idx, raw_job in enumerate(raw_jobs):
-        content = raw_job.get("content", "")
+        content = html.unescape(raw_job.get("content", ""))  # Decode HTML entities first
         url = raw_job.get("url", "")
         source = raw_job.get("source", "unknown")
         
@@ -51,7 +55,7 @@ def process_raw_jobs(state: GraphState):
             except (ValueError, OSError):
                 posted_date = ""
         
-        description = raw_job.get("description", "")
+        description = html.unescape(raw_job.get("description", ""))
         salary = raw_job.get("salary", "")
         
         jobs.append({
@@ -131,22 +135,43 @@ def run_ingestion_source(source_name: str, ingestion_func, state: GraphState):
 
 # Aggregator function to combine all ingestion results
 def aggregate_ingestion(state: GraphState):
-    """Aggregate results from all ingestion agents in parallel"""
+    """Aggregate results from all ingestion agents in parallel with incremental refresh"""
     initial_state = {"raw_jobs": [], "role": state.get("role")}
     all_jobs = []
     
-    # Active ingestion sources
+    # Check if force refresh is requested (for manual refreshes)
+    force_refresh = state.get("force_refresh", False)
+    
+    # Active ingestion sources with their refresh intervals (in hours)
     ingestion_sources = [
-        ("JSearch", ingest_jsearch),
-        ("Adzuna", ingest_adzuna),
-        ("Jobicy", ingest_jobicy),
+        # ("jsearch", ingest_jsearch, 3),    # DISABLED: Not returning results
+        ("jobs_api", ingest_jobs_api, 3),    # High-frequency: every 3 hours (RapidAPI Jobs API)
+        ("jobicy", ingest_jobicy, 3),        # High-frequency: every 3 hours
+        # ("company", ingest_company, 6),    # DISABLED: Medium-frequency: every 6 hours
     ]
     
-    # Execute all ingestion sources in parallel
+    # Filter sources that need refresh (or force all if force_refresh=True)
+    sources_to_refresh = []
+    for source_name, func, interval in ingestion_sources:
+        if force_refresh or source_tracker.should_refresh_source(source_name, interval):
+            sources_to_refresh.append((source_name, func))
+            if force_refresh:
+                print(f"🔄 {source_name.title()}: forcing refresh (manual)")
+            else:
+                print(f"🔄 {source_name.title()}: needs refresh (interval: {interval}h)")
+        else:
+            last_refresh = source_tracker.get_last_refresh(source_name)
+            print(f"✓ {source_name.title()}: skipping (last refresh: {last_refresh.strftime('%H:%M:%S')})")
+    
+    if not sources_to_refresh:
+        print("No sources need refresh at this time")
+        return {"raw_jobs": all_jobs, "role": state.get("role")}
+    
+    # Execute only sources that need refresh in parallel
     with ThreadPoolExecutor(max_workers=8) as executor:
         future_to_source = {
             executor.submit(run_ingestion_source, name, func, initial_state): name 
-            for name, func in ingestion_sources
+            for name, func in sources_to_refresh
         }
         
         for future in as_completed(future_to_source):
@@ -160,7 +185,10 @@ def aggregate_ingestion(state: GraphState):
                     job_count = len(jobs)
                     all_jobs.extend(jobs)
                     total_count = len(all_jobs)
-                    print(f"{name}: fetched {job_count} jobs (total: {total_count})")
+                    print(f"{name.title()}: fetched {job_count} jobs (total: {total_count})")
+                    
+                    # Mark source as refreshed
+                    source_tracker.mark_refreshed(name, job_count)
                     
             except Exception as e:
                 print(f"{source_name} failed to process results: {e}")

@@ -6,7 +6,7 @@ import json
 class JobRefreshManager:
     def __init__(self):
         self.refresh_lock = threading.Lock()
-        self.refresh_interval_hours = 6
+        self.refresh_interval_hours = 3
         self.state_file = os.path.join(os.path.dirname(__file__), ".refresh_state.json")
         self.last_refresh = self._load_last_refresh()
         self.first_request = True
@@ -35,7 +35,7 @@ class JobRefreshManager:
     def should_refresh(self) -> bool:
         """Check if jobs should be refreshed:
         - Always on first request after server start
-        - Then every 6 hours
+        - Then every 3 hours
         """
         # Always refresh on first request
         if self.first_request:

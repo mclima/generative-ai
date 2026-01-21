@@ -14,11 +14,34 @@ AI_ML_KEYWORDS = [
     "data scientist", "data science", "data engineer", "data analyst", "machine learning"
 ]
 
-FRONTEND_KEYWORDS = ["frontend engineer", "front-end engineer", "frontend developer", "front-end developer", "ui engineer", "ux engineer"]
-BACKEND_KEYWORDS = ["backend engineer", "back-end engineer", "backend developer", "back-end developer", "api engineer"]
+FRONTEND_KEYWORDS = [
+    "frontend engineer", "front-end engineer", "frontend developer", "front-end developer",
+    "ui engineer", "ux engineer", "react developer", "vue developer", "angular developer",
+    "javascript developer", "typescript developer", "web developer", "ui/ux engineer"
+]
+
+BACKEND_KEYWORDS = [
+    "backend engineer", "back-end engineer", "backend developer", "back-end developer",
+    "api engineer", "server engineer", "java developer", "python developer", "node developer",
+    "golang developer", "ruby developer", ".net developer"
+]
+
 FULLSTACK_KEYWORDS = ["fullstack", "full-stack", "full stack"]
 DEVOPS_KEYWORDS = ["devops", "sre", "site reliability", "infrastructure engineer", "cloud engineer", "platform engineer"]
 MANAGEMENT_KEYWORDS = ["manager", "lead", "director"]
+
+# Content-based indicators for when title is ambiguous
+FRONTEND_CONTENT_INDICATORS = [
+    "react", "vue", "angular", "frontend", "front-end", "ui", "ux", "css", "html",
+    "javascript", "typescript", "next.js", "svelte", "tailwind", "responsive design",
+    "web components", "dom", "browser"
+]
+
+BACKEND_CONTENT_INDICATORS = [
+    "backend", "back-end", "api", "rest", "graphql", "database", "sql", "nosql",
+    "server", "microservices", "kubernetes", "docker", "aws", "azure", "gcp",
+    "node.js", "django", "flask", "spring", "express", "postgresql", "mongodb"
+]
 
 def infer_role(title: str, content: str = "") -> str:
     """
@@ -47,13 +70,23 @@ def infer_role(title: str, content: str = "") -> str:
     elif any(keyword in title_lower for keyword in DEVOPS_KEYWORDS):
         return "devops"
     
-    # Special handling for web developer
-    if "web developer" in title_lower:
-        if any(kw in content_lower for kw in ["frontend", "react", "vue", "angular", "javascript", "ui"]):
+    # For generic "Software Engineer" or "Engineer" titles, check content
+    generic_engineer_titles = ["software engineer", "engineer", "developer"]
+    is_generic = any(title_lower.strip().endswith(keyword) or title_lower.startswith(keyword) 
+                     for keyword in generic_engineer_titles)
+    
+    if is_generic and content_lower:
+        # Count frontend vs backend indicators in content
+        frontend_score = sum(1 for indicator in FRONTEND_CONTENT_INDICATORS if indicator in content_lower)
+        backend_score = sum(1 for indicator in BACKEND_CONTENT_INDICATORS if indicator in content_lower)
+        
+        # If strong signal for frontend or backend, classify accordingly
+        if frontend_score > backend_score and frontend_score >= 2:
             return "frontend"
-        elif any(kw in content_lower for kw in ["backend", "api", "server", "database"]):
+        elif backend_score > frontend_score and backend_score >= 2:
             return "backend"
-        return "fullstack"
+        elif frontend_score >= 2 and backend_score >= 2:
+            return "fullstack"
     
     # Management roles
     if any(keyword in title_lower for keyword in MANAGEMENT_KEYWORDS):

@@ -370,11 +370,42 @@ code {
 .job-detail-description {
   font-size: 1rem;
   line-height: 1.6;
-  white-space: pre-wrap;
   background-color: #1a1a1a;
-  padding: 1rem;
+  padding: 1.5rem;
   border-radius: 6px;
   border: 1px solid #333;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.job-detail-description ul {
+  list-style: disc;
+  margin-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.job-detail-description li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.job-detail-description p {
+  margin-bottom: 1rem;
+}
+
+.job-detail-description h1,
+.job-detail-description h2,
+.job-detail-description h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.job-detail-description strong {
+  font-weight: 600;
+  color: #f3f4f6;
 }
 
 .job-detail-salary {

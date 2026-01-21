@@ -1,8 +1,10 @@
 from app.graph.state import RawJob, GraphState
 from app.graph.teams.ingestion.job_filters import SEARCH_QUERIES
 from app.graph.teams.ingestion.salary_formatter import format_salary
+from app.graph.teams.ingestion.description_formatter import format_description_to_html
 import requests
 import os
+import html
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -53,9 +55,9 @@ def ingest_jsearch(state: GraphState) -> dict:
                     if not isinstance(job, dict):
                         continue
                     
-                    title = job.get("job_title", "")
-                    company = job.get("employer_name", "Unknown")
-                    description = job.get("job_description", "")
+                    title = html.unescape(job.get("job_title", ""))
+                    company = html.unescape(job.get("employer_name", "Unknown"))
+                    description = format_description_to_html(job.get("job_description", ""))
                     url = job.get("job_apply_link", "") or job.get("job_google_link", "")
                     posted_date = job.get("job_posted_at_datetime_utc", "")
                     

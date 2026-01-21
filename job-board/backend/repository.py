@@ -63,16 +63,8 @@ def save_jobs(jobs: list[dict]):
                 requirements = job.get("requirements")
                 responsibilities = job.get("responsibilities")
                 
-                # Strip HTML tags from description
+                # Get description (now with HTML formatting from ingestion agents)
                 description = job.get("description")
-                if description:
-                    # Remove HTML tags
-                    description = re.sub(r'<[^>]+>', '', description)
-                    # Replace HTML entities
-                    description = description.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
-                    description = description.replace('&quot;', '"').replace('&#x26;', '&')
-                    # Clean up extra whitespace
-                    description = re.sub(r'\n\s*\n', '\n\n', description)
                 
                 db_job = JobDB(
                     job_hash=job_hash,
