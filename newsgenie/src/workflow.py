@@ -21,7 +21,7 @@ class NewsGenieWorkflow:
         self.llm = ChatOpenAI(
             model="gpt-4o-mini",
             api_key=openai_api_key,
-            temperature=0.7
+            temperature=0.3
         )
         self.news_api = GNewsAPI(api_key=gnews_api_key)
         self.web_search = WebSearchTool(api_key=tavily_api_key)

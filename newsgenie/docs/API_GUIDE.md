@@ -40,7 +40,7 @@ from langchain_openai import ChatOpenAI
 llm = ChatOpenAI(
     model="gpt-4o-mini",
     api_key=openai_api_key,
-    temperature=0.7
+    temperature=0.3
 )
 ```
 
