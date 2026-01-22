@@ -136,7 +136,7 @@ export async function POST(request: Request) {
     let chatCompletion = await groq.chat.completions.create({
       messages: [SYSTEM_MESSAGE, ...messages],
       model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-      temperature: 0.7,
+      temperature: 0.3,
       max_tokens: 1024,
       tools,
       tool_choice: 'auto',
@@ -164,7 +164,7 @@ export async function POST(request: Request) {
           },
         ],
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-        temperature: 0.7,
+        temperature: 0.3,
         max_tokens: 1024,
       })
     }

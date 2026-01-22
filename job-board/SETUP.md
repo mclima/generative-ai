@@ -56,7 +56,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/jobboard
 # LLM Provider (openai or anthropic)
 LLM_PROVIDER=openai
 LLM_MODEL=gpt-4o
-LLM_TEMPERATURE=0.7
+LLM_TEMPERATURE=0.3
 
 # API Keys
 OPENAI_API_KEY=your_key_here
