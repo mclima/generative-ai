@@ -1,4 +1,4 @@
-# Agentic Job Board
+# Agentic Tech Job Board
 
 AI-powered job aggregation system using LangGraph multi-agent architecture.
 
