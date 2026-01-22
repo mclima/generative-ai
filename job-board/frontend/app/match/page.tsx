@@ -163,9 +163,6 @@ export default function MatchPage() {
       <p style={{ color: "#3b82f6", fontSize: "0.875rem", marginBottom: "1rem", padding: "0.75rem", backgroundColor: "#1a1a1a", borderRadius: "6px", border: "1px solid #1e3a8a" }}>
         💡 <strong>Tip:</strong> For best results, use an ATS-compatible resume format (plain text, clear headings, standard fonts, no complex formatting or graphics).
       </p>
-      <p style={{ color: "#f59e0b", fontSize: "0.875rem", marginBottom: "2rem", padding: "0.75rem", backgroundColor: "#1a1a1a", borderRadius: "6px", border: "1px solid #333" }}>
-        ⚠️ Note: Some jobs from Adzuna may have truncated descriptions, which can affect matching accuracy. Jobs from other sources have complete descriptions.
-      </p>
 
       <form onSubmit={handleSubmit} style={{ marginBottom: "3rem" }}>
         {/* Tabs for input mode */}
