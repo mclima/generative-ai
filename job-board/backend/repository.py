@@ -12,12 +12,12 @@ ALLOWED_SORT_FIELDS = {
 }
 
 def cleanup_old_jobs():
-    """Delete jobs older than 30 days"""
+    """Delete jobs older than 15 days"""
     with Session(engine) as session:
         from datetime import timezone
-        cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=15)
         
-        # Delete jobs with posted_date older than 30 days
+        # Delete jobs with posted_date older than 15 days
         all_jobs = session.exec(select(JobDB)).all()
         deleted_count = 0
         
@@ -43,7 +43,7 @@ def cleanup_old_jobs():
         
         session.commit()
         if deleted_count > 0:
-            print(f"Cleaned up {deleted_count} jobs older than 30 days")
+            print(f"Cleaned up {deleted_count} jobs older than 15 days")
 
 def save_jobs(jobs: list[dict]):
     with Session(engine) as session:

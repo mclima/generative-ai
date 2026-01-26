@@ -4,7 +4,7 @@
     "jobs_fetched": 0
   },
   "jobicy": {
-    "last_refresh": "2026-01-21T20:50:22.690760",
+    "last_refresh": "2026-01-24T20:50:35.909777",
     "jobs_fetched": 49
   },
   "company": {
@@ -12,7 +12,7 @@
     "jobs_fetched": 100
   },
   "jobs_api": {
-    "last_refresh": "2026-01-21T20:50:40.347438",
-    "jobs_fetched": 10
+    "last_refresh": "2026-01-24T20:51:18.826035",
+    "jobs_fetched": 20
   }
 }

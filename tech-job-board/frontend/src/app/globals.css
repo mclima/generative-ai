@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 6px;
+  border: 2px solid #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #374151 #1a1a1a;
+}
+
+a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.job-description {
+  max-width: none;
+  color: #d1d5db !important;
+  white-space: pre-line;
+  line-height: 1.8;
+}
+
+.job-description * {
+  color: #d1d5db !important;
+  background-color: transparent !important;
+}
+
+.job-description p {
+  margin-bottom: 1.25rem;
+  line-height: 1.8;
+}
+
+.job-description h1,
+.job-description h2,
+.job-description h3,
+.job-description h4,
+.job-description h5,
+.job-description h6 {
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.job-description ul,
+.job-description ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.job-description li {
+  margin-bottom: 0.5rem;
+}
+
+.job-description strong,
+.job-description b {
+  font-weight: 600;
+}
+
+.job-description a {
+  color: #3b82f6 !important;
+  text-decoration: underline;
+}
+
+.job-description code {
+  background-color: #1f2937 !important;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.job-description pre {
+  background-color: #1f2937 !important;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.job-description pre code {
+  background-color: transparent !important;
+}
+
+.job-description blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1rem;
+  color: #d1d5db !important;
+  font-style: italic;
+  margin-bottom: 1rem;
+}
