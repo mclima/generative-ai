@@ -128,7 +128,7 @@ class JobAggregator:
                 
                 # Broad search for tech jobs in USA, remote only
                 params = {
-                    "query": "software engineer developer in USA",
+                    "query": "(software engineer OR software developer OR backend engineer OR frontend engineer OR full stack engineer OR data engineer OR data scientist OR machine learning engineer OR AI engineer OR generative AI OR LLM) in USA",
                     "page": "1",
                     "num_pages": "1",
                     "date_posted": "month",

@@ -22,7 +22,7 @@ The system uses a **two-phase refresh strategy** for optimal performance:
    - Fetches up to 50 remote tech jobs from USA
    
 2. **JSearch** (RapidAPI) - 1 call
-   - Query: "software engineer developer in USA"
+   - Query: "(software engineer OR software developer OR backend engineer OR frontend engineer OR full stack engineer OR data engineer OR data scientist OR machine learning engineer OR AI engineer OR generative AI OR LLM) in USA"
    - Note: May hit rate limits on free tier
    
 3. **Jobs API** (RapidAPI) - up to 10 search calls
