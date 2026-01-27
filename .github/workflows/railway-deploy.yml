@@ -15,7 +15,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    # Note: Removed "environment: production" here to allow the job 
+    # to access standard Repository Secrets for all projects.
 
     steps:
       - name: Checkout
@@ -27,8 +28,6 @@ jobs:
         id: changes
         uses: dorny/paths-filter@v3
         with:
-          base: ${{ github.event.before }}
-          ref: ${{ github.sha }}
           filters: |
             tech_job_board_backend:
               - 'tech-job-board/backend/**'
@@ -42,12 +41,6 @@ jobs:
               - 'newsgenie/**'
 
       - name: Install Railway CLI
-        if: |
-          steps.changes.outputs.tech_job_board_backend == 'true' ||
-          steps.changes.outputs.research_assistant_backend == 'true' ||
-          steps.changes.outputs.research_assistant_frontend == 'true' ||
-          steps.changes.outputs.stock_agent_backend == 'true' ||
-          steps.changes.outputs.newsgenie == 'true'
         run: npm install -g @railway/cli
 
       # ----------------------------
@@ -59,8 +52,8 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         working-directory: tech-job-board/backend
         run: |
-          echo "Token length: ${#RAILWAY_TOKEN}"
           railway up \
+            --project ${{ secrets.RAILWAY_PROJECT_ID_TECH_JOB_BOARD_BACKEND }} \
             --service 490af9cb-ab65-4431-9f67-5fdf49c0e77d \
             --environment production
 
@@ -73,8 +66,8 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         working-directory: research-assistant/backend
         run: |
-          echo "Token length: ${#RAILWAY_TOKEN}"
           railway up \
+            --project ${{ secrets.RAILWAY_PROJECT_ID_RESEARCH_ASSISTANT_BACKEND }} \
             --service 5e14f5e1-074f-41f9-a580-d631a87dd03c \
             --environment production
 
@@ -87,8 +80,8 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         working-directory: research-assistant/frontend
         run: |
-          echo "Token length: ${#RAILWAY_TOKEN}"
           railway up \
+            --project ${{ secrets.RAILWAY_PROJECT_ID_RESEARCH_ASSISTANT_FRONTEND }} \
             --service 80d9f328-4dd0-47ef-a9c2-41f6ff0a4770 \
             --environment production
 
@@ -101,8 +94,8 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         working-directory: stock-agent/backend
         run: |
-          echo "Token length: ${#RAILWAY_TOKEN}"
           railway up \
+            --project ${{ secrets.RAILWAY_PROJECT_ID_STOCK_AGENT_BACKEND }} \
             --service bf8f1c17-fb05-47eb-9389-f81ea59d894f \
             --environment production
 
@@ -115,8 +108,7 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         working-directory: newsgenie
         run: |
-          echo "Token length: ${#RAILWAY_TOKEN}"
-          railway whoami   # <-- check token validity
           railway up \
+            --project ${{ secrets.RAILWAY_PROJECT_ID_NEWSGENIE }} \
             --service 5defeac8-08ac-41d6-97a2-b7bdcb949576 \
             --environment production
