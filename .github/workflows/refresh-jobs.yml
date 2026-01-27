@@ -12,4 +12,4 @@ jobs:
     steps:
       - name: Trigger refresh
         run: |
-          curl -sS -X POST "${{ secrets.BACKEND_URL }}/api/jobs/refresh"
+          curl -sS -X POST "https://generative-ai-production-ca5d.up.railway.app/api/jobs/refresh"
