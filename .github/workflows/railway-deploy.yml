@@ -109,6 +109,5 @@ jobs:
         working-directory: newsgenie
         run: |
           railway up \
-            --project ${{ secrets.RAILWAY_PROJECT_ID_NEWSGENIE }} \
             --service 5defeac8-08ac-41d6-97a2-b7bdcb949576 \
             --environment production
