@@ -116,6 +116,7 @@ jobs:
         working-directory: newsgenie
         run: |
           echo "Token length: ${#RAILWAY_TOKEN}"
+          railway whoami   # <-- check token validity
           railway up \
             --service 5defeac8-08ac-41d6-97a2-b7bdcb949576 \
             --environment production
