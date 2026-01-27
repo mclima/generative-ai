@@ -83,8 +83,8 @@ To optimize deployments and only deploy apps when their specific folders have ch
 
 In GitHub: **Settings → Secrets and variables → Actions → New repository secret**
 
-- **Name**: `RAILWAY_TOKEN`
-- **Value**: Railway **Project Token** for this Railway project
+- **Name**: `RAILWAY_API_TOKEN`
+- **Value**: Railway **API Token** (created in Railway → Tokens)
 
 This token is used by the GitHub Actions workflow to run `railway up`.
 
