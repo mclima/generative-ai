@@ -91,5 +91,4 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         working-directory: newsgenie
         run: |
-          railway link -p ${{ secrets.RAILWAY_PROJECT_ID_NEWSGENIE }}
-          railway up --service 5defeac8-08ac-41d6-97a2-b7bdcb949576
+          railway up --service 5defeac8-08ac-41d6-97a2-b7bdcb949576 --project ${{ secrets.RAILWAY_PROJECT_ID_NEWSGENIE }}
