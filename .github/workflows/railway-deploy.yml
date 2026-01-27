@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'tech-job-board/backend/**'
+      - 'research-assistant/backend/**'
+      - 'research-assistant/frontend/**'
+      - 'stock-agent/backend/**'
+      - 'newsgenie/**'
   workflow_dispatch:
 
 jobs:
@@ -13,11 +19,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Detect changed projects
         id: changes
         uses: dorny/paths-filter@v3
         with:
+          base: ${{ github.event.before }}
+          ref: ${{ github.sha }}
           filters: |
             tech_job_board_backend:
               - 'tech-job-board/backend/**'
