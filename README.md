@@ -74,3 +74,5 @@ To add a custom subdomain for your Vercel-deployed apps:
 ## Getting Started
 
 Each project has its own README with specific setup instructions. Navigate to the individual project directories for more details.
+
+## Railway Deployment Configuration
