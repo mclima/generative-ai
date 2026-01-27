@@ -108,6 +108,4 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         working-directory: newsgenie
         run: |
-          railway up \
-            --service "NewsGenie" \
-            --environment production
+          railway list
