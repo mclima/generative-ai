@@ -16,7 +16,7 @@ To optimize deployments and only build apps when their specific folders have cha
 
 ### 1. Configure Ignored Build Step
 
-Navigate to: **Settings → Git → Ignored Build Step**
+Navigate to: **Settings → Build and Deployment → Ignored Build Step**
 
 - Select: **Only build if there are changes in a folder**
 - Set the command to:
