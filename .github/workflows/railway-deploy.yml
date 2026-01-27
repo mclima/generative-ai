@@ -105,9 +105,12 @@ jobs:
       - name: Deploy NewsGenie
         if: steps.changes.outputs.newsgenie == 'true'
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          # Using the specific token you created for this project
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_NEWSGENIE }}
         working-directory: newsgenie
         run: |
           railway up \
+            --project 5defeac8-08ac-41d6-97a2-b7bdcb949576 \
             --service cf6bb12a-bd6e-4d53-a692-a734b790b317 \
-            --environment production
+            --environment production \
+            --detach
