@@ -49,50 +49,47 @@ jobs:
           steps.changes.outputs.newsgenie == 'true'
         run: npm install -g @railway/cli
 
-      - name: Link Railway project
-        if: |
-          steps.changes.outputs.tech_job_board_backend == 'true' ||
-          steps.changes.outputs.research_assistant_backend == 'true' ||
-          steps.changes.outputs.research_assistant_frontend == 'true' ||
-          steps.changes.outputs.stock_agent_backend == 'true' ||
-          steps.changes.outputs.newsgenie == 'true'
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-        run: |
-          railway whoami
-          railway link -p ${{ secrets.RAILWAY_PROJECT_ID }}
-
       - name: Deploy tech-job-board-backend
         if: steps.changes.outputs.tech_job_board_backend == 'true'
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         working-directory: tech-job-board/backend
-        run: railway up --service 490af9cb-ab65-4431-9f67-5fdf49c0e77d
+        run: |
+          railway link -p ${{ secrets.RAILWAY_PROJECT_ID_TECH_JOB_BOARD_BACKEND }}
+          railway up --service 490af9cb-ab65-4431-9f67-5fdf49c0e77d
 
       - name: Deploy research-assistant-backend
         if: steps.changes.outputs.research_assistant_backend == 'true'
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         working-directory: research-assistant/backend
-        run: railway up --service 5e14f5e1-074f-41f9-a580-d631a87dd03c
+        run: |
+          railway link -p ${{ secrets.RAILWAY_PROJECT_ID_RESEARCH_ASSISTANT_BACKEND }}
+          railway up --service 5e14f5e1-074f-41f9-a580-d631a87dd03c
 
       - name: Deploy research-assistant-frontend
         if: steps.changes.outputs.research_assistant_frontend == 'true'
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         working-directory: research-assistant/frontend
-        run: railway up --service 80d9f328-4dd0-47ef-a9c2-41f6ff0a4770
+        run: |
+          railway link -p ${{ secrets.RAILWAY_PROJECT_ID_RESEARCH_ASSISTANT_FRONTEND }}
+          railway up --service 80d9f328-4dd0-47ef-a9c2-41f6ff0a4770
 
       - name: Deploy stock-agent-backend
         if: steps.changes.outputs.stock_agent_backend == 'true'
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         working-directory: stock-agent/backend
-        run: railway up --service bf8f1c17-fb05-47eb-9389-f81ea59d894f
+        run: |
+          railway link -p ${{ secrets.RAILWAY_PROJECT_ID_STOCK_AGENT_BACKEND }}
+          railway up --service bf8f1c17-fb05-47eb-9389-f81ea59d894f
 
       - name: Deploy NewsGenie
         if: steps.changes.outputs.newsgenie == 'true'
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         working-directory: newsgenie
-        run: railway up --service 5defeac8-08ac-41d6-97a2-b7bdcb949576
+        run: |
+          railway link -p ${{ secrets.RAILWAY_PROJECT_ID_NEWSGENIE }}
+          railway up --service 5defeac8-08ac-41d6-97a2-b7bdcb949576
