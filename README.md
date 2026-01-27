@@ -79,4 +79,45 @@ Each project has its own README with specific setup instructions. Navigate to th
 
 To optimize deployments and only deploy apps when their specific folders have changes, configure the following settings in Railway:
 
+### 1. Add GitHub Actions secret
+
+In GitHub: **Settings → Secrets and variables → Actions → New repository secret**
+
+- **Name**: `RAILWAY_TOKEN`
+- **Value**: Railway **Project Token** for this Railway project
+
+This token is used by the GitHub Actions workflow to run `railway up`.
+
+### 2. Disconnect Railway auto-deploys from GitHub (per service)
+
+Railway will deploy on any push to the connected branch by default. To ensure deploys only happen via GitHub Actions, disconnect GitHub as the source **for each Railway service**.
+
+For each service (e.g. `tech-job-board-backend`, `research-assistant-backend`, etc.):
+
+1. Open the service in Railway
+2. Go to **Settings → Source**
+3. Disconnect:
+   - **Branch connected to production** (e.g. `main`)
+   - **Source Repo** (e.g. `mclima/generative-ai`)
+4. Click **Details → Deploy Changes** to apply the disconnect
+
+Recommendation: **Disconnect both the branch and the repo**. Disconnecting only the branch may still leave the repo connected and can continue to trigger deployments.
+
+### 3. Deploy via GitHub Actions (path-filtered)
+
+This repo uses a path-filtered workflow: `.github/workflows/railway-deploy.yml`.
+
+Deploys only run when changes occur under specific folders:
+
+- `tech-job-board/backend/**` → deploy `tech-job-board-backend`
+- `research-assistant/backend/**` → deploy `research-assistant-backend`
+- `research-assistant/frontend/**` → deploy `research-assistant-frontend`
+- `stock-agent/backend/**` → deploy `stock-agent-backend`
+- `newsgenie/**` → deploy `NewsGenie`
+
+Notes:
+
+- Changes to `README.md` at the repo root will **not** trigger a Railway deployment.
+- You can also manually run the workflow in GitHub Actions using **workflow_dispatch**.
+
 
