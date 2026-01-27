@@ -24,11 +24,13 @@
     font-size: 1.1rem;
     margin-bottom: 0.5rem;
 }
+
 .news-meta {
     font-size: 0.85rem;
     color: #666;
     margin-bottom: 0.5rem;
 }
+
 .stChatMessage {
     background-color: transparent;
 }
