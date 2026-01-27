@@ -79,5 +79,4 @@ Each project has its own README with specific setup instructions. Navigate to th
 
 To optimize deployments and only deploy apps when their specific folders have changes, configure the following settings in Railway:
 
-Instructions:
 
