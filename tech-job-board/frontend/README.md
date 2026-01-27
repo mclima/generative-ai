@@ -82,7 +82,8 @@ src/
 │   ├── jobs/[id]/         # Job details page
 │   ├── match-resume/      # Resume matching page
 │   ├── layout.tsx         # Root layout
-│   ├── page.tsx           # Home page
+│   ├── page.tsx           # Home page (Suspense wrapper)
+│   ├── HomePageClient.tsx
 │   └── globals.css        # Global styles
 ├── components/            # React components
 │   ├── CategoryTabs.tsx

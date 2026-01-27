@@ -79,8 +79,11 @@ tech-job-board/
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── layout.tsx       # Root layout
-│   │   │   ├── page.tsx         # Home page
+│   │   │   ├── page.tsx         # Home page (Suspense wrapper)
+│   │   │   ├── HomePageClient.tsx
 │   │   │   ├── jobs/[id]/       # Job details page
+│   │   │   │   ├── page.tsx      # Suspense wrapper
+│   │   │   │   └── JobDetailsClientPage.tsx
 │   │   │   └── match-resume/    # Resume matching page
 │   │   ├── components/
 │   │   │   ├── Header.tsx
@@ -204,38 +207,25 @@ Jobs synced daily via scheduled task to optimize API usage and provide instant s
 
 The application implements a simple and efficient refresh strategy:
 
-1. **Scheduled Daily Refresh**: Automated cron job runs at 3am EST daily to fetch fresh jobs
+1. **Scheduled Daily Refresh**: Automated refresh runs daily via GitHub Actions (see below)
 2. **Manual Refresh**: Users can manually trigger a refresh using the "Refresh Jobs" button
 3. **Background Processing**: Job descriptions are fetched in the background for optimal performance
 4. **Deduplication**: Only adds new jobs, prevents duplicates
 5. **Last Refresh Display**: Shows when jobs were last updated on the main page
 
-Jobs are refreshed **only** through the daily cron job or manual user action, ensuring predictable API usage and fresh content.
+Jobs are refreshed **only** through the scheduled job or manual user action, ensuring predictable API usage and fresh content.
 
-### Setting Up the Cron Job
+### Scheduled Refresh (GitHub Actions)
 
-To enable automated daily job refresh at 3am EST:
+This project schedules refresh runs via GitHub Actions:
 
-```bash
-cd backend
-chmod +x setup_cron.sh
-./setup_cron.sh
-```
+- Workflow: `.github/workflows/refresh-jobs.yml`
+- Endpoint called: `POST /api/jobs/refresh`
+- Schedule (UTC):
+  - `0 8 * * *` (3am ET in winter)
+  - `0 19 * * *` (2pm ET in winter)
 
-This will display the cron job command. To install it:
-
-```bash
-(crontab -l 2>/dev/null; echo "0 8 * * * cd /path/to/tech-job-board/backend && /path/to/venv/bin/python app/cron_job.py >> /path/to/tech-job-board/backend/cron_job.log 2>&1") | crontab -
-```
-
-Note: Replace `/path/to/` with your actual project path. The cron job runs at 8am UTC (3am EST).
-
-To remove the cron job later:
-```bash
-crontab -e  # then delete the line containing 'cron_job.py'
-```
-
-Note: Logs will be written to the `cron_job.log` file path you configure in your crontab entry.
+If you prefer a local cron for development, you can still use `backend/setup_cron.sh`.
 
 ## 🎯 Matching Algorithm
 

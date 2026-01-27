@@ -5,9 +5,9 @@ This repository contains multiple AI-powered applications:
 - **constitution-assistant** - Constitutional law assistant application
 - **groq-chatbot** - Chatbot powered by Groq
 - **image-generator** - AI image generation tool
-- **job-board** - Job board application
 - **research-assistant** - Research assistance tool
 - **stock-agent** - AI-powered stock analysis dashboard
+- **tech-job-board** - AI-powered job board
 - **task-maestro** - Task management application
 
 ## Vercel Deployment Configuration
