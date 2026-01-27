@@ -105,7 +105,8 @@ jobs:
       - name: Deploy NewsGenie
         if: steps.changes.outputs.newsgenie == 'true'
         env:
-          # Using the specific token you created for this project
+          # This LEFT side must stay RAILWAY_TOKEN so the CLI can see it
+          # The RIGHT side is your new, working project secret
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_NEWSGENIE }}
         working-directory: newsgenie
         run: |
