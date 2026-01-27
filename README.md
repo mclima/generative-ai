@@ -86,6 +86,11 @@ In GitHub: **Settings → Secrets and variables → Actions → New repository s
 - **Name**: `RAILWAY_API_TOKEN`
 - **Value**: Railway **API Token** (created in Railway → Tokens)
 
+Add a second secret:
+
+- **Name**: `RAILWAY_PROJECT_ID`
+- **Value**: Railway **Project ID** for the project that contains these services
+
 This token is used by the GitHub Actions workflow to run `railway up`.
 
 ### 2. Disconnect Railway auto-deploys from GitHub (per service)
