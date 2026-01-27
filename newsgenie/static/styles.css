@@ -16,19 +16,16 @@
     margin-bottom: 1rem;
     border-left: 4px solid #1f77b4;
 }
-
 .news-title {
     font-weight: bold;
     font-size: 1.1rem;
     margin-bottom: 0.5rem;
 }
-
 .news-meta {
     font-size: 0.85rem;
     color: #666;
     margin-bottom: 0.5rem;
 }
-
 .stChatMessage {
     background-color: transparent;
 }
