@@ -76,3 +76,6 @@ To add a custom subdomain for your Vercel-deployed apps:
 Each project has its own README with specific setup instructions. Navigate to the individual project directories for more details.
 
 ## Railway Deployment Configuration
+
+To optimize deployments and only deploy apps when their specific folders have changes, configure the following settings in Railway:
+
