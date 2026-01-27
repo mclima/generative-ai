@@ -1,7 +1,7 @@
 from psycopg2.extras import RealDictCursor
 from app.job_aggregator import JobAggregator
 from app.background_tasks import BackgroundDescriptionFetcher
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict
 import asyncio
 
@@ -94,4 +94,8 @@ class JobService:
                 LIMIT 1
             """)
             result = cur.fetchone()
-            return result['timestamp'] if result else None
+            if not result:
+                return None
+
+            ts = result['timestamp']
+            return ts.replace(tzinfo=timezone.utc) if ts and ts.tzinfo is None else ts
