@@ -109,5 +109,5 @@ jobs:
         working-directory: newsgenie
         run: |
           railway up \
-            --service NewsGenie \
+            --service "NewsGenie" \
             --environment production
