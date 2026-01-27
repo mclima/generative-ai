@@ -4,11 +4,13 @@
     text-align: center;
     margin-bottom: 0.5rem;
 }
+
 .sub-header {
     text-align: center;
     color: #666;
     margin-bottom: 2rem;
 }
+
 .news-card {
     background-color: transparent;
     padding: 1rem;
@@ -16,11 +18,13 @@
     margin-bottom: 1rem;
     border-left: 4px solid #1f77b4;
 }
+
 .news-title {
     font-weight: bold;
     font-size: 1.1rem;
     margin-bottom: 0.5rem;
 }
+
 .news-meta {
     font-size: 0.85rem;
     color: #666;
