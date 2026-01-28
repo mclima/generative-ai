@@ -7,7 +7,8 @@ Python FastAPI backend for the Tech Job Board application with AI-powered resume
 - Job aggregation from multiple sources (Jobicy, JSearch, Jobs API)
 - Automatic job categorization (AI, Engineering)
 - Smart refresh strategy (scheduled refresh + manual refresh)
-- AI-powered resume matching using OpenAI GPT-4o-mini
+- AI-powered resume matching using OpenAI GPT-4o-mini and Sentence Transformers
+- Sentence Transformer model pre-cached during deployment for instant resume matching
 - Resume parsing (PDF, DOCX, TXT)
 - RESTful API endpoints
 - Direct PostgreSQL database operations with connection pooling
