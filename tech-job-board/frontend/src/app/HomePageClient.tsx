@@ -123,7 +123,7 @@ export default function HomePageClient() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col min-h-screen">
       <div className="container mx-auto px-4 pt-6 px-6">
         <div className="mb-6">
           <h1 className="text-3xl md:text-4xl font-bold mb-3">Remote Tech Jobs in the US</h1>

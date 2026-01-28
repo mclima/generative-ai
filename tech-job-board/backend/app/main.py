@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import asyncio
@@ -7,6 +7,7 @@ from app.schemas import JobResponse, MatchedJob, ResumeUpload, RefreshResponse, 
 from app.services import JobService
 from app.resume_matcher import ResumeMatcher
 from app.resume_parser import ResumeParser
+from app.task_manager import task_manager, TaskStatus
 
 init_db()
 
@@ -119,6 +120,66 @@ async def get_last_refresh():
         last_refresh = job_service.get_last_refresh_timestamp()
         
         return LastRefreshResponse(last_refresh=last_refresh)
+
+async def process_resume_matching(task_id: str, resume_text: str):
+    """Background task to process resume matching"""
+    try:
+        task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=10)
+        
+        with get_db() as conn:
+            job_service = JobService(conn)
+            all_jobs = job_service.get_all_jobs()
+        
+        task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=30)
+        
+        matcher = ResumeMatcher()
+        matched_jobs = await matcher.match_resume_to_jobs(resume_text, all_jobs)
+        
+        task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=90)
+        
+        # Convert to dict for JSON serialization
+        result = [job.dict() if hasattr(job, 'dict') else job for job in matched_jobs]
+        
+        task_manager.update_task(task_id, TaskStatus.COMPLETED, progress=100, result=result)
+        
+    except Exception as e:
+        print(f"Error processing resume matching: {str(e)}")
+        task_manager.update_task(task_id, TaskStatus.FAILED, error=str(e))
+
+@app.post("/api/match-resume-async")
+async def match_resume_async(
+    background_tasks: BackgroundTasks,
+    resume_file: Optional[UploadFile] = File(None),
+    resume_text: Optional[str] = Form(None)
+):
+    """Start async resume matching and return task ID immediately"""
+    if resume_file:
+        file_content = await resume_file.read()
+        try:
+            resume_text = ResumeParser.parse_resume(file_content, resume_file.filename)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+    
+    if not resume_text or len(resume_text.strip()) < 50:
+        raise HTTPException(status_code=400, detail="Resume text is too short or empty")
+    
+    # Create task and return ID immediately
+    task_id = task_manager.create_task()
+    
+    # Start background processing
+    background_tasks.add_task(process_resume_matching, task_id, resume_text)
+    
+    return {"task_id": task_id, "status": "pending"}
+
+@app.get("/api/task-status/{task_id}")
+async def get_task_status(task_id: str):
+    """Get status of resume matching task"""
+    task = task_manager.get_task(task_id)
+    
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    return task
 
 if __name__ == "__main__":
     import uvicorn

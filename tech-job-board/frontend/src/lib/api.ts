@@ -34,6 +34,26 @@ export const matchResume = async (formData: FormData): Promise<MatchedJob[]> => 
   return response.data
 }
 
+export const matchResumeAsync = async (formData: FormData): Promise<{ task_id: string; status: string }> => {
+  const response = await api.post('/api/match-resume-async', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+  return response.data
+}
+
+export const getTaskStatus = async (taskId: string): Promise<{
+  id: string
+  status: string
+  progress: number
+  result: MatchedJob[] | null
+  error: string | null
+}> => {
+  const response = await api.get(`/api/task-status/${taskId}`)
+  return response.data
+}
+
 export const refreshJobs = async () => {
   const response = await api.post('/api/jobs/refresh')
   return response.data

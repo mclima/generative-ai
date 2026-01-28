@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { matchResume } from '@/lib/api'
+import { matchResumeAsync, getTaskStatus } from '@/lib/api'
 import { MatchedJob } from '@/types'
 import MatchedJobCard from '@/components/MatchedJobCard'
 import Footer from '@/components/Footer'
@@ -15,6 +15,7 @@ export default function MatchResumePage() {
   const [file, setFile] = useState<File | null>(null)
   const [matchedJobs, setMatchedJobs] = useState<MatchedJob[]>([])
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
   const resultsRef = useRef<HTMLDivElement | null>(null)
@@ -40,6 +41,43 @@ export default function MatchResumePage() {
     }
   }
 
+  const pollTaskStatus = async (taskId: string) => {
+    const maxAttempts = 60 // Poll for up to 3 minutes (60 * 3s)
+    let attempts = 0
+
+    const poll = async () => {
+      try {
+        const status = await getTaskStatus(taskId)
+        setProgress(status.progress)
+
+        if (status.status === 'completed' && status.result) {
+          setMatchedJobs(status.result)
+          setLoading(false)
+          return
+        }
+
+        if (status.status === 'failed') {
+          setError(status.error || 'Failed to match resume')
+          setLoading(false)
+          return
+        }
+
+        attempts++
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 3000) // Poll every 3 seconds
+        } else {
+          setError('Request timed out. Please try again.')
+          setLoading(false)
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to check status')
+        setLoading(false)
+      }
+    }
+
+    poll()
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -50,6 +88,7 @@ export default function MatchResumePage() {
 
     try {
       setLoading(true)
+      setProgress(0)
       setError(null)
       setHasSearched(true)
       
@@ -60,12 +99,11 @@ export default function MatchResumePage() {
         formData.append('resume_text', resumeText)
       }
 
-      const data = await matchResume(formData)
-      setMatchedJobs(data)
+      const { task_id } = await matchResumeAsync(formData)
+      pollTaskStatus(task_id)
     } catch (err: any) {
       setError(err.message || 'Failed to match resume. Please try again.')
       console.error('Error matching resume:', err)
-    } finally {
       setLoading(false)
     }
   }
@@ -190,7 +228,7 @@ export default function MatchResumePage() {
             {loading ? (
               <>
                 <Loader2 className="animate-spin" size={20} />
-                Analyzing Resume...
+                Analyzing Resume... {progress}%
               </>
             ) : (
               <>
