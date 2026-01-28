@@ -39,13 +39,11 @@ jobs:
       - name: Deploy NewsGenie
         if: steps.changes.outputs.newsgenie == 'true'
         working-directory: newsgenie
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_NEWSGENIE }}
         run: |
-          # Use the --token flag directly on the link command
-          railway link --token ${{ secrets.RAILWAY_TOKEN_NEWSGENIE }} --project 5defeac8-08ac-41d6-97a2-b7bdcb949576
-          
-          # Use the --token flag directly on the up command
+          # With RAILWAY_TOKEN in the env, we skip 'link' and go straight to 'up'
           railway up \
-            --token ${{ secrets.RAILWAY_TOKEN_NEWSGENIE }} \
             --service cf6bb12a-bd6e-4d53-a692-a734b790b317 \
             --environment production \
             --detach
