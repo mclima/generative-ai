@@ -29,7 +29,7 @@ export const matchResume = async (formData: FormData): Promise<MatchedJob[]> => 
     headers: {
       'Content-Type': 'multipart/form-data',
     },
-    timeout: 120000,
+    timeout: 90000,
   })
   return response.data
 }
