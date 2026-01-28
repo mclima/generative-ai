@@ -38,14 +38,12 @@ jobs:
       # ----------------------------
       - name: Deploy NewsGenie
         if: steps.changes.outputs.newsgenie == 'true'
+        working-directory: newsgenie
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_NEWSGENIE }}
         run: |
-          # Use the project flag (-p) and service flag (-s) together
-          # Project ID: 5defeac8-08ac-41d6-97a2-b7bdcb949576
-          # Service ID: cf6bb12a-bd6e-4d53-a692-a734b790b317
+          # We keep the project and service flags that fixed the auth issue
           railway up \
-            --path newsgenie \
             --project 5defeac8-08ac-41d6-97a2-b7bdcb949576 \
             --service cf6bb12a-bd6e-4d53-a692-a734b790b317 \
             --environment production \
