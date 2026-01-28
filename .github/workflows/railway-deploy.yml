@@ -1,9 +1,10 @@
-name: Railway Monorepo Deployment
+# Disabled - Using Railway's native GitHub integration instead
+# name: Railway Monorepo Deployment
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
 jobs:
   deploy:
@@ -42,10 +43,8 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_NEWSGENIE }}
         run: |
-          railway up \
-            --service 5defeac8-08ac-41d6-97a2-b7bdcb949576 \
-            --environment production \
-            --detach
+          railway link --service 5defeac8-08ac-41d6-97a2-b7bdcb949576
+          railway up --detach
 
       # ----------------------------
       # Stock Agent Backend
