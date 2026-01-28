@@ -33,11 +33,13 @@ class ResumeMatcher:
             print("Model loaded successfully!")
         return cls._model
     
-    async def match_resume_to_jobs(self, resume_text: str, jobs: List[Dict]) -> List[Dict]:
+    async def match_resume_to_jobs(self, resume_text: str, jobs: List[Dict], progress_callback=None) -> List[Dict]:
         resume_analysis = await self._analyze_resume(resume_text)
         
         matched_jobs = []
-        for job in jobs:
+        total_jobs = len(jobs)
+        
+        for idx, job in enumerate(jobs):
             match_details = self._calculate_match_score(resume_analysis, job)
             
             # Debug logging to see all scores
@@ -53,6 +55,11 @@ class ResumeMatcher:
                 job_copy["skill_score"] = round(match_details['skill_score'] * 100, 2)
                 job_copy["semantic_score"] = round(match_details['semantic_score'] * 100, 2)
                 matched_jobs.append(job_copy)
+            
+            # Update progress during matching (30% to 90%)
+            if progress_callback and total_jobs > 0:
+                progress = 30 + int((idx + 1) / total_jobs * 60)
+                progress_callback(progress)
         
         matched_jobs.sort(key=lambda x: x["match_score"], reverse=True)
         

@@ -132,10 +132,14 @@ async def process_resume_matching(task_id: str, resume_text: str):
         
         task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=30)
         
-        matcher = ResumeMatcher()
-        matched_jobs = await matcher.match_resume_to_jobs(resume_text, all_jobs)
+        # Progress callback to update during matching
+        def update_progress(progress: int):
+            task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=progress)
         
-        task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=90)
+        matcher = ResumeMatcher()
+        matched_jobs = await matcher.match_resume_to_jobs(resume_text, all_jobs, progress_callback=update_progress)
+        
+        task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=95)
         
         # Convert to dict for JSON serialization
         result = [job.dict() if hasattr(job, 'dict') else job for job in matched_jobs]
