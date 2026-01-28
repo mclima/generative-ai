@@ -2,10 +2,15 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from typing import List, Dict, Optional
 import re
+import os
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from app.config import settings
+
+# Set cache directory for HuggingFace models
+os.environ["HF_HOME"] = "/app/.hf_cache"
+os.environ["TRANSFORMERS_CACHE"] = "/app/.hf_cache"
 
 class ResumeMatcher:
     # Class-level model instance for lazy loading (shared across all instances)
@@ -23,7 +28,8 @@ class ResumeMatcher:
         """Lazy load the Sentence Transformer model (only loads once)"""
         if cls._model is None:
             print("Loading Sentence Transformer model (all-MiniLM-L6-v2)...")
-            cls._model = SentenceTransformer('all-MiniLM-L6-v2')
+            cache_folder = "/app/.hf_cache"
+            cls._model = SentenceTransformer('all-MiniLM-L6-v2', cache_folder=cache_folder)
             print("Model loaded successfully!")
         return cls._model
     
