@@ -5,11 +5,13 @@ A full-stack web application that aggregates remote tech job listings in the Uni
 ## 🌟 Features
 
 ### Job Listings
-- **Automated Aggregation**: Fetches jobs from multiple sources (Jobicy, JSearch, Jobs API)
-- **Smart Categorization**: Categorization into AI and Engineering
-- **Filtering & Sorting**: Browse by category and sort by date (newest/oldest)
-- **Fresh Content**: Only shows jobs posted within the last 15 days
-- **Remote-Only**: Exclusively US remote positions
+- **Automated Job Aggregation**: Fetches jobs from multiple sources (Remotive, Arbeitnow, Jobicy, JSearch, Jobs API)
+- **Smart Refresh Strategy**: Scheduled refresh twice daily + manual refresh option
+- **AI-Powered Resume Matching**: Uses OpenAI GPT-4o-mini and Sentence Transformers for intelligent job matching
+- **Resume Parsing**: Supports PDF, DOCX, and TXT formats
+- **Category Filtering**: Filter jobs by AI or Engineering categories
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Job Retention Policy**: Automatically removes jobs older than 15 days, displays only jobs from last 10 days
 
 ### AI-Powered Resume Matching
 - **Multi-Format Support**: Upload PDF, DOCX, or TXT files, or paste resume text

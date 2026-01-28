@@ -127,9 +127,14 @@ export default function HomePageClient() {
       <div className="container mx-auto px-4 pt-6 px-6">
         <div className="mb-6">
           <h1 className="text-3xl md:text-4xl font-bold mb-3">Remote Tech Jobs in the US</h1>
-          <p className="text-gray-400 text-base md:text-lg mb-12">
+          <p className="text-gray-400 text-base md:text-lg mb-4">
             Discover the latest remote opportunities in AI and Engineering
           </p>
+          <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-3 mb-4">
+            <p className="text-blue-300 text-sm">
+              ℹ️ Showing jobs posted within the last 10 days
+            </p>
+          </div>
           {lastRefresh && (
             <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
               <Clock size={16} />

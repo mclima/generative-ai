@@ -51,6 +51,11 @@ class JobService:
                     DELETE FROM refresh_logs 
                     WHERE timestamp < NOW() - INTERVAL '30 days'
                 """)
+                
+                cur.execute("""
+                    DELETE FROM jobs 
+                    WHERE posted_date < NOW() - INTERVAL '10 days'
+                """)
             
             self.conn.commit()
             
@@ -66,6 +71,7 @@ class JobService:
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(f"""
                 SELECT * FROM jobs 
+                WHERE posted_date >= NOW() - INTERVAL '10 days'
                 ORDER BY posted_date {order}
             """)
             return cur.fetchall()
@@ -76,7 +82,8 @@ class JobService:
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(f"""
                 SELECT * FROM jobs 
-                WHERE category = %s
+                WHERE category = %s 
+                AND posted_date >= NOW() - INTERVAL '10 days'
                 ORDER BY posted_date {order}
             """, (category,))
             return cur.fetchall()

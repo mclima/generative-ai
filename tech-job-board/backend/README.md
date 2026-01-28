@@ -4,14 +4,14 @@ Python FastAPI backend for the Tech Job Board application with AI-powered resume
 
 ## Features
 
-- Job aggregation from multiple sources (Jobicy, JSearch, Jobs API)
-- Automatic job categorization (AI, Engineering)
+- Automated job aggregation from multiple sources (Remotive, Arbeitnow, Jobicy, JSearch, Jobs API)
 - Smart refresh strategy (scheduled refresh + manual refresh)
 - AI-powered resume matching using OpenAI GPT-4o-mini and Sentence Transformers
 - Sentence Transformer model pre-cached during deployment for instant resume matching
 - Resume parsing (PDF, DOCX, TXT)
 - RESTful API endpoints
 - Direct PostgreSQL database operations with connection pooling
+- Automatic job retention: Jobs older than 15 days are deleted, only jobs from last 10 days are displayed
 
 ## API Sources
 
