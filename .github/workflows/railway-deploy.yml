@@ -42,11 +42,9 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_NEWSGENIE }}
         run: |
-          # With RAILWAY_TOKEN in the env, we skip 'link' and go straight to 'up'
-          railway up \
-            --service cf6bb12a-bd6e-4d53-a692-a734b790b317 \
-            --environment production \
-            --detach
+          # With a Service Token, you don't even need to specify --service
+          # because the token is already tied to it!
+          railway up --environment production --detach
 
       # ----------------------------
       # Stock Agent Backend
