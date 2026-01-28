@@ -46,6 +46,11 @@ class JobService:
                     INSERT INTO refresh_logs (refresh_type, jobs_added)
                     VALUES (%s, %s)
                 """, ("scheduled", new_jobs_count))
+                
+                cur.execute("""
+                    DELETE FROM refresh_logs 
+                    WHERE timestamp < NOW() - INTERVAL '30 days'
+                """)
             
             self.conn.commit()
             

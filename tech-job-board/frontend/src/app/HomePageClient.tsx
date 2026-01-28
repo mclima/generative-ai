@@ -82,6 +82,7 @@ export default function HomePageClient() {
       setLoading(true)
       setError(null)
       const data = await getJobs(selectedCategory, sortBy)
+      console.log('Jobs fetched:', data.length, 'jobs')
       setJobs(data)
     } catch (err) {
       setError('Failed to load jobs. Please try again later.')
