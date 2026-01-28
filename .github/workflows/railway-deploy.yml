@@ -1,30 +1,20 @@
-name: Deploy to Railway (Monorepo)
+name: Railway Monorepo Deployment
 
 on:
   push:
     branches:
       - main
-    paths:
-      - 'tech-job-board/backend/**'
-      - 'research-assistant/backend/**'
-      - 'research-assistant/frontend/**'
-      - 'stock-agent/backend/**'
-      - 'newsgenie/**'
-  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Note: Removed "environment: production" here to allow the job 
-    # to access standard Repository Secrets for all projects.
-
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Detect changed projects
+      - name: Path Filter
         id: changes
         uses: dorny/paths-filter@v3
         with:
@@ -44,88 +34,61 @@ jobs:
         run: npm install -g @railway/cli
 
       # ----------------------------
-      # Tech Job Board – Backend
-      # ----------------------------
-      - name: Deploy tech-job-board-backend
-        if: steps.changes.outputs.tech_job_board_backend == 'true'
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        working-directory: tech-job-board/backend
-        run: |
-          railway up \
-            --project ${{ secrets.RAILWAY_PROJECT_ID_TECH_JOB_BOARD_BACKEND }} \
-            --service 490af9cb-ab65-4431-9f67-5fdf49c0e77d \
-            --environment production
-
-      # ----------------------------
-      # Research Assistant – Backend
-      # ----------------------------
-      - name: Deploy research-assistant-backend
-        if: steps.changes.outputs.research_assistant_backend == 'true'
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        working-directory: research-assistant/backend
-        run: |
-          railway up \
-            --project ${{ secrets.RAILWAY_PROJECT_ID_RESEARCH_ASSISTANT_BACKEND }} \
-            --service 5e14f5e1-074f-41f9-a580-d631a87dd03c \
-            --environment production
-
-      # ----------------------------
-      # Research Assistant – Frontend
-      # ----------------------------
-      - name: Deploy research-assistant-frontend
-        if: steps.changes.outputs.research_assistant_frontend == 'true'
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        working-directory: research-assistant/frontend
-        run: |
-          railway up \
-            --project ${{ secrets.RAILWAY_PROJECT_ID_RESEARCH_ASSISTANT_FRONTEND }} \
-            --service 80d9f328-4dd0-47ef-a9c2-41f6ff0a4770 \
-            --environment production
-
-      # ----------------------------
-      # Stock Agent – Backend
-      # ----------------------------
-      - name: Deploy stock-agent-backend
-        if: steps.changes.outputs.stock_agent_backend == 'true'
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        working-directory: stock-agent/backend
-        run: |
-          railway up \
-            --project ${{ secrets.RAILWAY_PROJECT_ID_STOCK_AGENT_BACKEND }} \
-            --service bf8f1c17-fb05-47eb-9389-f81ea59d894f \
-            --environment production
-
-      # ----------------------------
       # NewsGenie
       # ----------------------------
       - name: Deploy NewsGenie
         if: steps.changes.outputs.newsgenie == 'true'
+        working-directory: newsgenie
         env:
-          # This LEFT side must stay RAILWAY_TOKEN so the CLI can see it
-          # The RIGHT side is your new, working project secret
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_NEWSGENIE }}
-        working-directory: newsgenie
         run: |
-          railway up \
-            --project 5defeac8-08ac-41d6-97a2-b7bdcb949576 \
-            --service cf6bb12a-bd6e-4d53-a692-a734b790b317 \
-            --environment production \
-            --detach
+          railway link --project 5defeac8-08ac-41d6-97a2-b7bdcb949576
+          railway up --service cf6bb12a-bd6e-4d53-a692-a734b790b317 --environment production --detach
 
       # ----------------------------
-      # NewsGenie
+      # Stock Agent Backend
       # ----------------------------
-      - name: Deploy NewsGenie
-        if: steps.changes.outputs.newsgenie == 'true'
-        working-directory: newsgenie
+      - name: Deploy Stock Agent Backend
+        if: steps.changes.outputs.stock_agent_backend == 'true'
+        working-directory: stock-agent/backend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STOCK_AGENT }}
         run: |
-          railway up \
-            --token ${{ secrets.RAILWAY_TOKEN_NEWSGENIE }} \
-            --project 5defeac8-08ac-41d6-97a2-b7bdcb949576 \
-            --service cf6bb12a-bd6e-4d53-a692-a734b790b317 \
-            --environment production \
-            --detach
+          railway link --project <YOUR_STOCK_AGENT_PROJECT_ID>
+          railway up --service <YOUR_STOCK_AGENT_SERVICE_ID> --environment production --detach
+
+      # ----------------------------
+      # Tech Job Board Backend
+      # ----------------------------
+      - name: Deploy Tech Job Board
+        if: steps.changes.outputs.tech_job_board_backend == 'true'
+        working-directory: tech-job-board/backend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_TECH_JOB }}
+        run: |
+          railway link --project <YOUR_TECH_JOB_PROJECT_ID>
+          railway up --service <YOUR_TECH_JOB_SERVICE_ID> --environment production --detach
+
+      # ----------------------------
+      # Research Assistant Backend
+      # ----------------------------
+      - name: Deploy Research Assistant Backend
+        if: steps.changes.outputs.research_assistant_backend == 'true'
+        working-directory: research-assistant/backend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_RESEARCH_BACKEND }}
+        run: |
+          railway link --project <YOUR_RESEARCH_BACKEND_PROJECT_ID>
+          railway up --service <YOUR_RESEARCH_BACKEND_SERVICE_ID> --environment production --detach
+
+      # ----------------------------
+      # Research Assistant Frontend
+      # ----------------------------
+      - name: Deploy Research Assistant Frontend
+        if: steps.changes.outputs.research_assistant_frontend == 'true'
+        working-directory: research-assistant/frontend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_RESEARCH_FRONTEND }}
+        run: |
+          railway link --project <YOUR_RESEARCH_FRONTEND_PROJECT_ID>
+          railway up --service <YOUR_RESEARCH_FRONTEND_SERVICE_ID> --environment production --detach
