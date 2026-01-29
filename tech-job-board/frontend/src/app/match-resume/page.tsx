@@ -44,10 +44,13 @@ export default function MatchResumePage() {
   const pollTaskStatus = async (taskId: string) => {
     const maxAttempts = 60 // Poll for up to 3 minutes (60 * 3s)
     let attempts = 0
+    let consecutiveErrors = 0
+    const maxConsecutiveErrors = 3
 
     const poll = async () => {
       try {
         const status = await getTaskStatus(taskId)
+        consecutiveErrors = 0 // Reset error count on success
         setProgress(status.progress)
 
         if (status.status === 'completed' && status.result) {
@@ -57,7 +60,7 @@ export default function MatchResumePage() {
         }
 
         if (status.status === 'failed') {
-          setError(status.error || 'Failed to match resume')
+          setError(status.error || 'Failed to match resume. Please try again.')
           setLoading(false)
           return
         }
@@ -66,12 +69,29 @@ export default function MatchResumePage() {
         if (attempts < maxAttempts) {
           setTimeout(poll, 3000) // Poll every 3 seconds
         } else {
-          setError('Request timed out. Please try again.')
+          setError('Processing is taking longer than expected. The server may be under heavy load. Please try again in a few moments.')
           setLoading(false)
         }
       } catch (err: any) {
-        setError(err.message || 'Failed to check status')
-        setLoading(false)
+        consecutiveErrors++
+        console.error('Polling error:', err)
+        
+        // If we hit too many consecutive errors, stop polling
+        if (consecutiveErrors >= maxConsecutiveErrors) {
+          setError('Network connection lost. Please check your internet connection and try again.')
+          setLoading(false)
+          return
+        }
+        
+        // Otherwise, retry with exponential backoff
+        attempts++
+        if (attempts < maxAttempts) {
+          const backoffDelay = Math.min(3000 * Math.pow(1.5, consecutiveErrors - 1), 10000)
+          setTimeout(poll, backoffDelay)
+        } else {
+          setError('Unable to complete resume matching due to network issues. Please try again.')
+          setLoading(false)
+        }
       }
     }
 

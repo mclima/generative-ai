@@ -11,10 +11,11 @@ A full-stack web application that aggregates remote tech job listings in the Uni
 - **Resume Parsing**: Supports PDF, DOCX, and TXT formats
 - **Category Filtering**: Filter jobs by AI or Engineering categories
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Job Retention Policy**: Automatically removes jobs older than 15 days, displays only jobs from last 10 days
+- **Job Retention Policy**: Automatically removes jobs older than 10 days, displays only jobs from last 10 days
 
 ### AI-Powered Resume Matching
 - **Multi-Format Support**: Upload PDF, DOCX, or TXT files, or paste resume text
+- **Async Processing**: Background task processing with real-time progress updates
 - **Enhanced Semantic Matching**: Uses Sentence Transformers (all-MiniLM-L6-v2) for intelligent matching
 - **Hybrid Algorithm**:
   - Skill overlap (40%) - Technical skills matching
@@ -29,6 +30,8 @@ A full-stack web application that aggregates remote tech job listings in the Uni
   - Matched skills from your resume
   - Score weights and calculations
 - **Context-Aware**: Understands synonyms, context, and semantic relationships
+- **Progress Tracking**: Real-time progress updates during matching (typically 1-2 minutes)
+- **Error Handling**: Robust network error handling with automatic retry logic
 
 ### User Experience
 - **Modern UI**: Dark theme with blue accents (#3b82f6)
@@ -39,13 +42,15 @@ A full-stack web application that aggregates remote tech job listings in the Uni
 ## 🏗️ Architecture
 
 ### Backend (Python/FastAPI)
-- **Framework**: FastAPI with async support
+- **Framework**: FastAPI with async support and background tasks
 - **Database**: PostgreSQL with psycopg2 and connection pooling
 - **AI/ML**: 
   - Sentence Transformers (all-MiniLM-L6-v2) for semantic matching
   - OpenAI GPT-4o-mini for resume analysis
   - scikit-learn for cosine similarity calculations
   - LangChain for AI orchestration
+- **Task Management**: In-memory task queue for async resume matching
+- **Model Caching**: Optimized HuggingFace model caching at `/app/.hf_cache`
 - **Job Aggregation**: Async HTTP requests to multiple job boards
 - **Resume Parsing**: PyPDF2, python-docx for file processing
 
@@ -197,7 +202,9 @@ Frontend will be available at `http://localhost:3000`
 - `GET /api/last-refresh` - Get timestamp of last job refresh
 
 ### Resume Matching
-- `POST /api/match-resume` - Match resume to jobs (multipart/form-data)
+- `POST /api/match-resume` - Match resume to jobs (multipart/form-data) - Legacy synchronous endpoint
+- `POST /api/match-resume-async` - Start async resume matching, returns task ID
+- `GET /api/task-status/{task_id}` - Poll task status and get results
 
 ### Metadata
 - `GET /api/categories` - Get available job categories
@@ -269,6 +276,20 @@ railway init
 railway up
 ```
 
+**Model Caching:**
+- The Sentence Transformer model is pre-downloaded during build via `download_model.py`
+- Model cached at `/app/.hf_cache` for faster runtime performance
+- Dependencies pinned for stability:
+  - `sentence-transformers==2.6.1`
+  - `torch==2.2.2`
+  - `transformers==4.39.3`
+
+**Performance Notes:**
+- Railway Hobby plan: Resume matching takes 1-2 minutes
+- Model loads from cache (not re-downloaded at runtime)
+- First deployment may take 7-15 minutes due to model download
+- Subsequent deployments use cached layers when possible
+
 ### Frontend (Vercel)
 
 1. Install Vercel CLI:
@@ -314,10 +335,13 @@ vercel
 - Secure file upload handling
 
 ### Performance
-- Async job fetching
-- Database indexing on key fields
+- Async job fetching and background task processing
+- Database indexing on key fields (posted_date, category)
 - Client-side caching
-- Optimized TF-IDF calculations
+- Optimized model loading with HuggingFace cache
+- Polling-based architecture to avoid timeout issues
+- Progress tracking with granular updates (30% to 90%)
+- Exponential backoff for network error recovery
 
 ### Code Quality
 - Type safety with TypeScript and Pydantic
