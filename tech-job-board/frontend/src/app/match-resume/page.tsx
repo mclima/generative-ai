@@ -146,9 +146,16 @@ export default function MatchResumePage() {
         </p>
 
         <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 mb-4 flex gap-3">
-          <Info size={24} className="text-primary flex-shrink-0 mt-0.5" />
+          <Info size={20} className="text-primary flex-shrink-0 mt-0.5" />
           <p className="text-sm text-gray-300">
             <strong>Tip:</strong> For best results, use an ATS-compatible resume format (plain text, clear headings, standard fonts, no complex formatting or graphics).
+          </p>
+        </div>
+
+        <div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border border-yellow-800/50 rounded-lg p-4 mb-8 flex gap-3">
+          <Info size={20} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-gray-300">
+            <strong>AI Insights:</strong> Job matches with 80% or higher scores include personalized AI-generated explanations highlighting aligned skills and growth opportunities.
           </p>
         </div>
 

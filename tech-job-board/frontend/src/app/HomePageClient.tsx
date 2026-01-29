@@ -9,7 +9,7 @@ import SortDropdown from '@/components/SortDropdown'
 import Footer from '@/components/Footer'
 import { getJobs, refreshJobs, getLastRefresh } from '@/lib/api'
 import { Job } from '@/types'
-import { Briefcase, Loader2, RefreshCw, Clock, X } from 'lucide-react'
+import { Briefcase, Loader2, RefreshCw, Clock, X, Info } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 export default function HomePageClient() {
@@ -130,17 +130,26 @@ export default function HomePageClient() {
           <p className="text-gray-400 text-base md:text-lg mb-4">
             Discover the latest remote opportunities in AI and Engineering
           </p>
-          <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-3 mb-4">
-            <p className="text-blue-300 text-sm">
-              ℹ️ Showing jobs posted within the last 10 days
+          <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 mb-4 flex gap-3">
+          <Info size={20} className="text-primary flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-gray-300">
+              Showing jobs posted within the last 10 days.
             </p>
           </div>
+
           {lastRefresh && (
-            <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-              <Clock size={16} />
-              <span>
-                {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'} last refreshed {formatDistanceToNow(lastRefresh, { addSuffix: true })}
-              </span>
+            <div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border border-yellow-800/50 rounded-lg p-4 mb-8">
+              <div className="flex items-start gap-3">
+                <Clock size={20} className="mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-gray-300 space-y-2">
+                  <p>
+                    {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'} last refreshed {formatDistanceToNow(lastRefresh, { addSuffix: true })}.
+                  </p>
+                  <p>
+                    Jobs refresh automatically at 2:15 PM and 3:15 AM EST, but you can manually refresh them at any time by pressing the refresh button.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>
