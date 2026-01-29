@@ -124,11 +124,14 @@ async def get_last_refresh():
 async def process_resume_matching(task_id: str, resume_text: str):
     """Background task to process resume matching"""
     try:
+        print(f"[Task {task_id}] Starting resume matching...")
         task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=10)
         
+        print(f"[Task {task_id}] Fetching jobs from database...")
         with get_db() as conn:
             job_service = JobService(conn)
             all_jobs = job_service.get_all_jobs()
+        print(f"[Task {task_id}] Found {len(all_jobs)} jobs to match against")
         
         task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=30)
         
@@ -136,8 +139,10 @@ async def process_resume_matching(task_id: str, resume_text: str):
         def update_progress(progress: int):
             task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=progress)
         
+        print(f"[Task {task_id}] Starting resume analysis and matching...")
         matcher = ResumeMatcher()
         matched_jobs = await matcher.match_resume_to_jobs(resume_text, all_jobs, progress_callback=update_progress)
+        print(f"[Task {task_id}] Matching complete. Found {len(matched_jobs)} matches")
         
         task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=95)
         
@@ -145,9 +150,12 @@ async def process_resume_matching(task_id: str, resume_text: str):
         result = [job.dict() if hasattr(job, 'dict') else job for job in matched_jobs]
         
         task_manager.update_task(task_id, TaskStatus.COMPLETED, progress=100, result=result)
+        print(f"[Task {task_id}] Task completed successfully")
         
     except Exception as e:
-        print(f"Error processing resume matching: {str(e)}")
+        print(f"[Task {task_id}] ERROR: {str(e)}")
+        import traceback
+        print(f"[Task {task_id}] Traceback: {traceback.format_exc()}")
         task_manager.update_task(task_id, TaskStatus.FAILED, error=str(e))
 
 @app.post("/api/match-resume-async")

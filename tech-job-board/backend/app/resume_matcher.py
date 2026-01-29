@@ -21,7 +21,9 @@ class ResumeMatcher:
         self.llm = ChatOpenAI(
             model="gpt-4o-mini",
             api_key=settings.openai_api_key,
-            temperature=0.3
+            temperature=0.3,
+            timeout=60.0,  # 60 second timeout
+            max_retries=2
         )
     
     @classmethod
