@@ -4,13 +4,61 @@ from app.background_tasks import BackgroundDescriptionFetcher
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict
 import asyncio
+import json
 
 class JobService:
     _refresh_lock = asyncio.Lock()
+    _embedding_model = None
     
     def __init__(self, conn):
         self.conn = conn
         self.aggregator = JobAggregator()
+    
+    @classmethod
+    def _get_embedding_model(cls):
+        """Lazy load embedding model for job pre-computation"""
+        if cls._embedding_model is None:
+            from sentence_transformers import SentenceTransformer
+            import os
+            cache_folder = os.path.expanduser("~/.cache/huggingface")
+            cls._embedding_model = SentenceTransformer('all-MiniLM-L6-v2', cache_folder=cache_folder)
+            print("Embedding model loaded for job pre-computation")
+        return cls._embedding_model
+    
+    def _compute_job_embeddings(self, job_data: Dict) -> Dict[str, str]:
+        """Pre-compute 3 embeddings for a job and return as JSON strings"""
+        try:
+            from app.resume_matcher import ResumeMatcher
+            model = self._get_embedding_model()
+            description = job_data.get('description', '')
+            
+            # Extract sections using ResumeMatcher's helper
+            matcher = ResumeMatcher()
+            sections = matcher._extract_key_sections(description)
+            
+            # 1. Full description embedding
+            full_emb = model.encode(description).tolist()
+            
+            # 2. Responsibilities embedding
+            resp_text = sections.get('responsibilities', description[:1000])
+            resp_emb = model.encode(resp_text).tolist()
+            
+            # 3. Requirements embedding
+            req_text = sections.get('requirements', description[:1000])
+            req_emb = model.encode(req_text).tolist()
+            
+            return {
+                'embedding_full': json.dumps(full_emb),
+                'embedding_responsibilities': json.dumps(resp_emb),
+                'embedding_requirements': json.dumps(req_emb)
+            }
+        except Exception as e:
+            print(f"Error computing embeddings for job {job_data.get('job_id')}: {e}")
+            return {
+                'embedding_full': None,
+                'embedding_responsibilities': None,
+                'embedding_requirements': None
+            }
     
     async def refresh_jobs(self) -> int:
         # Use lock to prevent duplicate refreshes
@@ -24,10 +72,14 @@ class JobService:
                     existing_job = cur.fetchone()
                     
                     if not existing_job:
+                        # Compute embeddings for the job
+                        embeddings = self._compute_job_embeddings(job_data)
+                        
                         cur.execute("""
                             INSERT INTO jobs (job_id, title, company, location, description, 
-                                            category, source, posted_date, salary, apply_url)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                            category, source, posted_date, salary, apply_url,
+                                            embedding_full, embedding_responsibilities, embedding_requirements)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """, (
                             job_data["job_id"],
                             job_data["title"],
@@ -38,9 +90,14 @@ class JobService:
                             job_data["source"],
                             job_data["posted_date"],
                             job_data.get("salary"),
-                            job_data["apply_url"]
+                            job_data["apply_url"],
+                            embeddings['embedding_full'],
+                            embeddings['embedding_responsibilities'],
+                            embeddings['embedding_requirements']
                         ))
                         new_jobs_count += 1
+                        if new_jobs_count % 10 == 0:
+                            print(f"Pre-computed embeddings for {new_jobs_count} jobs...")
                 
                 cur.execute("""
                     INSERT INTO refresh_logs (refresh_type, jobs_added)

@@ -216,7 +216,7 @@ class ResumeMatcher:
         
         semantic_score = self._calculate_semantic_similarity(
             resume_analysis["raw_text"],
-            job["description"]
+            job
         )
         
         # Calculate domain expertise boost
@@ -388,35 +388,48 @@ class ResumeMatcher:
             'matched_skills': matched_skill_list
         }
     
-    def _calculate_semantic_similarity(self, resume_text: str, job_description: str) -> float:
+    def _calculate_semantic_similarity(self, resume_text: str, job: Dict) -> float:
         """
-        Enhanced semantic similarity using chunked analysis and key section matching.
-        This captures meaning beyond keywords and understands context better.
+        Enhanced semantic similarity using pre-computed job embeddings.
+        Computes resume embeddings once and reuses cached job embeddings for speed.
         """
         try:
+            import json
             model = self._get_model()
             
-            # Extract key sections from job description
-            job_sections = self._extract_key_sections(job_description)
-            resume_sections = self._extract_key_sections(resume_text)
+            # Check if job has pre-computed embeddings
+            if not job.get('embedding_full'):
+                # Fallback: compute on-the-fly if embeddings not available
+                job_description = job.get('description', '')
+                embeddings = model.encode([resume_text, job_description])
+                return float(cosine_similarity([embeddings[0]], [embeddings[1]])[0][0])
             
-            # Calculate overall similarity
-            embeddings = model.encode([resume_text, job_description])
-            overall_similarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
+            # Compute resume embeddings once and cache them
+            if not hasattr(self, '_resume_embeddings'):
+                resume_sections = self._extract_key_sections(resume_text)
+                self._resume_embeddings = {
+                    'full': model.encode(resume_text),
+                    'experience': model.encode(resume_sections.get('experience', resume_text[:1000])),
+                    'skills': model.encode(resume_sections.get('skills', resume_text[:1000]))
+                }
             
-            # Calculate section-specific similarities for better matching
+            # Load pre-computed job embeddings from database
+            job_emb_full = np.array(json.loads(job['embedding_full']))
+            
+            # Calculate overall similarity using cached embeddings
+            overall_similarity = cosine_similarity([self._resume_embeddings['full']], [job_emb_full])[0][0]
+            
+            # Calculate section-specific similarities if available
             section_similarities = []
             
-            # Compare responsibilities/experience sections
-            if job_sections['responsibilities'] and resume_sections['experience']:
-                resp_emb = model.encode([resume_sections['experience'], job_sections['responsibilities']])
-                resp_sim = cosine_similarity([resp_emb[0]], [resp_emb[1]])[0][0]
+            if job.get('embedding_responsibilities'):
+                job_emb_resp = np.array(json.loads(job['embedding_responsibilities']))
+                resp_sim = cosine_similarity([self._resume_embeddings['experience']], [job_emb_resp])[0][0]
                 section_similarities.append(resp_sim)
             
-            # Compare requirements/skills sections
-            if job_sections['requirements'] and resume_sections['skills']:
-                req_emb = model.encode([resume_sections['skills'], job_sections['requirements']])
-                req_sim = cosine_similarity([req_emb[0]], [req_emb[1]])[0][0]
+            if job.get('embedding_requirements'):
+                job_emb_req = np.array(json.loads(job['embedding_requirements']))
+                req_sim = cosine_similarity([self._resume_embeddings['skills']], [job_emb_req])[0][0]
                 section_similarities.append(req_sim)
             
             # Weighted combination: 60% overall, 40% section-specific
@@ -427,7 +440,6 @@ class ResumeMatcher:
                 final_similarity = overall_similarity
             
             # Apply boost for strong technical alignment
-            # If many skills match, boost semantic score
             boost_factor = 1.0
             if hasattr(self, '_last_skill_score') and self._last_skill_score > 0.7:
                 boost_factor = 1.15
@@ -435,7 +447,9 @@ class ResumeMatcher:
             return min(float(final_similarity * boost_factor), 1.0)
             
         except Exception as e:
-            print(f"Error calculating semantic similarity with Sentence Transformers: {e}")
+            print(f"Error calculating semantic similarity: {e}")
+            import traceback
+            traceback.print_exc()
             return 0.5
     
     def _extract_key_sections(self, text: str) -> Dict[str, str]:

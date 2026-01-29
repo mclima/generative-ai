@@ -45,7 +45,10 @@ def init_db():
                     posted_date TIMESTAMP,
                     salary VARCHAR(255),
                     apply_url TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    embedding_full TEXT,
+                    embedding_responsibilities TEXT,
+                    embedding_requirements TEXT
                 );
                 
                 CREATE INDEX IF NOT EXISTS idx_jobs_job_id ON jobs(job_id);
