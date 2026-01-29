@@ -134,11 +134,25 @@ Matching logic:
 
 a. Skill overlap (40% weight) - Technical skills matching
 
-b. Semantic similarity (35% weight) - Uses Sentence Transformers (all-MiniLM-L6-v2)
+b. Semantic similarity (35% weight) - Uses Sentence Transformers (all-MiniLM-L6-v2) with pre-computed embeddings
+   - Job embeddings (3 per job: full, responsibilities, requirements) pre-computed during job refresh and cached in PostgreSQL
+   - Resume embeddings (3 total: full, experience, skills) computed once per matching session
+   - Weighted combination: 60% overall similarity + 40% section-specific similarities
 
 c. Job title similarity (25% weight) - Role alignment
 
 Minimum match threshold: 60% - Only jobs scoring 60% or higher are displayed
+
+Performance: ~15-20 seconds for matching (including AI explanations for top matches)
+
+AI Match Explanations:
+- Generate personalized explanations for top 5 matches with score >= 80%
+- Use OpenAI GPT-4o-mini to create 2-3 sentence insights
+- Explain why the job is a strong fit
+- Highlight aligned skills and relevant experience
+- Identify growth opportunities
+- Display with sparkle icon (✨) and gradient background
+- Generated after matching completes (progress: 90-100%)
 
 Implement a matching score algorithm (once you implement the matching logic formula (math + pseudocode), plase include it in a .md file)
 
@@ -147,6 +161,7 @@ Display matched jobs:
 Sorted by matching score (highest first)
 
 Each matched job card shows:
+- AI Match Insight (for top 5 matches with 80%+ score)
 - Individual component scores (semantic, skills, title)
 - Matched skills from resume
 - Score weights and calculations
@@ -185,25 +200,31 @@ Use the following technologies:
 
 Python
 
-langchain_community (if needed)
+FastAPI
 
-langchain_tavily (if needed)
+Sentence Transformers (all-MiniLM-L6-v2)
 
-langchain_experimental (if needed)
+OpenAI GPT-4o-mini (for match explanations)
 
-ChatOpenAI(model="gpt-4o-mini")
+LangChain (for LLM integration)
+
+scikit-learn (for cosine similarity)
+
+PostgreSQL (with embedding storage in TEXT columns as JSON arrays)
 
 Backend responsibilities:
 
 Job ingestion & normalization
 
-Database operations (PostgreSQL)
+Database operations (PostgreSQL) with pre-computed embeddings
 
-Resume parsing & matching logic
+Resume parsing & matching logic with cached embeddings
 
 API endpoints for frontend consumption
 
 Secure handling of uploaded resumes
+
+Background task processing for long-running operations
 
 10. Frontend Requirements
 

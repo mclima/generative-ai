@@ -5,8 +5,9 @@ A full-stack web application that aggregates remote tech job listings in the Uni
 ## 🌟 Features
 
 ### Job Listings
-- **Automated Job Aggregation**: Fetches jobs from multiple sources (Remotive, Arbeitnow, Jobicy, JSearch, Jobs API)
+- **Automated Job Aggregation**: Fetches jobs from multiple sources (Jobicy, JSearch, Jobs API)
 - **Smart Refresh Strategy**: Scheduled refresh twice daily + manual refresh option
+- **Salary Information**: Displays salary ranges when available from job sources
 - **AI-Powered Resume Matching**: Uses Sentence Transformers (all-MiniLM-L6-v2) for intelligent semantic job matching
 - **Resume Parsing**: Supports PDF, DOCX, and TXT formats
 - **Category Filtering**: Filter jobs by AI or Engineering categories
@@ -17,20 +18,26 @@ A full-stack web application that aggregates remote tech job listings in the Uni
 - **Multi-Format Support**: Upload PDF, DOCX, or TXT files, or paste resume text
 - **Async Processing**: Background task processing with real-time progress updates
 - **Enhanced Semantic Matching**: Uses Sentence Transformers (all-MiniLM-L6-v2) for intelligent matching
+- **Pre-computed Embeddings**: Job embeddings cached in database for fast matching (~10 seconds)
 - **Hybrid Algorithm**:
   - Skill overlap (40%) - Technical skills matching
-  - Semantic similarity (35%) - Transformer-based embeddings
+  - Semantic similarity (35%) - Transformer-based embeddings (3 per job: full, responsibilities, requirements)
   - Job title similarity (25%) - Role alignment
 - **Minimum Match Threshold**: Only shows jobs with 60%+ match score
 - **Color-Coded Results**:
   - 🟢 Green (80-100%): Strong Match
   - 🟠 Orange (60-79%): Moderate Match
+- **AI Match Explanations**: Top 5 matches with 80%+ scores get personalized insights powered by GPT-4o-mini
+  - Explains why each job is a strong fit
+  - Highlights aligned skills and relevant experience
+  - Identifies growth opportunities
+  - 2-3 sentence concise explanations
 - **Detailed Match Breakdown**: Each matched job shows:
   - Individual component scores (semantic, skills, title)
   - Matched skills from your resume
   - Score weights and calculations
 - **Context-Aware**: Understands synonyms, context, and semantic relationships
-- **Progress Tracking**: Real-time progress updates during matching (typically 1-2 minutes)
+- **Progress Tracking**: Real-time progress updates during matching (~15-20 seconds typical including AI explanations)
 - **Error Handling**: Robust network error handling with automatic retry logic
 
 ### User Experience
@@ -335,13 +342,19 @@ vercel
 - Secure file upload handling
 
 ### Performance
+- **Pre-computed Job Embeddings**: Job embeddings (3 per job) computed once during job refresh and cached in PostgreSQL
+- **Fast Resume Matching**: ~10 seconds (only computes 3 resume embeddings, reuses cached job embeddings)
+- **Optimized Embedding Strategy**: 
+  - Jobs: Full description, responsibilities, and requirements embeddings pre-computed and stored
+  - Resume: Computed once per matching session (full text, experience, skills)
+  - Result: 3 embeddings computed vs 126+ in naive approach
 - Async job fetching and background task processing
 - Database indexing on key fields (posted_date, category)
 - Client-side caching
-- Optimized model loading with HuggingFace cache
+- Optimized model loading with HuggingFace cache (~/.cache/huggingface)
 - Polling-based architecture to avoid timeout issues
 - Progress tracking with granular updates (30% to 90%)
-- Exponential backoff for network error recovery
+- Smart rate limit handling (stops fetching when API limit reached)
 
 ### Code Quality
 - Type safety with TypeScript and Pydantic
@@ -349,24 +362,7 @@ vercel
 - Comprehensive error handling
 - RESTful API design
 
-## 📋 Roadmap / TODO
-
-### Future Features
-- [ ] **LLM-Powered Match Explanations** - Add personalized explanations for top job matches
-  - Generate AI-powered insights explaining why each job is a good fit
-  - Highlight aligned skills and experience
-  - Identify potential gaps to address in applications
-  - Show match reasoning beyond just scores
-  - Expected implementation: Generate explanations for top 5-10 matches only (~2-3 min total)
-
-### Completed
-- [x] Async polling pattern for resume matching (no timeout issues)
-- [x] Model caching optimization (`~/.cache/huggingface`)
-- [x] Progress tracking with granular updates
-- [x] Network error handling with retry logic
-- [x] Job retention policy (10 days)
-- [x] Mobile UI fixes
-- [x] Performance optimization (1-2 min resume matching)
+### Future Features 
 
 ## 🤝 Contributing
 

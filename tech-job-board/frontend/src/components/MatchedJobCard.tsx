@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { MatchedJob } from '@/types'
 import { formatDate, getMatchColor, getMatchBgColor } from '@/lib/utils'
-import { Building2, MapPin, Calendar, Tag, TrendingUp, CheckCircle2, BarChart3 } from 'lucide-react'
+import { Building2, MapPin, Calendar, Tag, TrendingUp, CheckCircle2, BarChart3, Sparkles } from 'lucide-react'
 
 interface MatchedJobCardProps {
   job: MatchedJob
@@ -78,6 +78,21 @@ export default function MatchedJobCard({ job }: MatchedJobCardProps) {
           </div>
         </div>
       </div>
+
+      {/* AI Match Explanation - Only for top matches with 80%+ score */}
+      {job.match_explanation && (
+        <div className="mt-4 pt-4 border-t border-gray-700">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles size={16} className="text-yellow-400" />
+            <h4 className="text-sm font-semibold text-gray-200">AI Match Insight</h4>
+          </div>
+          <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-4">
+            <p className="text-sm text-gray-300 leading-relaxed">
+              {job.match_explanation}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Matched Skills */}
       {job.matched_skills && job.matched_skills.length > 0 && (

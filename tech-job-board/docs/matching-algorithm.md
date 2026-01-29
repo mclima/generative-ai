@@ -11,9 +11,9 @@ The resume matching algorithm uses a hybrid approach combining multiple techniqu
 ### 1. Resume Analysis
 
 The system first analyzes the resume using:
-- **LLM Analysis**: Uses OpenAI GPT-4o-mini to extract structured information
 - **Skill Extraction**: Pattern matching against common technical skills
 - **Job Title Extraction**: Identifies previous roles and positions
+- **Semantic Analysis**: Extracts key sections (experience, skills) for embedding generation
 
 ### 2. Matching Score Calculation
 
@@ -121,13 +121,25 @@ function calculateSkillOverlap(resumeSkills, jobDescription):
 
 #### C. Semantic Similarity Score (35% weight)
 
-Uses **Sentence Transformers** (all-MiniLM-L6-v2) for enhanced semantic understanding.
+Uses **Sentence Transformers** (all-MiniLM-L6-v2) with **pre-computed job embeddings** for fast matching.
 
 **Algorithm:**
-1. Load pre-trained transformer model (all-MiniLM-L6-v2)
-2. Generate 384-dimensional embeddings for resume and job description
-3. Calculate cosine similarity between embeddings
-4. Return similarity score (0-1)
+1. **Job Embeddings (Pre-computed during job refresh):**
+   - Full job description embedding
+   - Responsibilities section embedding
+   - Requirements section embedding
+   - Stored in PostgreSQL for reuse
+
+2. **Resume Embeddings (Computed once per matching session):**
+   - Full resume text embedding
+   - Experience section embedding
+   - Skills section embedding
+
+3. **Similarity Calculation:**
+   - Overall similarity: Resume full text vs Job full description
+   - Section similarities: Resume experience vs Job responsibilities, Resume skills vs Job requirements
+   - Weighted combination: 60% overall + 40% section-specific
+   - Return similarity score (0-1)
 
 **How Sentence Transformers Work:**
 
@@ -160,18 +172,41 @@ A · B = Dot product of vectors
 
 **Pseudocode:**
 ```
-function calculateSemanticSimilarity(resumeText, jobDescription):
+function calculateSemanticSimilarity(resumeText, job):
     try:
         // Load model (lazy loading - only once)
         model = SentenceTransformer('all-MiniLM-L6-v2')
         
-        // Generate embeddings
-        embeddings = model.encode([resumeText, jobDescription])
+        // Check if job has pre-computed embeddings
+        if not job.embedding_full:
+            // Fallback: compute on-the-fly
+            embeddings = model.encode([resumeText, job.description])
+            return cosineSimilarity(embeddings[0], embeddings[1])
         
-        // Calculate cosine similarity
-        similarity = cosineSimilarity(embeddings[0], embeddings[1])
+        // Compute resume embeddings once (cached for session)
+        if not cached_resume_embeddings:
+            resume_sections = extractSections(resumeText)
+            cached_resume_embeddings = {
+                'full': model.encode(resumeText),
+                'experience': model.encode(resume_sections.experience),
+                'skills': model.encode(resume_sections.skills)
+            }
         
-        return similarity
+        // Load pre-computed job embeddings from database
+        job_emb_full = loadEmbedding(job.embedding_full)
+        job_emb_resp = loadEmbedding(job.embedding_responsibilities)
+        job_emb_req = loadEmbedding(job.embedding_requirements)
+        
+        // Calculate similarities
+        overall_sim = cosineSimilarity(cached_resume_embeddings.full, job_emb_full)
+        resp_sim = cosineSimilarity(cached_resume_embeddings.experience, job_emb_resp)
+        req_sim = cosineSimilarity(cached_resume_embeddings.skills, job_emb_req)
+        
+        // Weighted combination
+        section_avg = (resp_sim + req_sim) / 2
+        final_sim = (overall_sim * 0.6) + (section_avg * 0.4)
+        
+        return final_sim
     catch error:
         return 0.5  // Default fallback
 ```
@@ -182,6 +217,13 @@ function calculateSemanticSimilarity(resumeText, jobDescription):
 - **Output:** 384-dimensional vectors
 - **Speed:** ~0.01-0.05 seconds per text
 - **Source:** Hugging Face Sentence Transformers library
+
+**Performance Optimization:**
+- **Job embeddings:** Pre-computed during job refresh (one-time cost)
+- **Resume embeddings:** Computed once per matching session (3 embeddings total)
+- **Matching speed:** ~10 seconds for 50 jobs (down from 3-5 minutes)
+- **Embeddings stored:** PostgreSQL TEXT columns as JSON arrays
+- **Cache location:** `~/.cache/huggingface` for model persistence
 
 ### 4. Score Interpretation
 
@@ -231,13 +273,44 @@ The final score (0-100%) is categorized as follows:
 - The algorithm is implemented in `backend/app/resume_matcher.py`
 - Uses **Sentence Transformers** library with all-MiniLM-L6-v2 model
 - Model is lazy-loaded (only loads once, shared across requests)
-- OpenAI GPT-4o-mini provides additional resume analysis
+- **Pre-computed embeddings:** Job embeddings calculated during job refresh and stored in PostgreSQL
+- **Embedding storage:** 3 TEXT columns per job (embedding_full, embedding_responsibilities, embedding_requirements)
+- **Resume embeddings:** Computed once per matching session and cached in memory
 - All scores are normalized to 0-1 range before final calculation
 - Final score is multiplied by 100 and capped at 100%
 - **Minimum match threshold: 60%** - Only jobs scoring 60% or higher are returned
+- **Performance:** ~10 seconds for matching (3 resume embeddings vs 126+ in naive approach)
 - Memory efficient: ~400-500MB total (model + runtime)
 - Compatible with Railway deployment
 - Word boundary matching for short skills (e.g., "golang", "rust", "java") to avoid false positives
+
+## AI Match Explanations (Implemented)
+
+For top 5 matches with scores ≥ 80%, the system generates personalized explanations using OpenAI GPT-4o-mini:
+
+**Implementation:**
+- Triggered after matching completes (progress: 90-100%)
+- Concise 2-3 sentence explanations
+- Focuses on: aligned skills, relevant experience, growth opportunities
+- Adds `match_explanation` field to qualifying job results
+- Graceful error handling (sets to None if generation fails)
+
+**Prompt Strategy:**
+```
+Explain why this job is a strong match for the candidate in 2-3 sentences.
+
+Job: {title} at {company}
+Match Score: {score}%
+Matched Skills: {top 10 skills}
+Candidate Background: {job titles}
+
+Focus on: aligned skills, relevant experience, and growth opportunities.
+```
+
+**Performance:**
+- ~1-2 seconds per explanation
+- Total: ~5-10 seconds for 5 explanations
+- Overall matching time: ~15-20 seconds (including explanations)
 
 ## Future Improvements
 
@@ -248,5 +321,4 @@ Potential enhancements to the algorithm:
 4. Add industry/domain experience matching
 5. Fine-tune the Sentence Transformer model on job-resume pairs
 6. Add user feedback loop to improve matching accuracy
-7. Implement caching for frequently matched resumes
-8. Add explanation generation ("Why this match?")
+7. Implement vector database (ChromaDB, Pinecone) for 1000+ jobs scale

@@ -139,7 +139,7 @@ export default function HomePageClient() {
             <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
               <Clock size={16} />
               <span>
-                Jobs last refreshed {formatDistanceToNow(lastRefresh, { addSuffix: true })}
+                {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'} last refreshed {formatDistanceToNow(lastRefresh, { addSuffix: true })}
               </span>
             </div>
           )}

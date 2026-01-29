@@ -55,30 +55,6 @@ class JobAggregator:
         
         return unique_jobs
     
-    async def _fetch_from_remotive(self) -> List[Dict]:
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.get("https://remotive.com/api/remote-jobs?category=software-dev")
-                if response.status_code == 200:
-                    data = response.json()
-                    jobs = data.get("jobs", [])
-                    return self._normalize_remotive_jobs(jobs)
-        except Exception as e:
-            print(f"Error fetching from Remotive: {e}")
-        return []
-    
-    async def _fetch_from_arbeitnow(self) -> List[Dict]:
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.get("https://www.arbeitnow.com/api/job-board-api")
-                if response.status_code == 200:
-                    data = response.json()
-                    jobs = data.get("data", [])
-                    return self._normalize_arbeitnow_jobs(jobs)
-        except Exception as e:
-            print(f"Error fetching from Arbeitnow: {e}")
-        return []
-    
     async def _fetch_from_jobicy(self) -> List[Dict]:
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
@@ -241,87 +217,6 @@ class JobAggregator:
             print(f"Error fetching from Jobs API: {e}")
         return []
     
-    def _normalize_remotive_jobs(self, jobs: List[Dict]) -> List[Dict]:
-        normalized = []
-        thirty_days_ago = datetime.now() - timedelta(days=15)
-        
-        for job in jobs:
-            try:
-                posted_date_str = job.get("publication_date", "")
-                posted_date = datetime.fromisoformat(posted_date_str.replace("Z", "+00:00"))
-                
-                if posted_date < thirty_days_ago:
-                    continue
-                
-                location = job.get("candidate_required_location", "")
-                if "US" not in location and "USA" not in location and "United States" not in location:
-                    continue
-                
-                category = self._categorize_job(job.get("title", ""), job.get("description", ""))
-                
-                normalized.append({
-                    "job_id": f"remotive_{job.get('id')}",
-                    "title": job.get("title", ""),
-                    "company": job.get("company_name", ""),
-                    "location": "Remote (US)",
-                    "description": job.get("description", ""),
-                    "category": category,
-                    "source": "Remotive",
-                    "posted_date": posted_date,
-                    "salary": job.get("salary", None),
-                    "apply_url": job.get("url", "")
-                })
-            except Exception as e:
-                print(f"Error normalizing Remotive job: {e}")
-                continue
-        
-        return normalized
-    
-    def _normalize_arbeitnow_jobs(self, jobs: List[Dict]) -> List[Dict]:
-        normalized = []
-        thirty_days_ago = datetime.now() - timedelta(days=15)
-        
-        for job in jobs:
-            try:
-                created_at = job.get("created_at", "")
-                if not created_at:
-                    continue
-                
-                # Handle both integer timestamps and ISO strings
-                if isinstance(created_at, int):
-                    posted_date = datetime.fromtimestamp(created_at)
-                else:
-                    posted_date = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-                
-                if posted_date < thirty_days_ago:
-                    continue
-                
-                location = job.get("location", "")
-                remote = job.get("remote", False)
-                
-                if not remote:
-                    continue
-                
-                category = self._categorize_job(job.get("title", ""), job.get("description", ""))
-                
-                normalized.append({
-                    "job_id": f"arbeitnow_{job.get('slug', '')}",
-                    "title": job.get("title", ""),
-                    "company": job.get("company_name", ""),
-                    "location": "Remote (US)",
-                    "description": job.get("description", ""),
-                    "category": category,
-                    "source": "Arbeitnow",
-                    "posted_date": posted_date,
-                    "salary": None,
-                    "apply_url": job.get("url", "")
-                })
-            except Exception as e:
-                print(f"Error normalizing Arbeitnow job: {e}")
-                continue
-        
-        return normalized
-    
     def _normalize_jobicy_jobs(self, jobs: List[Dict]) -> List[Dict]:
         normalized = []
         from datetime import timezone
@@ -356,6 +251,15 @@ class JobAggregator:
                 
                 category = self._categorize_job(title, description)
                 
+                # Extract salary information if available
+                salary = None
+                if job.get("salary"):
+                    salary = job.get("salary")
+                elif job.get("annualSalaryMin") and job.get("annualSalaryMax"):
+                    min_sal = job.get("annualSalaryMin")
+                    max_sal = job.get("annualSalaryMax")
+                    salary = f"${min_sal:,.0f} - ${max_sal:,.0f} USD/year"
+                
                 normalized.append({
                     "job_id": f"jobicy_{job.get('id', '')}",
                     "title": title,
@@ -365,7 +269,7 @@ class JobAggregator:
                     "category": category,
                     "source": "Jobicy",
                     "posted_date": posted_date,
-                    "salary": None,
+                    "salary": salary,
                     "apply_url": job.get("url", "")
                 })
             except Exception as e:
@@ -421,6 +325,17 @@ class JobAggregator:
                 if job.get("job_city") and job.get("job_state"):
                     location = f"Remote ({job.get('job_city')}, {job.get('job_state')})"
                 
+                # Extract salary information if available
+                salary = None
+                if job.get("job_min_salary") and job.get("job_max_salary"):
+                    min_sal = job.get("job_min_salary")
+                    max_sal = job.get("job_max_salary")
+                    salary_period = job.get("job_salary_period", "YEAR")
+                    currency = job.get("job_salary_currency", "USD")
+                    salary = f"${min_sal:,.0f} - ${max_sal:,.0f} {currency}/{salary_period.lower()}"
+                elif job.get("job_salary_period"):
+                    salary = job.get("job_salary_period")
+                
                 normalized.append({
                     "job_id": f"jsearch_{job.get('job_id', '')}",
                     "title": title,
@@ -430,7 +345,7 @@ class JobAggregator:
                     "category": category,
                     "source": "JSearch",
                     "posted_date": posted_date,
-                    "salary": None,
+                    "salary": salary,
                     "apply_url": job.get("job_apply_link", "")
                 })
             except Exception as e:
@@ -481,6 +396,13 @@ class JobAggregator:
                 if not location or location == "":
                     location = "Remote (US)"
                 
+                # Extract salary information if available
+                salary = None
+                if job.get("salary"):
+                    salary = job.get("salary")
+                elif job.get("salaryRange"):
+                    salary = job.get("salaryRange")
+                
                 normalized.append({
                     "job_id": f"jobsapi_{job.get('id', '')}",
                     "title": title,
@@ -490,7 +412,7 @@ class JobAggregator:
                     "category": category,
                     "source": "Jobs API",
                     "posted_date": posted_date,
-                    "salary": None,
+                    "salary": salary,
                     "apply_url": job.get("linkedinUrl", "")
                 })
             except Exception as e:

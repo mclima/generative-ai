@@ -78,10 +78,16 @@ export default function JobDetails({ job }: JobDetailsProps) {
 
           <div className="border-t border-gray-800 pt-8">
             <h2 className="text-2xl font-semibold mb-6 text-white">About the job</h2>
-            <div 
-              className="job-description text-gray-300 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: formatJobDescription(job.description) }}
-            />
+            {job.description === "Description will be loaded shortly..." || !job.description || job.description.trim() === "" ? (
+              <div className="text-gray-400 italic bg-gray-800/50 p-4 rounded-lg">
+                Full job description not available. Please visit the job posting for complete details.
+              </div>
+            ) : (
+              <div 
+                className="job-description text-gray-300 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: formatJobDescription(job.description) }}
+              />
+            )}
           </div>
         </div>
       </div>

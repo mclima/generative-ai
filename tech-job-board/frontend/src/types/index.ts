@@ -21,4 +21,5 @@ export interface MatchedJob extends Job {
   title_score: number
   skill_score: number
   semantic_score: number
+  match_explanation?: string
 }

@@ -133,10 +133,16 @@ export default function JobDetailsClientPage() {
 
         <div className="border-t border-gray-800 pt-6 mb-6">
           <h2 className="text-2xl font-semibold mb-4">Job Description</h2>
-          <div
-            className="job-description"
-            dangerouslySetInnerHTML={{ __html: formatJobDescription(job.description) }}
-          />
+          {job.description === "Description will be loaded shortly..." || !job.description || job.description.trim() === "" ? (
+            <div className="text-gray-400 italic bg-gray-800/50 p-4 rounded-lg">
+              Full job description not available. Please visit the job posting for complete details.
+            </div>
+          ) : (
+            <div
+              className="job-description"
+              dangerouslySetInnerHTML={{ __html: formatJobDescription(job.description) }}
+            />
+          )}
         </div>
 
         <div className="border-t border-gray-800 pt-6">

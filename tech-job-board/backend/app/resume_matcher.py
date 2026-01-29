@@ -1,6 +1,4 @@
-# LLM imports - commented out for performance, can be re-enabled for match explanations
-# from langchain_openai import ChatOpenAI
-# from langchain.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
 from typing import List, Dict, Optional
 import re
 import os
@@ -18,17 +16,15 @@ class ResumeMatcher:
     # Class-level model instance for lazy loading (shared across all instances)
     _model: Optional[SentenceTransformer] = None
     
-    # LLM initialization - commented out for performance
-    # Can be re-enabled later for match explanations feature
-    # def __init__(self):
-    #     self.llm = ChatOpenAI(
-    #         model="gpt-4o-mini",
-    #         api_key=settings.openai_api_key,
-    #         temperature=0,
-    #         timeout=30.0,
-    #         max_retries=1,
-    #         max_tokens=500
-    #     )
+    def __init__(self):
+        self.llm = ChatOpenAI(
+            model="gpt-4o-mini",
+            api_key=settings.openai_api_key,
+            temperature=0,
+            timeout=30.0,
+            max_retries=2,
+            max_tokens=300
+        )
     
     @classmethod
     def _get_model(cls) -> SentenceTransformer:
@@ -67,6 +63,9 @@ class ResumeMatcher:
         
         matched_jobs.sort(key=lambda x: x["match_score"], reverse=True)
         
+        # Generate explanations for top 5 matches with score >= 80%
+        await self._add_match_explanations(matched_jobs, resume_analysis, progress_callback)
+        
         return matched_jobs
     
     async def _analyze_resume(self, resume_text: str) -> Dict:
@@ -102,6 +101,45 @@ class ResumeMatcher:
         #     "job_titles": job_titles,
         #     "llm_summary": llm_summary
         # }
+    
+    async def _add_match_explanations(self, matched_jobs: List[Dict], resume_analysis: Dict, progress_callback=None) -> None:
+        """
+        Generate AI-powered explanations for top 5 matches with score >= 80%.
+        Adds 'match_explanation' field to qualifying job dictionaries.
+        """
+        # Filter top 5 matches with score >= 80%
+        top_matches = [job for job in matched_jobs if job['match_score'] >= 80][:5]
+        
+        if not top_matches:
+            return
+        
+        print(f"Generating explanations for {len(top_matches)} top matches...")
+        
+        for idx, job in enumerate(top_matches):
+            try:
+                # Create concise prompt for explanation
+                prompt = f"""Explain why this job is a strong match for the candidate in 2-3 sentences.
+
+Job: {job['title']} at {job['company']}
+Match Score: {job['match_score']}%
+Matched Skills: {', '.join(job['matched_skills'][:10])}
+Candidate Background: {', '.join(resume_analysis['job_titles'][:3])}
+
+Focus on: aligned skills, relevant experience, and growth opportunities. Be specific and encouraging."""
+
+                response = self.llm.invoke(prompt)
+                job['match_explanation'] = response.content.strip()
+                
+                print(f"Generated explanation for {job['title']} ({idx + 1}/{len(top_matches)})")
+                
+                # Update progress (90% to 100%)
+                if progress_callback:
+                    progress = 90 + int((idx + 1) / len(top_matches) * 10)
+                    progress_callback(progress)
+                    
+            except Exception as e:
+                print(f"Failed to generate explanation for {job['title']}: {e}")
+                job['match_explanation'] = None
     
     def _extract_skills(self, text: str) -> List[str]:
         common_skills = [

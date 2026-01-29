@@ -4,14 +4,15 @@ Python FastAPI backend for the Tech Job Board application with AI-powered resume
 
 ## Features
 
-- Automated job aggregation from multiple sources (Remotive, Arbeitnow, Jobicy, JSearch, Jobs API)
+- Automated job aggregation from multiple sources (Jobicy, JSearch, Jobs API)
 - Smart refresh strategy (scheduled refresh + manual refresh)
-- AI-powered resume matching using OpenAI GPT-4o-mini and Sentence Transformers
+- AI-powered resume matching using Sentence Transformers (all-MiniLM-L6-v2) with pre-computed embeddings
+- AI match explanations using OpenAI GPT-4o-mini for top 5 matches with 80%+ scores
 - Sentence Transformer model pre-cached during deployment for instant resume matching
 - Resume parsing (PDF, DOCX, TXT)
 - RESTful API endpoints
 - Direct PostgreSQL database operations with connection pooling
-- Automatic job retention: Jobs older than 15 days are deleted, only jobs from last 10 days are displayed
+- Automatic job retention: Jobs older than 10 days are deleted, only jobs from last 10 days are displayed
 
 ## API Sources
 
@@ -53,7 +54,7 @@ After the fast refresh completes, a background task automatically fetches full j
 - Initial refresh: 4 to 12 calls
 - Background descriptions: 0 to N additional calls (roughly 1 per Jobs API job missing a full description)
 
-All jobs are filtered for remote USA positions, posted within the last 15 days, and categorized based on comprehensive keyword matching. Jobs with title "AI/ML Developer" from DataAnnotation are automatically excluded.
+All jobs are filtered for remote USA positions, posted within the last 10 days, and categorized based on comprehensive keyword matching. Jobs with title "AI/ML Developer" from DataAnnotation are automatically excluded.
 
 ## Setup
 

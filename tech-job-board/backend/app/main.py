@@ -125,6 +125,9 @@ async def process_resume_matching(task_id: str, resume_text: str):
     """Background task to process resume matching"""
     try:
         print(f"[Task {task_id}] Starting resume matching...")
+        task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=5)
+        await asyncio.sleep(0.5)  # Small delay to ensure frontend sees initial progress
+        
         task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=10)
         
         print(f"[Task {task_id}] Fetching jobs from database...")
@@ -178,10 +181,13 @@ async def match_resume_async(
     # Create task and return ID immediately
     task_id = task_manager.create_task()
     
+    # Set initial progress so frontend shows activity immediately
+    task_manager.update_task(task_id, TaskStatus.PROCESSING, progress=1)
+    
     # Start background processing
     background_tasks.add_task(process_resume_matching, task_id, resume_text)
     
-    return {"task_id": task_id, "status": "pending"}
+    return {"task_id": task_id, "status": "processing", "progress": 1}
 
 @app.get("/api/task-status/{task_id}")
 async def get_task_status(task_id: str):
