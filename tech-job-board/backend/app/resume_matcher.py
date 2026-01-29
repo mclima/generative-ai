@@ -9,8 +9,9 @@ import numpy as np
 from app.config import settings
 
 # Set cache directory for HuggingFace models
-os.environ["HF_HOME"] = "/app/.hf_cache"
-os.environ["TRANSFORMERS_CACHE"] = "/app/.hf_cache"
+# Use /tmp as /app is read-only on Railway
+os.environ["HF_HOME"] = "/tmp/.hf_cache"
+os.environ["TRANSFORMERS_CACHE"] = "/tmp/.hf_cache"
 
 class ResumeMatcher:
     # Class-level model instance for lazy loading (shared across all instances)
@@ -28,7 +29,7 @@ class ResumeMatcher:
         """Lazy load the Sentence Transformer model (only loads once)"""
         if cls._model is None:
             print("Loading Sentence Transformer model (all-MiniLM-L6-v2)...")
-            cache_folder = "/app/.hf_cache"
+            cache_folder = "/tmp/.hf_cache"
             cls._model = SentenceTransformer('all-MiniLM-L6-v2', cache_folder=cache_folder)
             print("Model loaded successfully!")
         return cls._model
@@ -41,9 +42,6 @@ class ResumeMatcher:
         
         for idx, job in enumerate(jobs):
             match_details = self._calculate_match_score(resume_analysis, job)
-            
-            # Debug logging to see all scores
-            print(f"Job: {job.get('title', 'Unknown')} | Company: {job.get('company', 'Unknown')} | Score: {round(match_details['final_score'], 2)}%")
             
             if match_details['final_score'] >= 60:
                 job_copy = job.copy()
@@ -83,14 +81,6 @@ class ResumeMatcher:
         
         skills = self._extract_skills(resume_text)
         job_titles = self._extract_job_titles(resume_text)
-        
-        # Debug: Print extracted skills and titles
-        print(f"\n=== RESUME EXTRACTION DEBUG ===")
-        print(f"Skills extracted: {skills}")
-        print(f"Titles extracted: {job_titles}")
-        print(f"Resume text length: {len(resume_text)} chars")
-        print(f"Resume preview: {resume_text[:200]}...")
-        print("=" * 50 + "\n")
         
         return {
             "raw_text": resume_text,
@@ -235,20 +225,6 @@ class ResumeMatcher:
         # Debug: Print component scores for detailed analysis
         job_title = job.get('title', 'Unknown')
         
-        if 'voxel' in job.get('company', '').lower() or 'senior frontend' in job_title.lower():
-            print(f"\n=== DETAILED SCORE BREAKDOWN for {job_title} ===")
-            print(f"Company: {job.get('company', 'Unknown')}")
-            print(f"Resume titles found: {resume_analysis['job_titles']}")
-            print(f"Resume skills found ({len(all_resume_skills)} total): {all_resume_skills}")
-            print(f"Matched skills ({len(matched_skills)}): {matched_skills}")
-            print(f"Missed skills ({len(missed_skills)}): {missed_skills}")
-            print(f"Job description length: {len(job.get('description', ''))} chars")
-            print(f"Job description preview: {job.get('description', '')[:150]}...")
-            print(f"Title Score: {title_score:.2f} (weight: 25%)")
-            print(f"Skill Score: {skill_score:.2f} (weight: 40%)")
-            print(f"Semantic Score: {semantic_score:.2f} (weight: 35%)")
-            print(f"Final Score: {final_score * 100:.2f}%")
-            print("=" * 50 + "\n")
         
         return {
             'final_score': min(final_score * 100, 100),

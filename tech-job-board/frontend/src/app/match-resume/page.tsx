@@ -155,7 +155,7 @@ export default function MatchResumePage() {
         <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-4 mb-8 flex gap-3">
           <Info size={24} className="text-yellow-400 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-gray-300">
-            <strong>Processing Time:</strong> Resume analysis takes 1-2 minutes. While we use advanced AI matching algorithms, this demo runs on free-tier infrastructure with limited resources. You'll see progress updates during processing.
+            <strong>Processing Time:</strong> Resume analysis takes 1-2 minutes. While we use advanced AI matching algorithms, this demo runs on cost-optimized infrastructure with limited resources. You&apos;ll see progress updates during processing.
           </p>
         </div>
 

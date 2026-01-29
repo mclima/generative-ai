@@ -94,7 +94,7 @@ async def match_resume(
 @app.get("/api/categories")
 async def get_categories():
     return {
-        "categories": ["All Jobs", "AI", "Frontend", "Backend", "Full Stack", "DevOps", "Engineering"]
+        "categories": ["All Jobs", "AI", "Engineering"]
     }
 
 @app.get("/api/stats")
@@ -104,7 +104,7 @@ async def get_stats():
         total_jobs = job_service.get_total_jobs_count()
         
         categories_count = {}
-        for category in ["AI", "Frontend", "Backend", "Full Stack", "DevOps", "Engineering"]:
+        for category in ["AI", "Engineering"]:
             count = len(job_service.get_jobs_by_category(category))
             categories_count[category] = count
         
