@@ -9,9 +9,9 @@ import numpy as np
 from app.config import settings
 
 # Set cache directory for HuggingFace models
-# Use /tmp as /app is read-only on Railway
-os.environ["HF_HOME"] = "/tmp/.hf_cache"
-os.environ["TRANSFORMERS_CACHE"] = "/tmp/.hf_cache"
+# Use ~/.cache/huggingface (default HF location that persists on Railway)
+os.environ["HF_HOME"] = os.path.expanduser("~/.cache/huggingface")
+os.environ["TRANSFORMERS_CACHE"] = os.path.expanduser("~/.cache/huggingface")
 
 class ResumeMatcher:
     # Class-level model instance for lazy loading (shared across all instances)
@@ -29,7 +29,7 @@ class ResumeMatcher:
         """Lazy load the Sentence Transformer model (only loads once)"""
         if cls._model is None:
             print("Loading Sentence Transformer model (all-MiniLM-L6-v2)...")
-            cache_folder = "/tmp/.hf_cache"
+            cache_folder = os.path.expanduser("~/.cache/huggingface")
             cls._model = SentenceTransformer('all-MiniLM-L6-v2', cache_folder=cache_folder)
             print("Model loaded successfully!")
         return cls._model

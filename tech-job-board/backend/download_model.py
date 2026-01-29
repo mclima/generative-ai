@@ -7,9 +7,9 @@ import os
 from sentence_transformers import SentenceTransformer
 
 # Set cache directory for HuggingFace models
-# Use /tmp as /app is read-only on Railway
-os.environ["HF_HOME"] = "/tmp/.hf_cache"
-os.environ["TRANSFORMERS_CACHE"] = "/tmp/.hf_cache"
+# Use ~/.cache/huggingface (default HF location that persists on Railway)
+os.environ["HF_HOME"] = os.path.expanduser("~/.cache/huggingface")
+os.environ["TRANSFORMERS_CACHE"] = os.path.expanduser("~/.cache/huggingface")
 
 def download_model():
     """
@@ -17,7 +17,7 @@ def download_model():
     This script is run during the Railway build phase via nixpacks.toml
     """
     model_name = 'all-MiniLM-L6-v2'
-    cache_folder = "/tmp/.hf_cache"
+    cache_folder = os.path.expanduser("~/.cache/huggingface")
     
     print(f"Downloading Sentence Transformer model: {model_name}")
     print(f"Cache folder: {cache_folder}")
