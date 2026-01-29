@@ -42,7 +42,7 @@ class BackgroundDescriptionFetcher:
                         # Extract LinkedIn job ID from our job_id format (jobsapi_XXXXX)
                         linkedin_id = job_id.replace("jobsapi_", "")
                         
-                        await asyncio.sleep(1)  # Rate limit
+                        await asyncio.sleep(1)  # Rate limit between requests
                         
                         detail_response = await client.get(
                             f"https://jobs-api14.p.rapidapi.com/v2/linkedin/get",
@@ -66,6 +66,10 @@ class BackgroundDescriptionFetcher:
                                         conn.commit()
                                 
                                 print(f"Updated description for job {db_id}")
+                        elif detail_response.status_code == 429:
+                            # Rate limit hit - skip remaining jobs since limit is account-wide
+                            print(f"Rate limit reached at job {db_id}. Skipping remaining description fetches.")
+                            break  # Exit the loop entirely
                         else:
                             print(f"Error fetching description for job {db_id}: {detail_response.status_code}")
                     
