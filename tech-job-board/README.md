@@ -7,7 +7,7 @@ A full-stack web application that aggregates remote tech job listings in the Uni
 ### Job Listings
 - **Automated Job Aggregation**: Fetches jobs from multiple sources (Remotive, Arbeitnow, Jobicy, JSearch, Jobs API)
 - **Smart Refresh Strategy**: Scheduled refresh twice daily + manual refresh option
-- **AI-Powered Resume Matching**: Uses OpenAI GPT-4o-mini and Sentence Transformers for intelligent job matching
+- **AI-Powered Resume Matching**: Uses Sentence Transformers (all-MiniLM-L6-v2) for intelligent semantic job matching
 - **Resume Parsing**: Supports PDF, DOCX, and TXT formats
 - **Category Filtering**: Filter jobs by AI or Engineering categories
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
@@ -349,6 +349,25 @@ vercel
 - Comprehensive error handling
 - RESTful API design
 
+## 📋 Roadmap / TODO
+
+### Future Features
+- [ ] **LLM-Powered Match Explanations** - Add personalized explanations for top job matches
+  - Generate AI-powered insights explaining why each job is a good fit
+  - Highlight aligned skills and experience
+  - Identify potential gaps to address in applications
+  - Show match reasoning beyond just scores
+  - Expected implementation: Generate explanations for top 5-10 matches only (~2-3 min total)
+
+### Completed
+- [x] Async polling pattern for resume matching (no timeout issues)
+- [x] Model caching optimization (`~/.cache/huggingface`)
+- [x] Progress tracking with granular updates
+- [x] Network error handling with retry logic
+- [x] Job retention policy (10 days)
+- [x] Mobile UI fixes
+- [x] Performance optimization (1-2 min resume matching)
+
 ## 🤝 Contributing
 
 This is a production-ready application built according to specific requirements. For modifications:
@@ -365,7 +384,7 @@ This project is built as a demonstration of AI-powered job matching technology.
 ## 🙏 Acknowledgments
 
 - Job data sourced from Jobicy, JSearch (RapidAPI), and Jobs API (RapidAPI)
-- AI powered by OpenAI GPT-4o-mini
+- AI powered by Sentence Transformers (HuggingFace)
 - UI icons from Lucide React
 
 ---

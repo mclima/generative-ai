@@ -1,5 +1,6 @@
-from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+# LLM imports - commented out for performance, can be re-enabled for match explanations
+# from langchain_openai import ChatOpenAI
+# from langchain.prompts import ChatPromptTemplate
 from typing import List, Dict, Optional
 import re
 import os
@@ -17,14 +18,17 @@ class ResumeMatcher:
     # Class-level model instance for lazy loading (shared across all instances)
     _model: Optional[SentenceTransformer] = None
     
-    def __init__(self):
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
-            api_key=settings.openai_api_key,
-            temperature=0.3,
-            timeout=60.0,  # 60 second timeout
-            max_retries=2
-        )
+    # LLM initialization - commented out for performance
+    # Can be re-enabled later for match explanations feature
+    # def __init__(self):
+    #     self.llm = ChatOpenAI(
+    #         model="gpt-4o-mini",
+    #         api_key=settings.openai_api_key,
+    #         temperature=0,
+    #         timeout=30.0,
+    #         max_retries=1,
+    #         max_tokens=500
+    #     )
     
     @classmethod
     def _get_model(cls) -> SentenceTransformer:
@@ -66,20 +70,9 @@ class ResumeMatcher:
         return matched_jobs
     
     async def _analyze_resume(self, resume_text: str) -> Dict:
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an expert resume analyzer. Extract the following information from the resume:
-            1. Job titles/roles the candidate has held
-            2. Technical skills (programming languages, frameworks, tools)
-            3. Key responsibilities and achievements
-            4. Years of experience (estimate if not explicit)
-            5. Education level
-            
-            Return the analysis in a structured format."""),
-            ("user", "Resume:\n{resume_text}")
-        ])
-        
-        chain = prompt | self.llm
-        response = await chain.ainvoke({"resume_text": resume_text})
+        # Fast regex-based extraction for matching
+        # LLM analysis commented out for performance (was adding 10-20s)
+        # TODO: Re-enable LLM for match explanations feature in the future
         
         skills = self._extract_skills(resume_text)
         job_titles = self._extract_job_titles(resume_text)
@@ -87,9 +80,28 @@ class ResumeMatcher:
         return {
             "raw_text": resume_text,
             "skills": skills,
-            "job_titles": job_titles,
-            "llm_analysis": response.content
+            "job_titles": job_titles
         }
+        
+        # LLM analysis code - preserved for future match explanations feature:
+        # prompt = ChatPromptTemplate.from_messages([
+        #     ("system", "Extract from this resume: 1) All technical skills (programming languages, frameworks, tools, technologies) 2) Job titles/roles held 3) Years of experience. List skills as comma-separated. Be thorough but concise."),
+        #     ("user", "{resume_text}")
+        # ])
+        # chain = prompt | self.llm
+        # llm_task = chain.ainvoke({"resume_text": resume_text[:3000]})
+        # try:
+        #     response = await llm_task
+        #     llm_summary = response.content
+        # except Exception as e:
+        #     print(f"LLM analysis failed: {e}")
+        #     llm_summary = "LLM analysis unavailable"
+        # return {
+        #     "raw_text": resume_text,
+        #     "skills": skills,
+        #     "job_titles": job_titles,
+        #     "llm_summary": llm_summary
+        # }
     
     def _extract_skills(self, text: str) -> List[str]:
         common_skills = [
