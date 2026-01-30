@@ -42,7 +42,7 @@ class BackgroundDescriptionFetcher:
                         # Extract LinkedIn job ID from our job_id format (jobsapi_XXXXX)
                         linkedin_id = job_id.replace("jobsapi_", "")
                         
-                        await asyncio.sleep(1)  # Rate limit between requests
+                        await asyncio.sleep(2)  # Rate limit between requests (2 seconds to avoid 429 errors)
                         
                         detail_response = await client.get(
                             f"https://jobs-api14.p.rapidapi.com/v2/linkedin/get",

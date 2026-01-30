@@ -20,7 +20,7 @@ const formatJobDescription = (description: string): string => {
 
 export default function JobDetails({ job }: JobDetailsProps) {
   return (
-    <div className="h-full overflow-y-auto px-6">
+    <div className="h-full overflow-y-scroll px-6 job-details-scroll">
       <div className="bg-gray-900 rounded-xl border border-gray-800 shadow-xl">
         <div className="p-8">
           <div className="mb-8">

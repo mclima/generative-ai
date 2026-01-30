@@ -107,7 +107,7 @@ class JobAggregator:
                     "query": "(software engineer OR software developer OR backend engineer OR frontend engineer OR full stack engineer OR data engineer OR data scientist OR machine learning engineer OR AI engineer OR generative AI OR LLM) in USA",
                     "page": "1",
                     "num_pages": "1",
-                    "date_posted": "month",
+                    "date_posted": "week",
                     "remote_jobs_only": "true"
                 }
                 
@@ -148,7 +148,7 @@ class JobAggregator:
                     "location": "United States",
                     "workplaceTypes": "remote",
                     "employmentTypes": "fulltime",
-                    "datePosted": "month"
+                    "datePosted": "week"
                 }
                 
                 for page in range(3):  # Fetch up to 3 pages
@@ -185,7 +185,7 @@ class JobAggregator:
                     "location": "United States",
                     "workplaceTypes": "remote",
                     "employmentTypes": "fulltime",
-                    "datePosted": "month"
+                    "datePosted": "week"
                 }
                 
                 for page in range(3):  # Fetch up to 3 pages
@@ -222,7 +222,7 @@ class JobAggregator:
                     "location": "United States",
                     "workplaceTypes": "remote",
                     "employmentTypes": "fulltime",
-                    "datePosted": "month"
+                    "datePosted": "week"
                 }
                 
                 for page in range(3):  # Fetch up to 3 pages
@@ -259,7 +259,7 @@ class JobAggregator:
     def _normalize_jobicy_jobs(self, jobs: List[Dict]) -> List[Dict]:
         normalized = []
         from datetime import timezone
-        ten_days_ago = datetime.now(timezone.utc) - timedelta(days=10)
+        one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
         total_jobs = len(jobs)
         filtered_by_date = 0
         filtered_by_keyword = 0
@@ -273,7 +273,7 @@ class JobAggregator:
                 # Parse ISO format date
                 posted_date = datetime.fromisoformat(posted_date_str.replace("Z", "+00:00"))
                 
-                if posted_date < ten_days_ago:
+                if posted_date < one_week_ago:
                     filtered_by_date += 1
                     continue
                 
@@ -328,7 +328,7 @@ class JobAggregator:
     def _normalize_jsearch_jobs(self, jobs: List[Dict]) -> List[Dict]:
         normalized = []
         from datetime import timezone
-        ten_days_ago = datetime.now(timezone.utc) - timedelta(days=10)
+        one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
         
         for job in jobs:
             try:
@@ -339,7 +339,7 @@ class JobAggregator:
                 
                 posted_date = datetime.fromtimestamp(posted_date_timestamp, tz=timezone.utc)
                 
-                if posted_date < ten_days_ago:
+                if posted_date < one_week_ago:
                     continue
                 
                 title = job.get("job_title", "")
@@ -396,7 +396,7 @@ class JobAggregator:
     def _normalize_jobs_api_jobs(self, jobs: List[Dict]) -> List[Dict]:
         normalized = []
         from datetime import timezone
-        ten_days_ago = datetime.now(timezone.utc) - timedelta(days=10)
+        one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
         
         for job in jobs:
             try:
@@ -409,7 +409,7 @@ class JobAggregator:
                 posted_date = datetime.strptime(posted_date_str, "%Y-%m-%d")
                 posted_date = posted_date.replace(tzinfo=timezone.utc)
                 
-                if posted_date < ten_days_ago:
+                if posted_date < one_week_ago:
                     continue
                 
                 title = job.get("title", "")

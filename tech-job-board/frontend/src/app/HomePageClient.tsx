@@ -133,7 +133,7 @@ export default function HomePageClient() {
           <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 mb-4 flex gap-3">
           <Info size={20} className="text-primary flex-shrink-0 mt-0.5" />
           <p className="text-sm text-gray-300">
-              Showing jobs posted within the last 10 days.
+              Showing jobs posted within the last week.
             </p>
           </div>
 
@@ -146,7 +146,7 @@ export default function HomePageClient() {
                     {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'} last refreshed {formatDistanceToNow(lastRefresh, { addSuffix: true })}.
                   </p>
                   <p>
-                    Jobs refresh automatically at 2:15 PM and 3:15 AM EST, but you can manually refresh them at any time by pressing the refresh button.
+                    Jobs refresh automatically around 2:30 PM and 3:30 AM EST, but you can manually refresh them at any time by pressing the refresh button.
                   </p>
                 </div>
               </div>
@@ -211,8 +211,8 @@ export default function HomePageClient() {
       ) : (
         <>
           <div className="flex-1 overflow-hidden flex flex-col">
-            <div className="flex-1 overflow-hidden flex">
-              <div className="w-full lg:w-2/5 xl:w-1/3 border-r border-gray-800 overflow-y-auto bg-black">
+            <div className="overflow-hidden flex" style={{ height: 'calc(100vh - 400px)', minHeight: '500px' }}>
+              <div className="w-full lg:w-2/5 xl:w-1/3 border-r border-gray-800 overflow-y-scroll bg-black job-list-scroll" style={{ height: '100%' }}>
                 <div className="w-full pb-4">
                   {jobs.map((job) => (
                     <JobListItem
@@ -225,7 +225,7 @@ export default function HomePageClient() {
                 </div>
               </div>
 
-              <div className="hidden lg:block lg:w-3/5 xl:w-2/3 bg-black overflow-hidden">
+              <div className="hidden lg:block lg:w-3/5 xl:w-2/3 bg-black" style={{ height: '100%' }}>
                 {selectedJob ? (
                   <JobDetails job={selectedJob} />
                 ) : (

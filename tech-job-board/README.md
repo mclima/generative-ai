@@ -12,7 +12,7 @@ A full-stack web application that aggregates remote tech job listings in the Uni
 - **Resume Parsing**: Supports PDF, DOCX, and TXT formats
 - **Category Filtering**: Filter jobs by AI or Engineering categories
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Job Retention Policy**: Automatically removes jobs older than 10 days, displays only jobs from last 10 days
+- **Job Retention Policy**: Automatically removes jobs older than 1 week, displays only jobs from last 7 days
 
 ### AI-Powered Resume Matching
 - **Multi-Format Support**: Upload PDF, DOCX, or TXT files, or paste resume text

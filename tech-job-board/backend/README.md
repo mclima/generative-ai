@@ -12,7 +12,7 @@ Python FastAPI backend for the Tech Job Board application with AI-powered resume
 - Resume parsing (PDF, DOCX, TXT)
 - RESTful API endpoints
 - Direct PostgreSQL database operations with connection pooling
-- Automatic job retention: Jobs older than 10 days are deleted, only jobs from last 10 days are displayed
+- Automatic job retention: Jobs older than 1 week are deleted, only jobs from last 7 days are displayed
 
 ## API Sources
 
@@ -54,7 +54,7 @@ After the fast refresh completes, a background task automatically fetches full j
 - Initial refresh: 4 to 12 calls
 - Background descriptions: 0 to N additional calls (roughly 1 per Jobs API job missing a full description)
 
-All jobs are filtered for remote USA positions, posted within the last 10 days, and categorized based on comprehensive keyword matching. Jobs with title "AI/ML Developer" from DataAnnotation are automatically excluded.
+All jobs are filtered for remote USA positions, posted within the last week (7 days), and categorized based on comprehensive keyword matching. Jobs with title "AI/ML Developer" from DataAnnotation are automatically excluded.
 
 ## Setup
 
