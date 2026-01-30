@@ -69,10 +69,7 @@ class ResumeMatcher:
         return matched_jobs
     
     async def _analyze_resume(self, resume_text: str) -> Dict:
-        # Fast regex-based extraction for matching
-        # LLM analysis commented out for performance (was adding 10-20s)
-        # TODO: Re-enable LLM for match explanations feature in the future
-        
+        # Fast regex-based extraction for matching    
         skills = self._extract_skills(resume_text)
         job_titles = self._extract_job_titles(resume_text)
         
@@ -81,26 +78,6 @@ class ResumeMatcher:
             "skills": skills,
             "job_titles": job_titles
         }
-        
-        # LLM analysis code - preserved for future match explanations feature:
-        # prompt = ChatPromptTemplate.from_messages([
-        #     ("system", "Extract from this resume: 1) All technical skills (programming languages, frameworks, tools, technologies) 2) Job titles/roles held 3) Years of experience. List skills as comma-separated. Be thorough but concise."),
-        #     ("user", "{resume_text}")
-        # ])
-        # chain = prompt | self.llm
-        # llm_task = chain.ainvoke({"resume_text": resume_text[:3000]})
-        # try:
-        #     response = await llm_task
-        #     llm_summary = response.content
-        # except Exception as e:
-        #     print(f"LLM analysis failed: {e}")
-        #     llm_summary = "LLM analysis unavailable"
-        # return {
-        #     "raw_text": resume_text,
-        #     "skills": skills,
-        #     "job_titles": job_titles,
-        #     "llm_summary": llm_summary
-        # }
     
     async def _add_match_explanations(self, matched_jobs: List[Dict], resume_analysis: Dict, progress_callback=None) -> None:
         """

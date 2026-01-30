@@ -142,7 +142,7 @@ class JobAggregator:
                 }
                 
                 # Query 1: Broad query to capture tech jobs
-                # Fetch multiple pages (up to 5 pages = ~50 jobs)
+                # Fetch multiple pages (up to 3 pages = ~30 jobs)
                 params = {
                     "query": "software engineer developer",
                     "location": "United States",
@@ -150,7 +150,7 @@ class JobAggregator:
                     "employmentTypes": "fulltime"
                 }
                 
-                for page in range(5):  # Fetch up to 5 pages
+                for page in range(3):  # Fetch up to 3 pages
                     response = await client.get(
                         "https://jobs-api14.p.rapidapi.com/v2/linkedin/search",
                         headers=headers,
@@ -178,7 +178,7 @@ class JobAggregator:
                 await asyncio.sleep(1)
                 
                 # Query 2: Targeted query for AI/ML roles
-                # Fetch multiple pages (up to 5 pages = ~50 jobs)
+                # Fetch multiple pages (up to 3 pages = ~30 jobs)
                 ai_params = {
                     "query": "AI machine learning engineer",
                     "location": "United States",
@@ -186,7 +186,7 @@ class JobAggregator:
                     "employmentTypes": "fulltime"
                 }
                 
-                for page in range(5):  # Fetch up to 5 pages
+                for page in range(3):  # Fetch up to 3 pages
                     ai_response = await client.get(
                         "https://jobs-api14.p.rapidapi.com/v2/linkedin/search",
                         headers=headers,
@@ -208,6 +208,42 @@ class JobAggregator:
                         await asyncio.sleep(1)  # Rate limit between pages
                     else:
                         print(f"Jobs API error (AI): {ai_response.status_code}")
+                        break
+                
+                # Wait 1 second to respect rate limit
+                await asyncio.sleep(1)
+                
+                # Query 3: Targeted query for Generative AI/LLM roles
+                # Fetch multiple pages (up to 3 pages = ~30 jobs)
+                genai_params = {
+                    "query": "generative AI LLM engineer",
+                    "location": "United States",
+                    "workplaceTypes": "remote",
+                    "employmentTypes": "fulltime"
+                }
+                
+                for page in range(3):  # Fetch up to 3 pages
+                    genai_response = await client.get(
+                        "https://jobs-api14.p.rapidapi.com/v2/linkedin/search",
+                        headers=headers,
+                        params=genai_params
+                    )
+                    
+                    if genai_response.status_code == 200:
+                        genai_data = genai_response.json()
+                        genai_jobs = genai_data.get("data", [])
+                        all_jobs.extend(genai_jobs)
+                        
+                        # Check for next page token
+                        next_token = genai_data.get("meta", {}).get("nextToken")
+                        if not next_token or len(genai_jobs) == 0:
+                            break
+                        
+                        # Use token for next page
+                        genai_params = {"token": next_token}
+                        await asyncio.sleep(1)  # Rate limit between pages
+                    else:
+                        print(f"Jobs API error (GenAI): {genai_response.status_code}")
                         break
                 
                 # Return jobs without descriptions for fast refresh
