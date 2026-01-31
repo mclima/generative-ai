@@ -70,7 +70,6 @@ The app uses:
 - **Keyboard Navigation**: Full keyboard support for all controls
 - **Screen Reader Support**: ARIA labels and semantic HTML
 - **High Contrast**: Dark theme with black background optimized for visibility
-- **Test Audio Button**: Verify speech synthesis is working
 
 ## Deployment to Vercel
 
@@ -147,6 +146,34 @@ The app is already optimized for Vercel:
 - ✅ WebGL backend for GPU acceleration
 - ✅ Browser caching for model files
 
+## Making Updates
+
+### After making code changes:
+
+1. **Push to GitHub**:
+```bash
+cd /Users/marialima/github/generative-ai/vision-assist
+git add .
+git commit -m "Your commit message"
+git push
+```
+
+2. **Deploy to Vercel**:
+```bash
+vercel --prod
+```
+
+### Optional: Enable Automatic Deployments
+
+Connect GitHub to Vercel for automatic deployments on every push:
+
+1. Go to [vercel.com](https://vercel.com) → Your project → **Settings** → **Git**
+2. Click **Connect Git Repository**
+3. Select your `generative-ai` repository
+4. Set root directory to `vision-assist`
+
+Once connected, every push to `main` branch automatically deploys to production. You'll only need to push to GitHub - Vercel handles deployment automatically.
+
 ## Browser Compatibility
 
 - ✅ **Chrome/Edge** (recommended) - Best WebGL and speech synthesis support
@@ -156,7 +183,7 @@ The app is already optimized for Vercel:
 
 ### Known Issues
 
-- Speech synthesis may not work in some browsers - use the "Test Audio" button to verify
+- Speech synthesis may not work in some browsers - verify with the audio toggle in control panel
 - Browser extensions may cause hydration warnings (harmless, can be ignored)
 
 ## Privacy
@@ -172,8 +199,8 @@ VisionAssist is completely privacy-focused:
 ### No Audio
 - Check system volume is not muted
 - Try Chrome browser (best speech synthesis support)
-- Click "Test Audio" button to verify speech works
 - Check browser permissions for audio
+- Verify audio toggle is enabled in the control panel
 
 ### Low FPS on Mobile
 - Lower confidence threshold to 30-40%

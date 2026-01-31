@@ -58,17 +58,6 @@ export function ControlPanel({
                 Stop All
               </Button>
             )}
-            <Button
-              onClick={() => {
-                const utterance = new SpeechSynthesisUtterance('Test audio');
-                utterance.volume = 1.0;
-                speechSynthesis.speak(utterance);
-              }}
-              variant="secondary"
-              size="sm"
-            >
-              Test Audio
-            </Button>
           </div>
         </div>
 

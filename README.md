@@ -5,10 +5,12 @@ This repository contains multiple AI-powered applications:
 - **constitution-assistant** - Constitutional law assistant application
 - **groq-chatbot** - Chatbot powered by Groq
 - **image-generator** - AI image generation tool
+- **newsgenie** - AI-powered news aggregation and summarization
 - **research-assistant** - Research assistance tool
 - **stock-agent** - AI-powered stock analysis dashboard
 - **tech-job-board** - AI-powered job board
 - **task-maestro** - Task management application
+- **vision-assist** - Real-time object detection for visually impaired users
 
 ## Vercel Deployment Configuration
 
@@ -70,6 +72,28 @@ To add a custom subdomain for your Vercel-deployed apps:
 - `stock-agent.yourdomain.com` → Stock Agent app
 - `chatbot.yourdomain.com` → Groq Chatbot
 - `tasks.yourdomain.com` → Task Maestro
+
+## Featured Projects
+
+### VisionAssist
+Real-time object detection web app using TensorFlow.js and COCO-SSD model. Designed to assist visually impaired users by identifying nearby objects with audio announcements. Features include:
+- 🎯 Detects 90 common objects in real-time
+- 🔒 Privacy-first (all processing in browser)
+- ♿ Audio feedback with smart announcements
+- 📊 Performance metrics (50-60 FPS on M3 Pro)
+- 🎨 Dark theme with accessible UI
+
+[View Project →](./vision-assist)
+
+### Stock Agent
+AI-powered stock analysis dashboard with real-time market data and intelligent insights.
+
+[View Project →](./stock-agent)
+
+### Tech Job Board
+AI-powered job board with intelligent matching and recommendations.
+
+[View Project →](./tech-job-board)
 
 ## Getting Started
 
