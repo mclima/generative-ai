@@ -259,7 +259,7 @@ class JobAggregator:
     def _normalize_jobicy_jobs(self, jobs: List[Dict]) -> List[Dict]:
         normalized = []
         from datetime import timezone
-        one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        one_week_ago = datetime.now(timezone.utc) - timedelta(days=8)
         total_jobs = len(jobs)
         filtered_by_date = 0
         filtered_by_keyword = 0
@@ -328,7 +328,7 @@ class JobAggregator:
     def _normalize_jsearch_jobs(self, jobs: List[Dict]) -> List[Dict]:
         normalized = []
         from datetime import timezone
-        one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        one_week_ago = datetime.now(timezone.utc) - timedelta(days=8)
         
         for job in jobs:
             try:
@@ -396,7 +396,7 @@ class JobAggregator:
     def _normalize_jobs_api_jobs(self, jobs: List[Dict]) -> List[Dict]:
         normalized = []
         from datetime import timezone
-        one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        one_week_ago = datetime.now(timezone.utc) - timedelta(days=8)
         
         for job in jobs:
             try:
