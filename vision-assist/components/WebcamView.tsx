@@ -39,7 +39,7 @@ export const WebcamView = forwardRef<Webcam, WebcamViewProps>(
         ) : (
           <div className="text-gray-400 text-center p-8">
             <p className="text-lg">Camera not active</p>
-            <p className="text-sm mt-2">Click "Start Detection" to begin</p>
+            <p className="text-sm mt-2">Click "Activate Camera" to begin</p>
           </div>
         )}
       </div>
