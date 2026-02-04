@@ -107,7 +107,7 @@ export default function JobDetailsClientPage() {
 
             <div className="flex items-center gap-2">
               <Calendar size={20} className="text-gray-400" />
-              <span>Posted {formatDate(job.posted_date)}</span>
+              <span>Posted {formatDate(job.created_at)}</span>
             </div>
 
             {job.salary && (

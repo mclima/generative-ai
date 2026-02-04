@@ -43,7 +43,7 @@ export default function MatchedJobCard({ job }: MatchedJobCardProps) {
         
         <div className="flex items-center gap-2 text-gray-300">
           <Calendar size={16} className="text-gray-400" />
-          <span className="text-sm">{formatDate(job.posted_date)}</span>
+          <span className="text-sm">Posted {formatDate(job.created_at)}</span>
         </div>
         
         <div className="flex items-center gap-2">

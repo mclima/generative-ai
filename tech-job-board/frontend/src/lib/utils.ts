@@ -1,8 +1,22 @@
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, isToday, isYesterday, differenceInDays } from 'date-fns'
 
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
-  return formatDistanceToNow(date, { addSuffix: true })
+  
+  if (isToday(date)) {
+    return 'today'
+  }
+  
+  if (isYesterday(date)) {
+    return 'yesterday'
+  }
+  
+  const daysAgo = differenceInDays(new Date(), date)
+  if (daysAgo <= 7) {
+    return `${daysAgo} ${daysAgo === 1 ? 'day' : 'days'} ago`
+  }
+  
+  return formatDistanceToNow(date, { addSuffix: true, includeSeconds: false })
 }
 
 export const getMatchColor = (score: number): string => {

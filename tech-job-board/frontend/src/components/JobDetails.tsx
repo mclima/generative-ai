@@ -39,7 +39,7 @@ export default function JobDetails({ job }: JobDetailsProps) {
               
               <div className="flex items-center gap-3">
                 <Calendar size={20} className="text-gray-400" />
-                <span>Posted {formatDate(job.posted_date)}</span>
+                <span>Posted {formatDate(job.created_at)}</span>
               </div>
               
               {job.salary && (

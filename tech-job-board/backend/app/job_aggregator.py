@@ -406,8 +406,10 @@ class JobAggregator:
                     continue
                 
                 # Parse date string (YYYY-MM-DD format)
-                posted_date = datetime.strptime(posted_date_str, "%Y-%m-%d")
-                posted_date = posted_date.replace(tzinfo=timezone.utc)
+                # Since API only provides date (no time), use current time to avoid showing jobs as ~24 hours old
+                date_only = datetime.strptime(posted_date_str, "%Y-%m-%d").date()
+                now = datetime.now(timezone.utc)
+                posted_date = datetime.combine(date_only, now.time(), tzinfo=timezone.utc)
                 
                 if posted_date < one_week_ago:
                     continue

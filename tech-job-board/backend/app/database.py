@@ -42,10 +42,10 @@ def init_db():
                     description TEXT,
                     category VARCHAR(100),
                     source VARCHAR(100),
-                    posted_date TIMESTAMP,
+                    posted_date TIMESTAMPTZ,
                     salary VARCHAR(255),
                     apply_url TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                     embedding_full TEXT,
                     embedding_responsibilities TEXT,
                     embedding_requirements TEXT
@@ -58,7 +58,7 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS refresh_logs (
                     id SERIAL PRIMARY KEY,
                     refresh_type VARCHAR(50),
-                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                     jobs_added INTEGER DEFAULT 0
                 );
                 
