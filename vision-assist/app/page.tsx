@@ -25,6 +25,8 @@ export default function Home() {
   const lastAnnouncementRef = useRef<string>('');
   const lastAnnouncementTimeRef = useRef<number>(0);
   const audioEnabledRef = useRef<boolean>(true);
+  const isSpeakingRef = useRef<boolean>(false);
+  const speechDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const { isActive: isWebcamActive, error: webcamError, startWebcam, stopWebcam } = useWebcam();
   const {
@@ -43,8 +45,13 @@ export default function Home() {
     if (isDetecting) {
       stopDetection();
       speechSynthesis.cancel();
+      if (speechDebounceTimerRef.current) {
+        clearTimeout(speechDebounceTimerRef.current);
+        speechDebounceTimerRef.current = null;
+      }
       lastAnnouncementRef.current = '';
       lastAnnouncementTimeRef.current = 0;
+      isSpeakingRef.current = false;
       setIsDetecting(false);
       setDetections([]);
     } else if (isWebcamActive && videoElement) {
@@ -66,17 +73,33 @@ export default function Home() {
                 lastAnnouncementRef.current = objectNames;
                 lastAnnouncementTimeRef.current = now;
                 
-                if (speechSynthesis.speaking) {
-                  speechSynthesis.cancel();
+                if (speechDebounceTimerRef.current) {
+                  clearTimeout(speechDebounceTimerRef.current);
                 }
                 
-                setTimeout(() => {
+                speechDebounceTimerRef.current = setTimeout(() => {
+                  if (isSpeakingRef.current) {
+                    return;
+                  }
+                  
+                  isSpeakingRef.current = true;
+                  
                   const text = `Detected ${objectNames.replace(/,/g, ' and')}`;
                   const utterance = new SpeechSynthesisUtterance(text);
                   utterance.volume = 1.0;
                   utterance.lang = 'en-US';
+                  utterance.rate = 0.9;
+                  
+                  utterance.onend = () => {
+                    isSpeakingRef.current = false;
+                  };
+                  
+                  utterance.onerror = () => {
+                    isSpeakingRef.current = false;
+                  };
+                  
                   speechSynthesis.speak(utterance);
-                }, 100);
+                }, 500);
               }
             }
           });
@@ -96,8 +119,13 @@ export default function Home() {
     stopDetection();
     stopWebcam();
     speechSynthesis.cancel();
+    if (speechDebounceTimerRef.current) {
+      clearTimeout(speechDebounceTimerRef.current);
+      speechDebounceTimerRef.current = null;
+    }
     lastAnnouncementRef.current = '';
     lastAnnouncementTimeRef.current = 0;
+    isSpeakingRef.current = false;
     audioEnabledRef.current = false;
     setIsDetecting(false);
     setDetections([]);
