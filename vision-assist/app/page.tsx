@@ -150,7 +150,7 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white">
       <header className="border-b border-gray-800 bg-black/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-3">
               <Eye className="w-8 h-8 text-blue-500" />
               <div>
