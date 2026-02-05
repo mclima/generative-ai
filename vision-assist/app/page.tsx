@@ -60,6 +60,13 @@ export default function Home() {
       lastAnnouncementTimeRef.current = 0;
       setSettings(prev => ({ ...prev, enableAudio: true }));
       
+      // Initialize speech synthesis for mobile browsers
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance('');
+        speechSynthesis.speak(utterance);
+        speechSynthesis.cancel();
+      }
+      
       setTimeout(() => {
         if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
           startDetection(videoElement, (newDetections) => {
