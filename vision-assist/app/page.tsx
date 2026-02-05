@@ -75,7 +75,7 @@ export default function Home() {
           startDetection(videoElement, (newDetections) => {
             setDetections(newDetections);
             
-            if (audioEnabledRef.current && newDetections.length > 0) {
+            if (audioEnabledRef.current) {
               // Update detection history
               const currentObjects = new Set(newDetections.map(d => d.class));
               const history = detectionHistoryRef.current;
@@ -85,15 +85,10 @@ export default function Home() {
                 history.set(obj, (history.get(obj) || 0) + 1);
               });
               
-              // Decrement count for objects not detected
+              // Remove objects not currently detected
               Array.from(history.keys()).forEach(obj => {
                 if (!currentObjects.has(obj)) {
-                  const count = history.get(obj)! - 1;
-                  if (count <= 0) {
-                    history.delete(obj);
-                  } else {
-                    history.set(obj, count);
-                  }
+                  history.delete(obj);
                 }
               });
               
