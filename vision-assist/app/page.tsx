@@ -27,6 +27,8 @@ export default function Home() {
   const audioEnabledRef = useRef<boolean>(true);
   const isSpeakingRef = useRef<boolean>(false);
   const speechDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const detectionHistoryRef = useRef<Map<string, number>>(new Map());
+  const REQUIRED_DETECTIONS = 3;
 
   const { isActive: isWebcamActive, error: webcamError, startWebcam, stopWebcam } = useWebcam();
   const {
@@ -52,6 +54,7 @@ export default function Home() {
       lastAnnouncementRef.current = '';
       lastAnnouncementTimeRef.current = 0;
       isSpeakingRef.current = false;
+      detectionHistoryRef.current.clear();
       setIsDetecting(false);
       setDetections([]);
     } else if (isWebcamActive && videoElement) {
@@ -73,40 +76,69 @@ export default function Home() {
             setDetections(newDetections);
             
             if (audioEnabledRef.current && newDetections.length > 0) {
-              const objectNames = newDetections.map(d => d.class).sort().join(', ');
-              const now = Date.now();
+              // Update detection history
+              const currentObjects = new Set(newDetections.map(d => d.class));
+              const history = detectionHistoryRef.current;
               
-              if (objectNames !== lastAnnouncementRef.current || now - lastAnnouncementTimeRef.current > 5000) {
-                lastAnnouncementRef.current = objectNames;
-                lastAnnouncementTimeRef.current = now;
-                
-                if (speechDebounceTimerRef.current) {
-                  clearTimeout(speechDebounceTimerRef.current);
+              // Increment count for detected objects
+              currentObjects.forEach(obj => {
+                history.set(obj, (history.get(obj) || 0) + 1);
+              });
+              
+              // Decrement count for objects not detected
+              Array.from(history.keys()).forEach(obj => {
+                if (!currentObjects.has(obj)) {
+                  const count = history.get(obj)! - 1;
+                  if (count <= 0) {
+                    history.delete(obj);
+                  } else {
+                    history.set(obj, count);
+                  }
                 }
+              });
+              
+              // Only announce objects detected consistently
+              const confirmedObjects = Array.from(history.entries())
+                .filter(([_, count]) => count >= REQUIRED_DETECTIONS)
+                .map(([obj, _]) => obj)
+                .sort();
+              
+              if (confirmedObjects.length > 0) {
+                const objectNames = confirmedObjects.join(', ');
+                const now = Date.now();
                 
-                speechDebounceTimerRef.current = setTimeout(() => {
-                  if (isSpeakingRef.current) {
-                    return;
+                if (objectNames !== lastAnnouncementRef.current || now - lastAnnouncementTimeRef.current > 5000) {
+                  lastAnnouncementRef.current = objectNames;
+                  lastAnnouncementTimeRef.current = now;
+                  
+                  if (speechDebounceTimerRef.current) {
+                    clearTimeout(speechDebounceTimerRef.current);
                   }
                   
-                  isSpeakingRef.current = true;
-                  
-                  const text = `Detected ${objectNames.replace(/,/g, ' and')}`;
-                  const utterance = new SpeechSynthesisUtterance(text);
-                  utterance.volume = 1.0;
-                  utterance.lang = 'en-US';
-                  utterance.rate = 0.9;
-                  
-                  utterance.onend = () => {
-                    isSpeakingRef.current = false;
-                  };
-                  
-                  utterance.onerror = () => {
-                    isSpeakingRef.current = false;
-                  };
-                  
-                  speechSynthesis.speak(utterance);
-                }, 500);
+                  speechDebounceTimerRef.current = setTimeout(() => {
+                    if (isSpeakingRef.current) {
+                      return;
+                    }
+                    
+                    isSpeakingRef.current = true;
+                    
+                    const text = `Detected ${objectNames.replace(/,/g, ' and')}`;
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.volume = 1.0;
+                    utterance.lang = 'en-US';
+                    utterance.rate = 0.9;
+                    
+                    utterance.onend = () => {
+                      isSpeakingRef.current = false;
+                    };
+                    
+                    utterance.onerror = () => {
+                      isSpeakingRef.current = false;
+                    };
+                    
+                    speechSynthesis.speak(utterance);
+                  }, 500);
+                }
               }
             }
           });
@@ -133,6 +165,7 @@ export default function Home() {
     lastAnnouncementRef.current = '';
     lastAnnouncementTimeRef.current = 0;
     isSpeakingRef.current = false;
+    detectionHistoryRef.current.clear();
     audioEnabledRef.current = false;
     setIsDetecting(false);
     setDetections([]);
