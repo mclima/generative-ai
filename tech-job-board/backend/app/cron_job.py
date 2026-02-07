@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Cron job script to refresh jobs daily at 3am EST.
+Cron job script to refresh jobs daily at 3pm EST.
 This script should be scheduled using cron or a task scheduler.
 
-Example crontab entry (runs at 3am EST daily):
-0 8 * * * cd /path/to/tech-job-board/backend && /path/to/venv/bin/python app/cron_job.py
+Example crontab entry (runs at 3pm EST daily):
+0 20 * * * cd /path/to/tech-job-board/backend && /path/to/venv/bin/python app/cron_job.py
 
-Note: 8am UTC = 3am EST (UTC-5)
+Note: 8pm UTC = 3pm EST (UTC-5)
 """
 import asyncio
 import sys
@@ -21,7 +21,7 @@ from app.services import JobService
 
 async def run_daily_refresh():
     """Run the daily job refresh"""
-    print("Starting daily job refresh at 3am EST...")
+    print("Starting daily job refresh at 3pm EST...")
     
     try:
         with get_db() as conn:

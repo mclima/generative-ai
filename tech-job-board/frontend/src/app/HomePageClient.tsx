@@ -146,7 +146,7 @@ export default function HomePageClient() {
                     {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'} last refreshed {formatDistanceToNow(lastRefresh, { addSuffix: true })}.
                   </p>
                   <p>
-                    Jobs refresh automatically around 2:30 PM and 3:30 AM EST, but you can manually refresh them at any time by pressing the refresh button.
+                    Jobs refresh automatically around 3:00 PM EST, but you can manually refresh them at any time by pressing the refresh button.
                   </p>
                 </div>
               </div>

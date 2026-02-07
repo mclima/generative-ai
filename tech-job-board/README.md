@@ -238,8 +238,7 @@ This project schedules refresh runs via GitHub Actions:
 - Workflow: `.github/workflows/refresh-jobs.yml`
 - Endpoint called: `POST /api/jobs/refresh`
 - Schedule (UTC):
-  - `0 8 * * *` (3am ET in winter)
-  - `0 19 * * *` (2pm ET in winter)
+  - `0 20 * * *` (3pm EST)
 
 If you prefer a local cron for development, you can still use `backend/setup_cron.sh`.
 
