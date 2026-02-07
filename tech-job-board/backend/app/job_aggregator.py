@@ -9,15 +9,15 @@ CATEGORIES = ["AI", "Engineering"]
 
 # Shared list of required title keywords for tech job filtering
 REQUIRED_TITLE_KEYWORDS = [
+    "ai engineer", "ai developer",
+    "artificial intelligence engineer", "nlp engineer", "computer vision engineer", "applied ai engineer", "gen ai developer", "agentic ai architect", "prompt engineer", "ai/ml developer",
     "software engineer", "software developer", "backend engineer", "backend developer",
     "frontend engineer", "frontend developer", "front-end engineer", "front-end developer",
     "full stack engineer", "full stack developer", "fullstack engineer", "fullstack developer",
     "data engineer", "data scientist", "ml engineer", "ml developer", 
-    "machine learning engineer", "ai engineer", "ai developer",
-    "artificial intelligence engineer", "nlp engineer", "computer vision engineer",
+    "machine learning engineer", 
     "ai agent developer", "genai agent engineer", "generative ai engineer", "agentic ai engineer",
-    "ai software engineer", "applied ai engineer", "gen ai developer", "agentic ai architect",
-    "prompt engineer", "ai/ml developer",
+    "ai software engineer", 
     "cloud engineer", "platform engineer", "infrastructure engineer",
     "web developer", "mobile developer", "ios developer", "android developer",
     "react developer", "python developer", "java developer", "javascript developer",
@@ -144,7 +144,7 @@ class JobAggregator:
                 # Query 1: Broad query to capture tech jobs
                 # Fetch multiple pages (up to 3 pages = ~30 jobs)
                 params = {
-                    "query": "software engineer developer",
+                    "query": "AI engineer generative AI LLM agentic AI",
                     "location": "United States",
                     "workplaceTypes": "remote",
                     "employmentTypes": "fulltime",
@@ -180,8 +180,7 @@ class JobAggregator:
                 
                 # Query 2: Targeted query for AI/ML roles
                 # Fetch multiple pages (up to 3 pages = ~30 jobs)
-                ai_params = {
-                    "query": "AI machine learning engineer",
+                ai_params = {"query": "machine learning engineer applied scientist",
                     "location": "United States",
                     "workplaceTypes": "remote",
                     "employmentTypes": "fulltime",
@@ -215,10 +214,10 @@ class JobAggregator:
                 # Wait 1 second to respect rate limit
                 await asyncio.sleep(1)
                 
-                # Query 3: Targeted query for Generative AI/LLM roles
-                # Fetch multiple pages (up to 3 pages = ~30 jobs)
+                #Query 3: Targeted query for Generative AI/LLM roles
+                #Fetch multiple pages (up to 3 pages = ~30 jobs)
                 genai_params = {
-                    "query": "generative AI LLM engineer",
+                    "query": "software engineer developer",
                     "location": "United States",
                     "workplaceTypes": "remote",
                     "employmentTypes": "fulltime",
