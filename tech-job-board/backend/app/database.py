@@ -3,6 +3,10 @@ from psycopg2.extras import RealDictCursor
 from psycopg2.pool import SimpleConnectionPool
 from contextlib import contextmanager
 from app.config import settings
+import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 connection_pool = None
 
@@ -12,22 +16,58 @@ def get_connection_pool():
         connection_pool = SimpleConnectionPool(
             minconn=1,
             maxconn=10,
-            dsn=settings.database_url
+            dsn=settings.database_url,
+            connect_timeout=10,  # 10 second timeout
+            keepalives=1,
+            keepalives_idle=30,
+            keepalives_interval=10,
+            keepalives_count=5
         )
     return connection_pool
 
 @contextmanager
 def get_db():
     pool = get_connection_pool()
-    conn = pool.getconn()
+    conn = None
+    max_retries = 3
+    retry_delay = 1  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            conn = pool.getconn()
+            
+            # Test connection is alive
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+            
+            break  # Connection successful
+            
+        except (psycopg2.OperationalError, psycopg2.InterfaceError) as e:
+            logger.warning(f"Database connection attempt {attempt + 1}/{max_retries} failed: {e}")
+            
+            if conn:
+                try:
+                    pool.putconn(conn, close=True)
+                except:
+                    pass
+                conn = None
+            
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
+            else:
+                logger.error(f"Failed to connect to database after {max_retries} attempts")
+                raise
+    
     try:
         yield conn
         conn.commit()
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise e
     finally:
-        pool.putconn(conn)
+        if conn:
+            pool.putconn(conn)
 
 def init_db():
     with get_db() as conn:

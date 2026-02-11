@@ -21,6 +21,8 @@ export default function HomePageClient() {
   const [countdown, setCountdown] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
+  const [showingCachedData, setShowingCachedData] = useState(false)
+  const [cacheTime, setCacheTime] = useState<Date | null>(null)
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [showMobileDetails, setShowMobileDetails] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(() => {
@@ -81,11 +83,21 @@ export default function HomePageClient() {
     try {
       setLoading(true)
       setError(null)
-      const data = await getJobs(selectedCategory, sortBy)
-      console.log('Jobs fetched:', data.length, 'jobs')
-      setJobs(data)
-    } catch (err) {
-      setError('Failed to load jobs. Please try again later.')
+      const result = await getJobs(selectedCategory, sortBy)
+      console.log('Jobs fetched:', result.jobs.length, 'jobs', result.isCache ? '(from cache)' : '')
+      setJobs(result.jobs)
+      setShowingCachedData(result.isCache)
+      if (result.isCache && result.cacheTime) {
+        setCacheTime(new Date(result.cacheTime))
+      } else {
+        setCacheTime(null)
+      }
+    } catch (err: any) {
+      if (err?.response?.status === 503) {
+        setError('Database is temporarily unavailable. Please try again in a moment.')
+      } else {
+        setError('Failed to load jobs. Please try again later.')
+      }
       console.error('Error fetching jobs:', err)
     } finally {
       setLoading(false)
@@ -97,16 +109,36 @@ export default function HomePageClient() {
   }
 
   const handleRefresh = async () => {
+    setRefreshing(true)
+    setCountdown(19)
+    setError(null)
+    setShowingCachedData(false)
+    
+    let refreshFailed = false
+    
+    // Try to refresh jobs from APIs
     try {
-      setRefreshing(true)
-      setCountdown(19)
-      setError(null)
       await refreshJobs()
-      await fetchJobs()
       await fetchLastRefresh()
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error refreshing jobs:', err)
-      setError('Failed to refresh jobs. Please try again.')
+      refreshFailed = true
+      if (err?.response?.status === 503) {
+        setError('Database unavailable - cannot refresh. Showing cached jobs if available.')
+      } else {
+        setError('Failed to refresh jobs. Showing cached jobs if available.')
+      }
+    }
+    
+    // Always try to fetch jobs (will return cache if database is down)
+    try {
+      await fetchJobs()
+    } catch (err: any) {
+      console.error('Error fetching jobs after refresh:', err)
+      if (!refreshFailed) {
+        // Only set error if refresh succeeded but fetch failed
+        setError('Failed to load jobs. Please try again.')
+      }
     } finally {
       setRefreshing(false)
       setCountdown(0)
@@ -137,7 +169,23 @@ export default function HomePageClient() {
             </p>
           </div>
 
-          {lastRefresh && (
+          {showingCachedData && cacheTime && (
+            <div className="bg-gradient-to-r from-orange-900/30 to-red-900/30 border border-orange-700 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <Info size={20} className="text-orange-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-gray-200 space-y-2">
+                  <p className="font-semibold text-orange-300">
+                    Database temporarily unavailable - showing cached jobs from {formatDistanceToNow(cacheTime, { addSuffix: true })}
+                  </p>
+                  <p>
+                    The database connection is experiencing issues. You're seeing the last successfully loaded jobs. Try refreshing in a moment.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {lastRefresh && !showingCachedData && (
             <div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border border-yellow-800/50 rounded-lg p-4 mb-8">
               <div className="flex items-start gap-3">
                 <Clock size={20} className="mt-0.5 flex-shrink-0" />

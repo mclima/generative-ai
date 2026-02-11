@@ -1,7 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks, Response
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import asyncio
+import logging
+import psycopg2
+from datetime import datetime
 from app.database import get_db, init_db
 from app.schemas import JobResponse, MatchedJob, ResumeUpload, RefreshResponse, LastRefreshResponse
 from app.services import JobService
@@ -9,9 +12,23 @@ from app.resume_matcher import ResumeMatcher
 from app.resume_parser import ResumeParser
 from app.task_manager import task_manager, TaskStatus
 
-init_db()
+logger = logging.getLogger(__name__)
+
+# In-memory cache for jobs (fallback when database is unavailable)
+jobs_cache = {
+    'jobs': [],
+    'last_updated': None,
+    'by_category': {}
+}
 
 app = FastAPI(title="Tech Job Board API", version="1.0.0")
+
+# Try to initialize database, but don't fail if unavailable
+try:
+    init_db()
+    logger.info("Database initialized successfully")
+except Exception as e:
+    logger.warning(f"Database initialization failed (will retry on first request): {e}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,20 +42,64 @@ app.add_middleware(
 async def root():
     return {"message": "Tech Job Board API", "version": "1.0.0"}
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring database connectivity"""
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+        return {
+            "status": "healthy",
+            "database": "connected"
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {
+            "status": "unhealthy",
+            "database": "disconnected",
+            "error": str(e)
+        }
+
 @app.get("/api/jobs", response_model=List[JobResponse])
 async def get_jobs(
+    response: Response,
     category: Optional[str] = None,
     sort_by: str = "newest"
 ):
-    with get_db() as conn:
-        job_service = JobService(conn)
+    try:
+        with get_db() as conn:
+            job_service = JobService(conn)
+            
+            if category and category != "All Jobs":
+                jobs = job_service.get_jobs_by_category(category, sort_by)
+            else:
+                jobs = job_service.get_all_jobs(sort_by)
+            
+            # Update cache on successful fetch
+            cache_key = f"{category}_{sort_by}"
+            jobs_cache['by_category'][cache_key] = jobs
+            jobs_cache['last_updated'] = datetime.now()
+            
+            return jobs
+    except (psycopg2.OperationalError, psycopg2.InterfaceError) as e:
+        logger.error(f"Database connection error in get_jobs: {e}")
         
-        if category and category != "All Jobs":
-            jobs = job_service.get_jobs_by_category(category, sort_by)
-        else:
-            jobs = job_service.get_all_jobs(sort_by)
+        # Try to return cached jobs
+        cache_key = f"{category}_{sort_by}"
+        if cache_key in jobs_cache['by_category'] and jobs_cache['by_category'][cache_key]:
+            logger.info(f"Returning {len(jobs_cache['by_category'][cache_key])} cached jobs")
+            response.headers["X-Data-Source"] = "cache"
+            if jobs_cache['last_updated']:
+                response.headers["X-Cache-Time"] = jobs_cache['last_updated'].isoformat()
+            return jobs_cache['by_category'][cache_key]
         
-        return jobs
+        # No cache available, return empty list with error in header
+        logger.warning("No cached jobs available")
+        raise HTTPException(
+            status_code=503,
+            detail="Database temporarily unavailable and no cached jobs available."
+        )
 
 @app.get("/api/jobs/{job_id}", response_model=JobResponse)
 async def get_job(job_id: int):
@@ -53,15 +114,22 @@ async def get_job(job_id: int):
 
 @app.post("/api/jobs/refresh", response_model=RefreshResponse)
 async def refresh_jobs():
-    with get_db() as conn:
-        job_service = JobService(conn)
-        jobs_added = await job_service.refresh_jobs()
-        total_jobs = job_service.get_total_jobs_count()
-        
-        return RefreshResponse(
-            message="Jobs refreshed successfully",
-            jobs_added=jobs_added,
-            total_jobs=total_jobs
+    try:
+        with get_db() as conn:
+            job_service = JobService(conn)
+            jobs_added = await job_service.refresh_jobs()
+            total_jobs = job_service.get_total_jobs_count()
+            
+            return RefreshResponse(
+                message="Jobs refreshed successfully",
+                jobs_added=jobs_added,
+                total_jobs=total_jobs
+            )
+    except (psycopg2.OperationalError, psycopg2.InterfaceError) as e:
+        logger.error(f"Database connection error in refresh_jobs: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Database temporarily unavailable. Job refresh failed."
         )
 
 @app.post("/api/match-resume", response_model=List[MatchedJob])
@@ -115,11 +183,18 @@ async def get_stats():
 
 @app.get("/api/last-refresh", response_model=LastRefreshResponse)
 async def get_last_refresh():
-    with get_db() as conn:
-        job_service = JobService(conn)
-        last_refresh = job_service.get_last_refresh_timestamp()
-        
-        return LastRefreshResponse(last_refresh=last_refresh)
+    try:
+        with get_db() as conn:
+            job_service = JobService(conn)
+            last_refresh = job_service.get_last_refresh_timestamp()
+            
+            return LastRefreshResponse(last_refresh=last_refresh)
+    except (psycopg2.OperationalError, psycopg2.InterfaceError) as e:
+        logger.error(f"Database connection error in get_last_refresh: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Database temporarily unavailable. Please try again in a moment."
+        )
 
 async def process_resume_matching(task_id: str, resume_text: str):
     """Background task to process resume matching"""

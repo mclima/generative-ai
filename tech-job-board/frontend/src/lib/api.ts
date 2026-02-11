@@ -10,13 +10,22 @@ const api = axios.create({
   },
 })
 
-export const getJobs = async (category?: string, sortBy: string = 'newest'): Promise<Job[]> => {
+export const getJobs = async (category?: string, sortBy: string = 'newest'): Promise<{
+  jobs: Job[]
+  isCache: boolean
+  cacheTime?: string
+}> => {
   const params: any = { sort_by: sortBy }
   if (category && category !== 'All Jobs') {
     params.category = category
   }
   const response = await api.get('/api/jobs', { params })
-  return response.data
+  
+  return {
+    jobs: response.data,
+    isCache: response.headers['x-data-source'] === 'cache',
+    cacheTime: response.headers['x-cache-time']
+  }
 }
 
 export const getJobById = async (id: string): Promise<Job> => {
