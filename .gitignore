@@ -7,5 +7,6 @@ venv/
 */venv/
 **/venv/
 
-# PDF files
+# PDF files (but allow business-assistant/pdf folder to exist)
 *.pdf
+!business-assistant/pdf/.gitkeep
