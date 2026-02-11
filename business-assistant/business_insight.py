@@ -37,14 +37,18 @@ pdf_folder = 'pdf/'
 
 documents = []
 
-for file in os.listdir(pdf_folder):
-    if file.endswith('.pdf'):
-        loader = PyPDFLoader(os.path.join(pdf_folder, file))
-        documents.extend(loader.load())
+# Try to load PDFs if folder exists
+if os.path.exists(pdf_folder) and os.path.isdir(pdf_folder):
+    for file in os.listdir(pdf_folder):
+        if file.endswith('.pdf'):
+            try:
+                loader = PyPDFLoader(os.path.join(pdf_folder, file))
+                documents.extend(loader.load())
+            except Exception as e:
+                print(f"Warning: Could not load {file}: {e}")
 
 # Check if the pdf docus loaded successfully
-#print(f"Number of documents loaded: {len(documents)}")
-#print(f"First document preview: {documents[0] if documents else 'No documents loaded'}")
+print(f"Number of documents loaded: {len(documents)}")
 
 # Initialize text splitter
 text_splitter = RecursiveCharacterTextSplitter(
@@ -53,15 +57,17 @@ text_splitter = RecursiveCharacterTextSplitter(
 )
 
 # This actually splits the documents:
-texts = text_splitter.split_documents(documents)
+texts = text_splitter.split_documents(documents) if documents else []
 
 # Check if text splitting worked successfully
-#print(f"Number of text chunks: {len(texts)}")
-#print(f"First chunk preview: {texts[0] if texts else 'No chunks created'}")
+print(f"Number of text chunks: {len(texts)}")
 
-# Save chunks to pickle file for reuse
-with open('processed_text.pickle', 'wb') as f:
-    pickle.dump(texts, f)
+# Save chunks to pickle file for reuse only if we have texts
+if texts:
+    with open('processed_text.pickle', 'wb') as f:
+        pickle.dump(texts, f)
+else:
+    print("Warning: No PDF documents loaded. RAG features will be limited.")
 
 # Convert date column to datetime format
 df['date'] = pd.to_datetime(df['date'])
@@ -199,17 +205,26 @@ recommendation_chain = recommendation_prompt | llm
 #RAG SYSTEM IMPLEMENTATION
 
 embeddings = OpenAIEmbeddings()
-# Create FAISS vector store
-vectordb = FAISS.from_documents(
-    documents=texts,
-    embedding=embeddings
-)
-# Create retriever (top 3 similar chunks)
-retriever = vectordb.as_retriever(search_kwargs={"k": 3})
+
+# Create FAISS vector store only if we have texts
+if texts:
+    vectordb = FAISS.from_documents(
+        documents=texts,
+        embedding=embeddings
+    )
+    # Create retriever (top 3 similar chunks)
+    retriever = vectordb.as_retriever(search_kwargs={"k": 3})
+else:
+    vectordb = None
+    retriever = None
+    print("Warning: Vector store not initialized due to missing PDFs")
 
 # Create custom retrieval QA function
 def ask_pdf_question(question):
     """Ask a question about the PDF documents"""
+    if retriever is None:
+        return "PDF documents are not available. Please upload PDFs to enable this feature."
+    
     # Retrieve relevant documents
     docs = retriever.invoke(question)
     
@@ -251,22 +266,34 @@ def generate_rag_insight(question):
     
     @traceable(name="rag_insight_generation")
     def _generate_with_tracing(question):
-        # Retrieve from vector DB
-        retrieved_docs = retriever.invoke(question)
-        pdf_answer = ask_pdf_question(question)   
+        # Check if retriever is available
+        if retriever is not None:
+            # Retrieve from vector DB
+            retrieved_docs = retriever.invoke(question)
+            pdf_answer = ask_pdf_question(question)   
+            
+            # Combine contexts
+            retrieved_content = "\n".join([doc.page_content for doc in retrieved_docs])
+            
+            combined_context = f"""
+            Advanced Summary:
+            {advanced_summary}
 
-        # Combine contexts
-        retrieved_content = "\n".join([doc.page_content for doc in retrieved_docs])
-        
-        combined_context = f"""
-        Advanced Summary:
-        {advanced_summary}
+            PDF Analysis:
+            {pdf_answer}
 
-        PDF Analysis:
-        {pdf_answer}
+            Question: {question}
+            """
+        else:
+            # Use only CSV data if PDFs not available
+            combined_context = f"""
+            Advanced Summary:
+            {advanced_summary}
 
-        Question: {question}
-        """
+            Note: PDF analysis is not available. Analysis based on CSV data only.
+
+            Question: {question}
+            """
 
         # Generate final insight
         response = llm_chain.invoke({
