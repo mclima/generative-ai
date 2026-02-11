@@ -1,3 +1,11 @@
 
 # Environment variables
 task-maestro/.env
+
+# Python virtual environments
+venv/
+*/venv/
+**/venv/
+
+# PDF files
+*.pdf

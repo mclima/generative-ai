@@ -2,6 +2,7 @@
 
 This repository contains multiple AI-powered applications:
 
+- **business-assistant** - AI-powered business assistant
 - **constitution-assistant** - Constitutional law assistant application
 - **groq-chatbot** - Chatbot powered by Groq
 - **image-generator** - AI image generation tool
@@ -107,16 +108,16 @@ To optimize deployments and only deploy apps when their specific folders have ch
 
 For each service in your Railway project, configure the following:
 
-1. **Connect GitHub Repository**
+1. **Connect GitHub Repository and add Root Directory**
    - Open your Railway service (e.g., NewsGenie, Stock Agent Backend, etc.)
    - Go to **Settings → Source**
    - Click **Connect GitHub Repo**
    - Select your `generative-ai` repository
    - Choose the branch (e.g., `main`)
-
-2. **Configure Watch Paths and Root Directory**
-   - In the same service, go to **Settings → Build**
    - Set **Root Directory** to the service's folder path
+
+2. **Configure Watch Paths**
+   - In the same service, go to **Settings → Build**
    - Set **Watch Paths** to monitor only that service's directory
    
    **Example configurations:**
