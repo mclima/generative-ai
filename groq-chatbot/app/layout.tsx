@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'AI Chatbot - Powered by Groq',
+  title: 'AI Chat Assistant - Powered by Groq',
   description: 'A fast AI chatbot powered by Groq and Llama 4 Scout',
 }
 

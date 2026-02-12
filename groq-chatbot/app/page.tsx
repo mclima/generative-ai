@@ -7,7 +7,7 @@ export default function Home() {
       <main className="flex-1 flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-3xl">
           <h1 className="text-3xl font-bold text-white text-center mb-2">
-            AI Chatbot
+            AI Chat Assistant
           </h1>
           <p className="text-gray-400 text-white text-center mb-2">
             Powered by Groq & Llama 4 Scout with short-term memory.

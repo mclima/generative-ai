@@ -1,4 +1,4 @@
-# AI Chatbot - Powered by Groq
+# AI Chat Assistant - Powered by Groq
 
 A general-purpose AI chatbot that leverages Groq's ultra-fast inference platform to deliver real-time responses from Meta's Llama 4 Scout model with short-term conversational memory. Features include:
 
