@@ -13,7 +13,7 @@ FastAPI (Backend)
   ↓
 LangGraph (Multi-Agent Orchestration)
   ↓
-Specialized Agents (Search → Scrape → Write → Edit)
+Specialized Agents (Search → Scrape → Notes → Write → Edit)
   ↓
 OpenAI API + Tavily Search
 ```
@@ -27,8 +27,8 @@ The system uses a **sequential process** where each agent completes its task bef
 1. **Search Agent** - Finds relevant sources using Tavily
 2. **Scraper Agent** - Extracts content from discovered URLs
 3. **Note Taker** - Consolidates scraped content
-4. **Writer Agent** - Creates structured outline with summaries
-5. **Editor Agent** - Polishes and refines the final output
+4. **Writer Agent** - Creates structured outline with summaries (LLM Call)
+5. **Editor Agent** - Polishes and refines the final output (LLM Call)
 
 Each agent passes its output to the next agent in a linear chain: `search → scrape → notes → write → edit`
 
@@ -37,12 +37,13 @@ Each agent passes its output to the next agent in a linear chain: `search → sc
 ```
 research-assistant/
 ├── backend/
-│   ├── main.py           # FastAPI server
+│   ├── main.py           # FastAPI server with logging
 │   ├── llm.py            # OpenAI LLM configuration
 │   ├── tools.py          # Search and scraping tools
-│   ├── agents.py         # Agent definitions
+│   ├── agents.py         # Agent definitions with error handling
 │   ├── graph.py          # LangGraph workflow
 │   ├── schemas.py        # Pydantic models
+│   ├── fallback.py       # Fallback response generator with topic validation
 │   ├── requirements.txt  # Python dependencies
 │   └── .env              # API keys (not in repo)
 │
@@ -79,14 +80,13 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-export $(cat .env | xargs) && uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 **Expected output:**
 ```
 INFO:     Uvicorn running on http://0.0.0.0:8000
-✅ Backend is now running
-✅ LangGraph + agents are live
+INFO:     Application startup complete.
 ```
 
 ### 2. Test the Backend (Optional)
@@ -164,6 +164,86 @@ Railway uses internal networking, so `backend` resolves to your backend service 
 - ✅ Structured outline generation with summaries
 - ✅ Clean Streamlit interface
 - ✅ FastAPI backend with async support
+- ✅ **Robust error handling with retry logic**
+- ✅ **Topic validation to reject nonsensical queries**
+- ✅ **Fallback mechanisms for failed agents**
+- ✅ **Validation between pipeline steps**
+- ✅ **User-friendly fallback responses with clickable search links**
+- ✅ **Automatic environment variable loading with python-dotenv**
+
+## 🛡️ Reliability Features
+
+### Error Handling & Retry Logic
+
+Each agent implements robust error handling:
+
+- **Search Agent**: 3 retry attempts with exponential backoff
+- **Scraper Agent**: Validates search results before scraping, skips gracefully if search failed
+- **Writer Agent**: 2 retry attempts for LLM calls, fallback mode using general knowledge if no data
+- **Editor Agent**: 2 retry attempts, returns unedited draft if editing fails
+
+### Validation Between Steps
+
+Agents check for errors from previous steps:
+- Scraper validates search results before attempting to scrape
+- Note taker checks for scraper errors
+- Writer checks for missing notes and adapts accordingly
+- Editor validates draft before editing
+
+### Topic Validation
+
+The system validates topics before processing to reject nonsensical queries:
+
+**Invalid topics are rejected with helpful guidance:**
+```markdown
+## Invalid Research Topic
+
+**Please provide a valid research topic.** Your query appears to contain random characters or is not a meaningful research question.
+
+**Examples of valid topics:**
+- "climate change effects on polar bears"
+- "latest developments in quantum computing"
+- "history of the Roman Empire"
+- "benefits of Mediterranean diet"
+```
+
+### User-Friendly Fallback Responses
+
+When the pipeline fails, users receive a helpful response with clickable search links:
+
+**Fallback response includes:**
+- Clear explanation of what went wrong
+- Direct search links (Google News, Google Scholar, Wikipedia, etc.)
+- Technical details for debugging
+- Actionable next steps
+
+**Example fallback:**
+```markdown
+## Research Assistant - Service Temporarily Limited
+
+We encountered issues while researching "climate change effects".
+
+### � Search Resources
+
+- [Google News](https://news.google.com/search?q=climate+change+effects) - Latest news
+- [Google Search](https://www.google.com/search?q=climate+change+effects) - General search
+- [Wikipedia](https://en.wikipedia.org/wiki/Special:Search?search=climate+change+effects) - Encyclopedia
+- [Google Scholar](https://scholar.google.com/scholar?q=climate+change+effects) - Academic papers
+
+### 💡 What You Can Do
+
+1. Try again in a few moments
+2. Refine your topic
+3. Use the links above
+```
+
+### Environment Variables
+
+Environment variables are automatically loaded using `python-dotenv`:
+- **Local development:** Reads from `.env` file
+- **Railway deployment:** Uses Railway's environment variables
+
+No manual export commands needed - just run `uvicorn main:app`
 
 ## 🚧 Future Enhancements
 
@@ -272,6 +352,21 @@ Visit your Railway domain and test with a research topic. Check logs in Railway 
 - **Railway:** ~$5/month (Hobby plan)
 - **OpenAI API:** Pay per use (~$0.01-0.10 per outline)
 - **Tavily API:** Free tier available
+
+### Testing
+
+Manual testing guide available in `backend/test_manual.md`:
+
+**Test scenarios:**
+1. Invalid API key (search failure)
+2. Invalid OpenAI key (writer failure)
+3. Invalid topic validation
+4. Network simulation
+
+**To test:**
+- Temporarily modify API keys in `.env`
+- Restart backend and submit queries
+- Observe fallback responses with helpful links
 
 
 

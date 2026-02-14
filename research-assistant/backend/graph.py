@@ -7,7 +7,15 @@ from agents import (
 )
 
 def note_taker(state):
-    return {"notes": "\n".join(state["documents"])}
+    documents = state.get("documents", [])
+    scraper_error = state.get("scraper_error")
+    topic = state.get("topic", "")
+    
+    if scraper_error or not documents:
+        return {"topic": topic, "notes": ""}
+    
+    notes = "\n".join(documents)
+    return {"topic": topic, "notes": notes}
 
 graph = StateGraph(dict)
 

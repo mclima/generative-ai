@@ -28,6 +28,30 @@ if "outline" not in st.session_state:
     st.session_state.outline = None
 if "form_key" not in st.session_state:
     st.session_state.form_key = 0
+if "selected_topic" not in st.session_state:
+    st.session_state.selected_topic = ""
+
+# Suggested topics
+st.markdown("**Try these examples:**")
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    if st.button("Climate Change Effects", use_container_width=True):
+        st.session_state.selected_topic = "climate change effects on polar bears"
+        st.session_state.auto_submit = True
+        st.rerun()
+        
+with col2:
+    if st.button("Quantum Computing", use_container_width=True):
+        st.session_state.selected_topic = "latest developments in quantum computing"
+        st.session_state.auto_submit = True
+        st.rerun()
+        
+with col3:
+    if st.button("Mediterranean Diet", use_container_width=True):
+        st.session_state.selected_topic = "benefits of Mediterranean diet"
+        st.session_state.auto_submit = True
+        st.rerun()
 
 st.markdown("""
 <style>
@@ -59,16 +83,19 @@ div[data-testid="stFormSubmitButton"] {
 """, unsafe_allow_html=True)
 
 with st.form(key=f"research_form_{st.session_state.form_key}"):
-    topic = st.text_input("Enter research topic")
+    topic = st.text_input("Enter research topic", value=st.session_state.selected_topic)
     submit_button = st.form_submit_button("Generate Outline")
 
+# Auto-submit if button was clicked
+if st.session_state.get("auto_submit", False):
+    st.session_state.auto_submit = False
+    topic = st.session_state.selected_topic
+    submit_button = True
+
 if submit_button and topic:
+    st.session_state.selected_topic = ""
     with st.spinner("Running multi-agent research..."):
-        # Local development
-        # backend_url = "http://0.0.0.0:8000"
-        
-        # Railway deployment (uncomment for Railway)
-        backend_url = os.getenv("BACKEND_URL", "http://backend:8000")
+        backend_url = os.getenv("BACKEND_URL", "http://0.0.0.0:8000")
         
         res = requests.post(
             f"{backend_url}/research",
@@ -77,7 +104,7 @@ if submit_button and topic:
         st.session_state.outline = res.json()["outline"]
 
 if st.session_state.outline:
-    st.text_area("Outline", st.session_state.outline, height=400)
+    st.markdown(st.session_state.outline)
     
     if st.button("Clear"):
         st.session_state.outline = None
