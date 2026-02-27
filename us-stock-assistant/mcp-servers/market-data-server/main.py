@@ -54,6 +54,12 @@ async def root():
     }
 
 
+@app.get("/health")
+async def health():
+    """Health check endpoint for Railway"""
+    return {"status": "healthy", "service": "MCP Market Data Server"}
+
+
 @app.post("/tools/get_sector_performance")
 async def get_sector_performance(request: SectorPerformanceRequest):
     """

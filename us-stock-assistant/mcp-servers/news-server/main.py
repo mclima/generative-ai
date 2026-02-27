@@ -45,6 +45,12 @@ async def root():
     }
 
 
+@app.get("/health")
+async def health():
+    """Health check endpoint for Railway"""
+    return {"status": "healthy", "service": "MCP News Server"}
+
+
 @app.post("/tools/get_stock_news")
 async def get_stock_news(request: StockNewsRequest):
     """

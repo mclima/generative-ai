@@ -70,6 +70,12 @@ async def root():
     }
 
 
+@app.get("/health")
+async def health():
+    """Health check endpoint for Railway"""
+    return {"status": "healthy", "service": "MCP Stock Data Server"}
+
+
 @app.post("/tools/get_stock_price")
 async def get_stock_price(request: StockPriceRequest):
     """
