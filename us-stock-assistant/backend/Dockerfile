@@ -45,6 +45,7 @@ COPY . .
 
 # Make sure scripts are executable
 RUN chmod +x /app/entrypoint.sh || true
+RUN chmod +x /app/start.sh
 
 # Expose port
 EXPOSE 8000
@@ -53,6 +54,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
-# Run the application
-# Use Railway's PORT env variable, fallback to 8000 for local
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 4"]
+# Run the application using startup script
+CMD ["/app/start.sh"]
