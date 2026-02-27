@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 3px;
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    position: relative;
+  }
+
+  input[type="checkbox"]:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+  }
+
+  input[type="checkbox"]:checked::after {
+    content: "✓";
+    position: absolute;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #2a2a2a inset !important;
+    box-shadow: 0 0 0 1000px #2a2a2a inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #ffffff;
+  }
+
+  :root {
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #111111;
+    --bg-card: #1a1a1a;
+    --bg-card-hover: #222222;
+    --border-color: #2a2a2a;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --text-muted: #666666;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+}
+
+@layer utilities {
+  /* Touch-optimized button sizes - minimum 44x44px for accessibility */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Larger touch targets for mobile */
+  .touch-target-lg {
+    @apply min-h-[48px] min-w-[48px];
+  }
+
+  /* Prevent text selection on touch devices for interactive elements */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth scrolling for touch devices */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Touch-friendly spacing */
+  .touch-spacing {
+    @apply space-y-3 sm:space-y-2;
+  }
+
+  /* Larger padding for touch */
+  .touch-padding {
+    @apply p-4 sm:p-3;
+  }
+}
+
+@layer components {
+  /* Touch-optimized button base */
+  .btn-touch {
+    @apply touch-target px-6 py-3 rounded-lg font-medium transition-all duration-150 active:scale-95;
+  }
+
+  /* Touch-optimized link */
+  .link-touch {
+    @apply touch-target inline-flex items-center justify-center;
+  }
+}

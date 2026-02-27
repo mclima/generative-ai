@@ -1,0 +1,182 @@
+version: "3.8"
+
+# Production Docker Compose configuration
+# This is primarily for reference - Railway will use individual Dockerfiles
+# Use this for self-hosted production deployments
+
+services:
+  # Database (use managed service in production)
+  postgres:
+    image: postgres:16-alpine
+    container_name: stock_assistant_db_prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - stock_assistant_network
+
+  # Cache (use managed service in production)
+  redis:
+    image: redis:7-alpine
+    container_name: stock_assistant_redis_prod
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - stock_assistant_network
+
+  # MCP Servers
+  stock-data-server:
+    build:
+      context: ./mcp-servers/stock-data-server
+      dockerfile: Dockerfile
+    container_name: stock_data_server_prod
+    environment:
+      - PORT=8001
+      - ENVIRONMENT=production
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - stock_assistant_network
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+
+  news-server:
+    build:
+      context: ./mcp-servers/news-server
+      dockerfile: Dockerfile
+    container_name: news_server_prod
+    environment:
+      - PORT=8002
+      - ENVIRONMENT=production
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8002/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - stock_assistant_network
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+
+  market-data-server:
+    build:
+      context: ./mcp-servers/market-data-server
+      dockerfile: Dockerfile
+    container_name: market_data_server_prod
+    environment:
+      - PORT=8003
+      - ENVIRONMENT=production
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8003/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - stock_assistant_network
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stock_assistant_backend_prod
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - MCP_STOCK_DATA_URL=http://stock-data-server:8001
+      - MCP_NEWS_URL=http://news-server:8002
+      - MCP_MARKET_DATA_URL=http://market-data-server:8003
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=15
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - ENVIRONMENT=production
+      - SECURE_COOKIES=true
+      - HTTPS_ONLY=true
+      - WORKERS=4
+      - MAX_CONNECTIONS=100
+      - POOL_SIZE=20
+      - POOL_MAX_OVERFLOW=10
+      - RATE_LIMIT_PER_MINUTE=60
+      - RATE_LIMIT_PER_HOUR=1000
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      stock-data-server:
+        condition: service_started
+      news-server:
+        condition: service_started
+      market-data-server:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - stock_assistant_network
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "1"
+          memory: 1G
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  stock_assistant_network:
+    driver: bridge

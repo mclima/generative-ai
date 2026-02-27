@@ -1,0 +1,154 @@
+version: "3.8"
+
+services:
+  # Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: stock_assistant_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: stock_assistant
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stock_assistant_network
+
+  # Cache
+  redis:
+    image: redis:7-alpine
+    container_name: stock_assistant_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stock_assistant_network
+
+  # MCP Servers
+  stock-data-server:
+    build:
+      context: ./mcp-servers/stock-data-server
+      dockerfile: Dockerfile
+    container_name: stock_data_server
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - stock_assistant_network
+
+  news-server:
+    build:
+      context: ./mcp-servers/news-server
+      dockerfile: Dockerfile
+    container_name: news_server
+    ports:
+      - "8002:8002"
+    environment:
+      - PORT=8002
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8002/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - stock_assistant_network
+
+  market-data-server:
+    build:
+      context: ./mcp-servers/market-data-server
+      dockerfile: Dockerfile
+    container_name: market_data_server
+    ports:
+      - "8003:8003"
+    environment:
+      - PORT=8003
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8003/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - stock_assistant_network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stock_assistant_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/stock_assistant
+      - REDIS_URL=redis://redis:6379/0
+      - MCP_STOCK_DATA_URL=http://stock-data-server:8001
+      - MCP_NEWS_URL=http://news-server:8002
+      - MCP_MARKET_DATA_URL=http://market-data-server:8003
+      - JWT_SECRET_KEY=dev-secret-key-change-in-production
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=15
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - ENVIRONMENT=development
+      - CORS_ORIGINS=http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      stock-data-server:
+        condition: service_started
+      news-server:
+        condition: service_started
+      market-data-server:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - stock_assistant_network
+
+  # Frontend (optional for local development)
+  # Uncomment if you want to run frontend in Docker
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: stock_assistant_frontend
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NEXT_PUBLIC_API_URL=http://localhost:8000
+  #     - NEXT_PUBLIC_WS_URL=ws://localhost:8000
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - stock_assistant_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  stock_assistant_network:
+    driver: bridge
