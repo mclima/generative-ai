@@ -180,5 +180,6 @@ async def get_market_sentiment(request: MarketSentimentRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("SERVER_PORT", 8003))
+    # Railway provides PORT env variable, fallback to 8003 for local development
+    port = int(os.getenv("PORT", os.getenv("SERVER_PORT", 8003)))
     uvicorn.run(app, host="0.0.0.0", port=port)
