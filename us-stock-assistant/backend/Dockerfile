@@ -30,8 +30,11 @@ RUN apt-get update && apt-get install -y \
 # Copy Python dependencies from builder
 COPY --from=builder /root/.local /root/.local
 
+# Update PATH to include local Python packages
+ENV PATH=/root/.local/bin:$PATH
+
 # Pre-download FinBERT model weights at build time so first request isn't slow
-RUN /root/.local/bin/python -c "\
+RUN python3 -c "\
 from transformers import AutoTokenizer, AutoModelForSequenceClassification; \
 AutoTokenizer.from_pretrained('ProsusAI/finbert'); \
 AutoModelForSequenceClassification.from_pretrained('ProsusAI/finbert'); \
@@ -42,9 +45,6 @@ COPY . .
 
 # Make sure scripts are executable
 RUN chmod +x /app/entrypoint.sh || true
-
-# Update PATH to include local Python packages
-ENV PATH=/root/.local/bin:$PATH
 
 # Expose port
 EXPOSE 8000
