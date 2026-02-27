@@ -55,4 +55,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # Run the application
 # Use Railway's PORT env variable, fallback to 8000 for local
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 4
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 4"]
