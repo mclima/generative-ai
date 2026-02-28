@@ -53,10 +53,10 @@ export function useAddPosition(userId: string) {
             {
               ...newPosition,
               id: "temp-" + Date.now(),
-              currentPrice: 0,
-              currentValue: 0,
-              gainLoss: 0,
-              gainLossPercent: 0,
+              current_price: 0,
+              current_value: 0,
+              gain_loss: 0,
+              gain_loss_percent: 0,
             } as StockPosition,
           ],
         });
