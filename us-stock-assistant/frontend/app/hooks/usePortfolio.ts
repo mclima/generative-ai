@@ -14,7 +14,7 @@ export const portfolioKeys = {
 export function usePortfolio(userId: string, enabled = true) {
   return useQuery({
     queryKey: portfolioKeys.detail(userId),
-    queryFn: () => portfolioApi.getPortfolio(userId),
+    queryFn: () => portfolioApi.getPortfolio(),
     staleTime: CACHE_CONFIG.portfolio,
     enabled: enabled && !!userId,
   });
@@ -24,7 +24,7 @@ export function usePortfolio(userId: string, enabled = true) {
 export function usePortfolioMetrics(userId: string, enabled = true) {
   return useQuery({
     queryKey: portfolioKeys.metrics(userId),
-    queryFn: () => portfolioApi.calculateMetrics(userId),
+    queryFn: () => portfolioApi.getMetrics(),
     staleTime: CACHE_CONFIG.portfolio,
     enabled: enabled && !!userId,
   });
@@ -35,7 +35,7 @@ export function useAddPosition(userId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (position: StockPositionInput) => portfolioApi.addPosition(userId, position),
+    mutationFn: (position: StockPositionInput) => portfolioApi.addPosition(position),
     // Optimistic update
     onMutate: async (newPosition) => {
       // Cancel outgoing refetches
@@ -83,7 +83,7 @@ export function useUpdatePosition(userId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ positionId, updates }: { positionId: string; updates: Partial<StockPositionInput> }) => portfolioApi.updatePosition(userId, positionId, updates),
+    mutationFn: ({ positionId, updates }: { positionId: string; updates: Partial<StockPositionInput> }) => portfolioApi.updatePosition(positionId, updates),
     // Optimistic update
     onMutate: async ({ positionId, updates }) => {
       await queryClient.cancelQueries({ queryKey: portfolioKeys.detail(userId) });
@@ -116,7 +116,7 @@ export function useRemovePosition(userId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (positionId: string) => portfolioApi.removePosition(userId, positionId),
+    mutationFn: (positionId: string) => portfolioApi.removePosition(positionId),
     // Optimistic update
     onMutate: async (positionId) => {
       await queryClient.cancelQueries({ queryKey: portfolioKeys.detail(userId) });
@@ -147,7 +147,7 @@ export function useRemovePosition(userId: string) {
 // Hook for exporting portfolio
 export function useExportPortfolio(userId: string) {
   return useMutation({
-    mutationFn: (format: "csv" | "excel") => portfolioApi.exportPortfolio(userId, format),
+    mutationFn: (format: "csv" | "excel") => portfolioApi.exportPortfolio(format),
   });
 }
 
@@ -156,7 +156,7 @@ export function useImportPortfolio(userId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ file, format }: { file: File; format: "csv" | "excel" }) => portfolioApi.importPortfolio(userId, file, format),
+    mutationFn: ({ file, format }: { file: File; format: "csv" | "excel" }) => portfolioApi.importPortfolio(file, format),
     onSuccess: () => {
       // Invalidate portfolio queries after import
       queryClient.invalidateQueries({ queryKey: portfolioKeys.detail(userId) });
