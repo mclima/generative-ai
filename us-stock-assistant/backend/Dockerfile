@@ -46,6 +46,7 @@ COPY . .
 # Make sure scripts are executable
 RUN chmod +x /app/entrypoint.sh || true
 RUN chmod +x /app/start.sh
+RUN chmod +x /app/railway_start.py
 
 # Expose port
 EXPOSE 8000
@@ -54,5 +55,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
-# Run the application using startup script
-CMD ["/bin/bash", "/app/start.sh"]
+# Run the application using Python startup wrapper
+CMD ["python3", "/app/railway_start.py"]
