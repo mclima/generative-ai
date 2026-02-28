@@ -28,7 +28,7 @@ export const StockPriceChart: React.FC<StockPriceChartProps> = ({ data, ticker, 
   const effectiveChartType = chartType || preferences?.default_chart_type || "line";
 
   // Filter data based on selected time range
-  const filterDataByRange = (range: TimeRange): typeof data => {
+  const filterDataByRange = (range: TimeRange): StockPriceDataPoint[] | LineChartDataPoint[] => {
     if (range === "ALL" || data.length === 0) {
       return data;
     }
@@ -43,7 +43,7 @@ export const StockPriceChart: React.FC<StockPriceChartProps> = ({ data, ticker, 
     };
 
     const cutoffTime = now - rangeInMs[range];
-    return data.filter((point) => point.timestamp >= cutoffTime);
+    return data.filter((point) => point.timestamp >= cutoffTime) as StockPriceDataPoint[] | LineChartDataPoint[];
   };
 
   const filteredData = filterDataByRange(selectedRange);
