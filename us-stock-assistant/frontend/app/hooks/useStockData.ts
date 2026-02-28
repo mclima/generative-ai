@@ -41,7 +41,7 @@ export function useHistoricalData(ticker: string, startDate: Date, endDate: Date
 
   return useQuery({
     queryKey: stockKeys.historical(ticker, startStr, endStr),
-    queryFn: () => stocksApi.getHistoricalData(ticker, startDate, endDate),
+    queryFn: () => stocksApi.getHistoricalData(ticker, startStr, endStr),
     staleTime: CACHE_CONFIG.historicalData,
     enabled: enabled && !!ticker,
   });
