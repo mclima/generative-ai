@@ -55,4 +55,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
 # Run the application using startup script
-CMD ["/app/start.sh"]
+CMD ["/bin/bash", "/app/start.sh"]
