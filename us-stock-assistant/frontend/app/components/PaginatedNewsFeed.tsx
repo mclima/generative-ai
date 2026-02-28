@@ -53,7 +53,7 @@ export default function PaginatedNewsFeed({ articles, itemsPerPage = 10, classNa
                 <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                   <span>{article.source}</span>
                   <span>•</span>
-                  <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
+                  <span>{new Date(article.published_at).toLocaleDateString()}</span>
                 </div>
               </div>
               {article.sentiment && <div className={`px-3 py-1 rounded-full text-xs font-medium ${getSentimentColor(article.sentiment.label)}`}>{article.sentiment.label}</div>}
