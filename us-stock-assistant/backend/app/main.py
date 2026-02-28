@@ -44,23 +44,24 @@ async def lifespan(app: FastAPI):
     """
     # Startup: Start price update service and data deletion service
     logger.info("Starting application...")
-    price_service = get_price_update_service()
-    await price_service.start()
-    logger.info("Price update service started")
+    # Temporarily disabled background services for Railway deployment
+    # price_service = get_price_update_service()
+    # await price_service.start()
+    # logger.info("Price update service started")
     
-    deletion_service = get_data_deletion_service()
-    await deletion_service.start()
-    logger.info("Data deletion service started")
+    # deletion_service = get_data_deletion_service()
+    # await deletion_service.start()
+    # logger.info("Data deletion service stopped")
     
     yield
     
     # Shutdown: Stop services
     logger.info("Shutting down application...")
-    await price_service.stop()
-    logger.info("Price update service stopped")
+    # await price_service.stop()
+    # logger.info("Price update service stopped")
     
-    await deletion_service.stop()
-    logger.info("Data deletion service stopped")
+    # await deletion_service.stop()
+    # logger.info("Data deletion service stopped")
 
 
 app = FastAPI(
