@@ -2,7 +2,7 @@ import dynamic from 'next/dynamic';
 
 // Lazy load chart components (heavy due to recharts)
 export const PortfolioValueChart = dynamic(
-  () => import('../charts/PortfolioValueChart'),
+  () => import('../charts/PortfolioValueChart').then((mod) => mod.PortfolioValueChart),
   {
     loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded" />,
     ssr: false, // Charts don't need SSR
@@ -10,7 +10,7 @@ export const PortfolioValueChart = dynamic(
 );
 
 export const PortfolioCompositionChart = dynamic(
-  () => import('../charts/PortfolioCompositionChart'),
+  () => import('../charts/PortfolioCompositionChart').then((mod) => mod.PortfolioCompositionChart),
   {
     loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded" />,
     ssr: false,
@@ -18,7 +18,7 @@ export const PortfolioCompositionChart = dynamic(
 );
 
 export const StockPriceChart = dynamic(
-  () => import('../charts/StockPriceChart'),
+  () => import('../charts/StockPriceChart').then((mod) => mod.StockPriceChart),
   {
     loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded" />,
     ssr: false,
@@ -27,7 +27,7 @@ export const StockPriceChart = dynamic(
 
 // Lazy load analysis panels (heavy due to AI processing)
 export const StockAnalysisPanel = dynamic(
-  () => import('../StockAnalysisPanel'),
+  () => import('../StockAnalysisPanel').then((mod) => ({ default: mod.default })),
   {
     loading: () => (
       <div className="p-4 bg-white rounded-lg shadow">
@@ -43,7 +43,7 @@ export const StockAnalysisPanel = dynamic(
 );
 
 export const PortfolioAnalysisPanel = dynamic(
-  () => import('../PortfolioAnalysisPanel'),
+  () => import('../PortfolioAnalysisPanel').then((mod) => ({ default: mod.default })),
   {
     loading: () => (
       <div className="p-4 bg-white rounded-lg shadow">
@@ -60,7 +60,7 @@ export const PortfolioAnalysisPanel = dynamic(
 
 // Lazy load sector heatmap (heavy visualization)
 export const SectorHeatmap = dynamic(
-  () => import('../SectorHeatmap'),
+  () => import('../SectorHeatmap').then((mod) => ({ default: mod.default })),
   {
     loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded" />,
     ssr: false,
@@ -69,21 +69,21 @@ export const SectorHeatmap = dynamic(
 
 // Lazy load modals (not needed on initial load)
 export const AddStockModal = dynamic(
-  () => import('../AddStockModal'),
+  () => import('../AddStockModal').then((mod) => ({ default: mod.default })),
   {
     loading: () => null,
   }
 );
 
 export const AlertModal = dynamic(
-  () => import('../AlertModal'),
+  () => import('../AlertModal').then((mod) => ({ default: mod.default })),
   {
     loading: () => null,
   }
 );
 
 export const ImportPortfolioModal = dynamic(
-  () => import('../ImportPortfolioModal'),
+  () => import('../ImportPortfolioModal').then((mod) => ({ default: mod.default })),
   {
     loading: () => null,
   }
