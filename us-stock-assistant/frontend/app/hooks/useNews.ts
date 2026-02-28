@@ -42,11 +42,12 @@ export function useStockSentiment(ticker: string, enabled = true) {
 }
 
 // Hook for fetching news for multiple stocks
-export function useBatchStockNews(tickers: string[], enabled = true) {
-  return useQuery({
-    queryKey: newsKeys.batch(tickers),
-    queryFn: () => newsApi.getBatchStockNews(tickers),
-    staleTime: CACHE_CONFIG.news,
-    enabled: enabled && tickers.length > 0,
-  });
-}
+// TODO: Implement getBatchStockNews in newsApi before enabling this hook
+// export function useBatchStockNews(tickers: string[], enabled = true) {
+//   return useQuery({
+//     queryKey: newsKeys.batch(tickers),
+//     queryFn: () => newsApi.getBatchStockNews(tickers),
+//     staleTime: CACHE_CONFIG.news,
+//     enabled: enabled && tickers.length > 0,
+//   });
+// }
