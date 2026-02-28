@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CACHE_CONFIG } from "../providers/QueryProvider";
-import * as portfolioApi from "../lib/api/portfolio";
+import { portfolioApi } from "../lib/api/portfolio";
 import { Portfolio, StockPosition, StockPositionInput, PortfolioMetrics } from "../types/portfolio";
 
 // Query keys for cache management

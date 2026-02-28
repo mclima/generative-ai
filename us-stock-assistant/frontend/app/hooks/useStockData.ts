@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CACHE_CONFIG } from "../providers/QueryProvider";
-import * as stocksApi from "../lib/api/stocks";
+import { stocksApi } from "../lib/api/stocks";
 import { StockPrice, HistoricalData, CompanyInfo, FinancialMetrics } from "../types/stocks";
 
 // Query keys for cache management

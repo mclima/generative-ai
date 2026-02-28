@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { CACHE_CONFIG } from "../providers/QueryProvider";
-import * as newsApi from "../lib/api/news";
+import { newsApi } from "../lib/api/news";
 
 // Query keys for cache management
 export const newsKeys = {
