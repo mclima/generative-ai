@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { CACHE_CONFIG } from "../providers/QueryProvider";
-import * as marketApi from "../lib/api/market";
+import { marketApi } from "../lib/api/market";
 
 // Query keys for cache management
 export const marketKeys = {
