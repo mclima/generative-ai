@@ -5,7 +5,7 @@ import { ResponsiveContainer } from "recharts";
 import { useDeviceOrientation, useBreakpoint } from "@/app/hooks/useDeviceOrientation";
 
 interface ChartWrapperProps {
-  children: React.ReactNode;
+  children: React.ReactElement;
   height?: number | string;
   className?: string;
   mobileHeight?: number;
