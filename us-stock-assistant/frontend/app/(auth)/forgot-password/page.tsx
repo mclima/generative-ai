@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Check your email</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">We've sent you a password reset link. Please check your email.</p>
+          <p className="mt-2 text-center text-sm text-gray-600">We&apos;ve sent you a password reset link. Please check your email.</p>
         </div>
         <div className="text-center">
           <Link href="/login" className="text-sm font-medium text-blue-600 hover:text-blue-500">
@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
     <div className="max-w-md w-full space-y-8">
       <div>
         <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Reset your password</h2>
-        <p className="mt-2 text-center text-sm text-gray-600">Enter your email address and we'll send you a link to reset your password.</p>
+        <p className="mt-2 text-center text-sm text-gray-600">Enter your email address and we&apos;ll send you a link to reset your password.</p>
       </div>
       <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <div>

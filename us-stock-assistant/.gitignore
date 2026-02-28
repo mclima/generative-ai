@@ -211,3 +211,5 @@ keys/
 
 # Kiro IDE files and specs
 .kiro/
+.vercel
+.env*.local
