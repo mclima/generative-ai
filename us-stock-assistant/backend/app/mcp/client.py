@@ -7,6 +7,7 @@ from datetime import datetime
 import httpx
 
 from .config import MCPConfig
+from .sdk_client import MCPSDKClient
 from .exceptions import (
     MCPConnectionError,
     MCPToolError,
@@ -59,9 +60,14 @@ class MCPClient:
         """
         self.config = config
         self._client: Optional[httpx.AsyncClient] = None
+        self._sdk_client: Optional[MCPSDKClient] = None
         self._connected = False
         self._tools_cache: Optional[List[MCPTool]] = None
         self._lock = asyncio.Lock()
+        
+        # Initialize SDK client for MCP protocol support
+        server_name = config.server_url.split("//")[-1].split(".")[0]
+        self._sdk_client = MCPSDKClient(config.server_url, server_name)
     
     async def connect(self) -> None:
         """
@@ -97,8 +103,12 @@ class MCPClient:
                 # Test connection
                 await self._test_connection()
                 
+                # Connect SDK client
+                if self._sdk_client:
+                    await self._sdk_client.connect()
+                
                 self._connected = True
-                logger.info(f"Connected to MCP server at {self.config.server_url}")
+                logger.info(f"Connected to MCP server at {self.config.server_url} (using MCP SDK)")
                 
             except Exception as e:
                 logger.error(f"Failed to connect to MCP server: {e}")
@@ -110,6 +120,8 @@ class MCPClient:
     async def disconnect(self) -> None:
         """Close connection to MCP server."""
         async with self._lock:
+            if self._sdk_client:
+                await self._sdk_client.disconnect()
             if self._client:
                 await self._client.aclose()
                 self._client = None
@@ -230,7 +242,7 @@ class MCPClient:
         params: Dict[str, Any]
     ) -> MCPResponse:
         """
-        Execute a single tool request.
+        Execute a single tool request using MCP SDK.
         
         Args:
             tool_name: Name of the tool
@@ -245,6 +257,12 @@ class MCPClient:
             MCPValidationError: If response validation fails
         """
         try:
+            # Use SDK client for MCP protocol compliance
+            if self._sdk_client:
+                data = await self._sdk_client.call_tool(tool_name, params)
+                return MCPResponse(success=True, data=data)
+            
+            # Fallback to direct HTTP (backward compatibility)
             response = await self._client.post(
                 f"/tools/{tool_name}",
                 json=params
@@ -285,7 +303,7 @@ class MCPClient:
     
     async def list_tools(self) -> List[MCPTool]:
         """
-        List available tools from the MCP server.
+        List available tools from the MCP server using MCP protocol.
         
         Returns:
             List of available tools
@@ -301,6 +319,21 @@ class MCPClient:
             return self._tools_cache
         
         try:
+            # Use SDK client for MCP protocol tool discovery
+            if self._sdk_client:
+                tools_data = await self._sdk_client.list_tools()
+                tools = []
+                for tool_info in tools_data:
+                    tools.append(MCPTool(
+                        name=tool_info.get("name", ""),
+                        description=tool_info.get("description", ""),
+                        parameters=tool_info.get("inputSchema", {})
+                    ))
+                self._tools_cache = tools
+                logger.info(f"Discovered {len(tools)} tools via MCP protocol")
+                return tools
+            
+            # Fallback to direct HTTP
             response = await self._client.get("/tools")
             response.raise_for_status()
             data = response.json()

@@ -15,24 +15,35 @@ This project demonstrates integration with the **Model Context Protocol (MCP)**,
 
 ### MCP Architecture
 
-The application uses a hybrid approach to showcase both MCP protocol expertise and production pragmatism:
+This application demonstrates **complete end-to-end MCP protocol integration**, functioning as the "USB-C for AI":
 
-**All three MCP servers** implement the official MCP protocol using the Python SDK (`mcp[cli]`):
-- Use FastMCP framework for tool definitions
+**MCP Servers (Tool Providers):**
+- All three servers implement the official MCP protocol using the Python SDK (`mcp[cli]`)
+- Use FastMCP framework for type-safe tool definitions
 - Run over HTTP/SSE transport for cloud deployment
-- Demonstrate proper MCP tool implementation with type hints and docstrings
+- Expose 11 standardized tools that any MCP client can discover and use
 - Locations: 
   - `mcp-servers/news-server/server.py`
   - `mcp-servers/stock-data-server/server.py`
   - `mcp-servers/market-data-server/server.py`
 
-### Why MCP Protocol?
+**Backend (MCP Client):**
+- Uses the official MCP Python SDK for client-side integration
+- Implements automatic tool discovery via MCP protocol
+- Supports schema introspection and validation
+- Maintains backward compatibility with fallback mechanisms
+- Location: `backend/app/mcp/sdk_client.py`
 
-This architecture demonstrates:
-1. **MCP Protocol Expertise**: All three servers implement the official MCP standard
-2. **Modern AI Integration**: Using emerging standards for AI-to-tool communication
-3. **Type-Safe Tool Definitions**: Leveraging Python type hints for automatic schema generation
-4. **Production-Ready**: HTTP/SSE transport enables cloud deployment while maintaining protocol compliance
+### Why Full MCP Integration?
+
+This architecture demonstrates the **"Build Once, Use Everywhere"** vision of MCP:
+
+1. **Universal Standard**: Both client and server speak the MCP protocol
+2. **Tool Discovery**: AI can automatically discover available tools and their schemas
+3. **Interoperability**: Any MCP-compatible AI client (like Claude Desktop) can use these tools
+4. **Type Safety**: Automatic validation based on tool schemas defined with Python type hints
+5. **Production-Ready**: HTTP/SSE transport enables cloud deployment while maintaining protocol compliance
+6. **Future-Proof**: Following the official Anthropic standard for AI-to-tool communication
 
 ### MCP Tools Exposed
 
