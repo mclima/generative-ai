@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "bash scripts/vercel-build.sh",
+    "prebuild": "bash scripts/vercel-build.sh",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
