@@ -19,10 +19,10 @@ AI-powered portfolio management and stock analysis application.
 
 ### Setup
 
-1. Start infrastructure services:
+1. Start infrastructure services (redis, postgres):
 
 ```bash
-docker-compose up -d
+docker compose up -d postgres redis
 ```
 
 2. Set up backend:

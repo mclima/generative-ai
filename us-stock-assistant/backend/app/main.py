@@ -89,6 +89,7 @@ app.add_middleware(MetricsMiddleware)
 
 # CORS configuration - MUST be added last so it runs first
 # Temporarily allow all origins to debug CORS issue
+# Trigger redeploy to fix Railway networking issue
 logger.info("CORS: Allowing all origins temporarily for debugging")
 app.add_middleware(
     CORSMiddleware,
