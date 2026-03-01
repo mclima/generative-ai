@@ -17,24 +17,22 @@ This project demonstrates integration with the **Model Context Protocol (MCP)**,
 
 The application uses a hybrid approach to showcase both MCP protocol expertise and production pragmatism:
 
-- **News Server & Stock Data Server**: Implement the official MCP protocol using the Python SDK (`mcp[cli]`)
-  - Use FastMCP framework for tool definitions
-  - Run over HTTP/SSE transport for cloud deployment
-  - Demonstrate proper MCP tool implementation with type hints and docstrings
-  - Locations: `mcp-servers/news-server/server.py`, `mcp-servers/stock-data-server/server.py`
+**All three MCP servers** implement the official MCP protocol using the Python SDK (`mcp[cli]`):
+- Use FastMCP framework for tool definitions
+- Run over HTTP/SSE transport for cloud deployment
+- Demonstrate proper MCP tool implementation with type hints and docstrings
+- Locations: 
+  - `mcp-servers/news-server/server.py`
+  - `mcp-servers/stock-data-server/server.py`
+  - `mcp-servers/market-data-server/server.py`
 
-- **Market Data Server**: Uses simplified REST API
-  - Pragmatic choice for production reliability
-  - Easier deployment and debugging
-  - Same functionality, simpler implementation
-
-### Why This Hybrid Approach?
+### Why MCP Protocol?
 
 This architecture demonstrates:
-1. **MCP Protocol Knowledge**: The news-server shows understanding of the official MCP standard
-2. **Engineering Judgment**: Choosing REST for production services shows practical decision-making
-3. **Flexibility**: Ability to work with both emerging standards and traditional APIs
-4. **Production Focus**: Prioritizing reliability and maintainability
+1. **MCP Protocol Expertise**: All three servers implement the official MCP standard
+2. **Modern AI Integration**: Using emerging standards for AI-to-tool communication
+3. **Type-Safe Tool Definitions**: Leveraging Python type hints for automatic schema generation
+4. **Production-Ready**: HTTP/SSE transport enables cloud deployment while maintaining protocol compliance
 
 ### MCP Tools Exposed
 
@@ -50,6 +48,10 @@ This architecture demonstrates:
 - `get_financial_metrics(ticker)` - Get financial metrics including 52-week high/low
 - `search_stocks(query, limit)` - Search for stocks by ticker or company name
 - `get_market_indices()` - Get major market indices (S&P 500, NASDAQ, DOW)
+
+**Market Data Server:**
+- `get_sector_performance()` - Get performance data for market sectors
+- `get_market_sentiment()` - Get aggregated market sentiment based on indices
 
 ### Learn More
 
@@ -99,11 +101,11 @@ source venv/bin/activate
 pip install -r requirements.txt
 python server.py
 
-# Market data server (REST API)
+# Market data server (official MCP protocol)
 cd mcp-servers/market-data-server
 source venv/bin/activate
 pip install -r requirements.txt
-python main.py
+python server.py
 ```
 
 See [mcp-servers/README.md](mcp-servers/README.md) for detailed setup instructions.
