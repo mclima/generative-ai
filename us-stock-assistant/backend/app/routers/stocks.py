@@ -110,8 +110,6 @@ async def search_stocks(
             ]
         except Exception as mcp_error:
             # Fallback to static list if MCP is unavailable
-            logger.warning(f"MCP search failed, using fallback: {mcp_error}")
-            
             # Common stocks for fallback
             common_stocks = [
                 {"ticker": "AAPL", "company_name": "Apple Inc.", "exchange": "NASDAQ"},

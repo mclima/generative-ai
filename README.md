@@ -11,6 +11,7 @@ This repository contains multiple AI-powered applications:
 - **stock-agent** - AI-powered stock analysis dashboard
 - **tech-job-board** - AI-powered job board
 - **task-maestro** - Task management application
+- **us-stock-assistant** - AI-powered stock analysis dashboard
 - **vision-assist** - Real-time object detection for visually impaired users
 
 ## Vercel Deployment Configuration

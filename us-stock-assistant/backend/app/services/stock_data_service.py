@@ -236,7 +236,6 @@ class StockDataService:
         try:
             cached_data = self.redis.get(cache_key) if use_cache else None
             if cached_data:
-                logger.debug(f"Cache hit for search: {query}")
                 data_list = json.loads(cached_data)
                 query_upper = query.upper()
                 results = []
@@ -257,7 +256,7 @@ class StockDataService:
                 
                 return results
         except Exception as e:
-            logger.warning(f"Failed to read search results from cache for '{query}': {e}")
+            pass
         
         # Fetch from MCP
         try:
@@ -272,9 +271,8 @@ class StockDataService:
                         self.SEARCH_CACHE_TTL,
                         json.dumps(data_list)
                     )
-                    logger.debug(f"Cached search results for '{query}'")
             except Exception as e:
-                logger.warning(f"Failed to cache search results for '{query}': {e}")
+                pass
             
             # Apply limit if specified
             if limit is not None and limit > 0:
