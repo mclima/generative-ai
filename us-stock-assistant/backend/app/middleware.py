@@ -41,6 +41,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # Set correlation ID in logging context
         set_correlation_id(correlation_id)
         
+        # Skip authentication for CORS preflight requests
+        if request.method == "OPTIONS":
+            return await call_next(request)
+        
         # Skip authentication for public endpoints
         public_paths = ["/health", "/docs", "/openapi.json", "/redoc"]
         if request.url.path in public_paths:
