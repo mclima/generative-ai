@@ -17,13 +17,13 @@ This project demonstrates integration with the **Model Context Protocol (MCP)**,
 
 The application uses a hybrid approach to showcase both MCP protocol expertise and production pragmatism:
 
-- **News Server**: Implements the official MCP protocol using the Python SDK (`mcp[cli]`)
-  - Uses FastMCP framework for tool definitions
-  - Runs over HTTP/SSE transport for cloud deployment
-  - Demonstrates proper MCP tool implementation with type hints and docstrings
-  - Location: `mcp-servers/news-server/server.py`
+- **News Server & Stock Data Server**: Implement the official MCP protocol using the Python SDK (`mcp[cli]`)
+  - Use FastMCP framework for tool definitions
+  - Run over HTTP/SSE transport for cloud deployment
+  - Demonstrate proper MCP tool implementation with type hints and docstrings
+  - Locations: `mcp-servers/news-server/server.py`, `mcp-servers/stock-data-server/server.py`
 
-- **Stock Data & Market Data Servers**: Use simplified REST APIs
+- **Market Data Server**: Uses simplified REST API
   - Pragmatic choice for production reliability
   - Easier deployment and debugging
   - Same functionality, simpler implementation
@@ -38,11 +38,18 @@ This architecture demonstrates:
 
 ### MCP Tools Exposed
 
-The news-server exposes three MCP tools:
-
+**News Server:**
 - `get_stock_news(ticker, limit)` - Get news for specific stocks
 - `get_market_news(limit)` - Get market-wide news
 - `get_trending_tickers(limit)` - Get trending stocks by news volume
+
+**Stock Data Server:**
+- `get_stock_price(ticker)` - Get current stock price and daily change
+- `get_historical_data(ticker, start_date, end_date, timespan)` - Get historical price data
+- `get_company_info(ticker)` - Get company information and details
+- `get_financial_metrics(ticker)` - Get financial metrics including 52-week high/low
+- `search_stocks(query, limit)` - Search for stocks by ticker or company name
+- `get_market_indices()` - Get major market indices (S&P 500, NASDAQ, DOW)
 
 ### Learn More
 
@@ -86,11 +93,11 @@ source venv/bin/activate
 pip install -r requirements.txt
 python server.py
 
-# Stock data server (REST API)
+# Stock data server (official MCP protocol)
 cd mcp-servers/stock-data-server
 source venv/bin/activate
 pip install -r requirements.txt
-python main.py
+python server.py
 
 # Market data server (REST API)
 cd mcp-servers/market-data-server

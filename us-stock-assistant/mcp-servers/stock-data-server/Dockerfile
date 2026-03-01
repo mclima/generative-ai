@@ -36,4 +36,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8001/health')" || exit 1
 
 # Run the server
-CMD ["python", "main.py"]
+CMD ["python", "server.py"]
