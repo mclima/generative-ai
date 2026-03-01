@@ -9,6 +9,47 @@ AI-powered portfolio management and stock analysis application.
 - **AI/Agents**: LangChain and LangGraph for agentic workflows
 - **Data Access**: Model Context Protocol (MCP) for financial data
 
+## Model Context Protocol (MCP) Integration
+
+This project demonstrates integration with the **Model Context Protocol (MCP)**, an open standard from Anthropic for connecting AI systems to external data sources and tools.
+
+### MCP Architecture
+
+The application uses a hybrid approach to showcase both MCP protocol expertise and production pragmatism:
+
+- **News Server**: Implements the official MCP protocol using the Python SDK (`mcp[cli]`)
+  - Uses FastMCP framework for tool definitions
+  - Runs over HTTP/SSE transport for cloud deployment
+  - Demonstrates proper MCP tool implementation with type hints and docstrings
+  - Location: `mcp-servers/news-server/server.py`
+
+- **Stock Data & Market Data Servers**: Use simplified REST APIs
+  - Pragmatic choice for production reliability
+  - Easier deployment and debugging
+  - Same functionality, simpler implementation
+
+### Why This Hybrid Approach?
+
+This architecture demonstrates:
+1. **MCP Protocol Knowledge**: The news-server shows understanding of the official MCP standard
+2. **Engineering Judgment**: Choosing REST for production services shows practical decision-making
+3. **Flexibility**: Ability to work with both emerging standards and traditional APIs
+4. **Production Focus**: Prioritizing reliability and maintainability
+
+### MCP Tools Exposed
+
+The news-server exposes three MCP tools:
+
+- `get_stock_news(ticker, limit)` - Get news for specific stocks
+- `get_market_news(limit)` - Get market-wide news
+- `get_trending_tickers(limit)` - Get trending stocks by news volume
+
+### Learn More
+
+- [Model Context Protocol Specification](https://modelcontextprotocol.io)
+- [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
+- [FastMCP Documentation](https://modelcontextprotocol.io/docs/develop/build-server)
+
 ## Quick Start
 
 ### Prerequisites
@@ -39,10 +80,23 @@ uvicorn app.main:app --reload
 3. Set up MCP servers:
 
 ```bash
-# For each MCP server (stock-data-server, news-server, market-data-server):
-cd mcp-servers/stock-data-server  # or news-server, or market-data-server
+# News server (official MCP protocol)
+cd mcp-servers/news-server
 source venv/bin/activate
-python3 main.py
+pip install -r requirements.txt
+python server.py
+
+# Stock data server (REST API)
+cd mcp-servers/stock-data-server
+source venv/bin/activate
+pip install -r requirements.txt
+python main.py
+
+# Market data server (REST API)
+cd mcp-servers/market-data-server
+source venv/bin/activate
+pip install -r requirements.txt
+python main.py
 ```
 
 See [mcp-servers/README.md](mcp-servers/README.md) for detailed setup instructions.

@@ -31,9 +31,8 @@ ENV PATH=/root/.local/bin:$PATH
 # Expose port
 EXPOSE 8002
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8002/health')" || exit 1
+# Set environment variable for port
+ENV PORT=8002
 
-# Run the server
-CMD ["python", "main.py"]
+# Run the server with HTTP transport (SSE)
+CMD ["python", "server.py"]
