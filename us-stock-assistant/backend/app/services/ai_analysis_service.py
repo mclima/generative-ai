@@ -214,7 +214,7 @@ Provide a complete analysis including:
 2. Diversification score (0-100)
 3. Risk level assessment (high/medium/low)
 4. Specific rebalancing suggestions with actions (buy/sell/hold)
-5. List of underperforming stocks
+5. List of underperforming stocks - ONLY include stocks with SIGNIFICANT negative returns (worse than -10%) OR stocks showing concerning fundamental weakness despite the user's entry price. Do NOT flag quality stocks (like AAPL, AMZN, GOOGL, MSFT, etc.) as underperforming just because they have minor losses from the purchase price - consider their long-term strength and market position.
 6. Investment opportunities
 
 Generate the analysis in the specified JSON format.""")
