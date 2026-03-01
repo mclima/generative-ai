@@ -90,7 +90,8 @@ app.add_middleware(
 
 # Add security middleware
 app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(CSRFProtectionMiddleware)
+# Temporarily disabled - may interfere with CORS
+# app.add_middleware(CSRFProtectionMiddleware)
 app.add_middleware(HTTPSRedirectMiddleware, enforce_https=False)  # Set to True in production
 
 # Add metrics middleware
