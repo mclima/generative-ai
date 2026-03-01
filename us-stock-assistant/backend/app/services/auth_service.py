@@ -238,39 +238,73 @@ class AuthService:
             }
             
         except JWTError:
-            raise ValueError("Invalid token")
+            raise ValueError("Invalid or expired token")
     
-    def verify_session(self, access_token: str) -> User:
+    def verify_access_token(self, token: str) -> Optional[User]:
         """
         Verify access token and return user.
         
         Args:
-            access_token: User's access token
+            token: JWT access token
         
         Returns:
-            User object
-        
-        Raises:
-            ValueError: If token is invalid or expired
+            User object if token is valid, None otherwise
         """
         try:
-            # Decode access token
-            payload = jwt.decode(access_token, self.secret_key, algorithms=[self.algorithm])
+            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             
-            # Verify it's an access token
+            # Check token type
             if payload.get("type") != "access":
-                raise ValueError("Invalid token type")
+                return None
             
+            # Get user ID
             user_id = payload.get("sub")
             if not user_id:
-                raise ValueError("Invalid token")
+                return None
             
             # Get user from database
             user = get_user_by_id(self.db, uuid.UUID(user_id))
-            if not user:
-                raise ValueError("User not found")
-            
             return user
             
         except JWTError:
-            raise ValueError("Invalid or expired token")
+            return None
+    
+    def get_or_create_demo_user(self, demo_email: str) -> Dict[str, Any]:
+        """
+        Get or create demo user and return session tokens.
+        Used for automatic demo login without exposing credentials.
+        
+        Args:
+            demo_email: Email for the demo account
+        
+        Returns:
+            Dictionary containing user info and tokens
+        """
+        # Check if demo user exists
+        demo_user = get_user_by_email(self.db, demo_email)
+        
+        # Create demo user if it doesn't exist
+        if not demo_user:
+            # Use a secure random password that's never exposed
+            demo_password = str(uuid.uuid4()) + str(uuid.uuid4())
+            demo_user = create_user(self.db, demo_email, demo_password)
+        
+        # Generate tokens and session (same as login)
+        session_id = str(uuid.uuid4())
+        access_token, access_expire = self._create_access_token(str(demo_user.id))
+        refresh_token, refresh_expire = self._create_refresh_token(str(demo_user.id), session_id)
+        
+        # Store session in Redis
+        self._store_session(session_id, str(demo_user.id), refresh_expire)
+        
+        return {
+            "user": {
+                "id": str(demo_user.id),
+                "email": demo_user.email,
+                "created_at": demo_user.created_at.isoformat()
+            },
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "expires_at": access_expire.isoformat()
+        }

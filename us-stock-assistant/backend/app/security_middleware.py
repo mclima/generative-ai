@@ -139,7 +139,7 @@ class CSRFProtectionMiddleware(BaseHTTPMiddleware):
         self.secret_key = secret_key or settings.jwt_secret_key
         self.exempt_paths = {
             "/auth/login", "/auth/register", 
-            "/api/auth/login", "/api/auth/register",
+            "/api/auth/login", "/api/auth/register", "/api/auth/demo-login",
             "/health", "/docs", "/openapi.json", "/redoc"
         }
         self.safe_methods = {"GET", "HEAD", "OPTIONS"}

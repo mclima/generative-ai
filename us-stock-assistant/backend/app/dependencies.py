@@ -51,15 +51,14 @@ async def get_current_user(
     """
     token = credentials.credentials
     
-    try:
-        user = auth_service.verify_session(token)
-        return user
-    except ValueError as e:
+    user = auth_service.verify_access_token(token)
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
+            detail="Invalid or expired token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    return user
 
 
 # Type alias for dependency injection

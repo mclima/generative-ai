@@ -93,6 +93,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("access_token", access_token);
   };
 
+  const demoLogin = async () => {
+    const response = await apiClient.post("/api/auth/demo-login");
+
+    const { access_token, refresh_token } = response.data;
+    localStorage.setItem("access_token", access_token);
+    localStorage.setItem("refresh_token", refresh_token);
+
+    // Fetch user data
+    const userResponse = await apiClient.get("/api/auth/me");
+    setUser(userResponse.data);
+
+    router.push("/dashboard");
+  };
+
   const value: AuthContextType = {
     user,
     isLoading,
@@ -101,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     logout,
     refreshToken,
+    demoLogin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

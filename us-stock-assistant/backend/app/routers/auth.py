@@ -99,6 +99,30 @@ async def login(
         )
 
 
+@router.post("/demo-login", response_model=AuthResponse)
+@limiter.limit("20/minute")
+async def demo_login(
+    request: Request,
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    """
+    Automatic demo login for prospective employers and users to try the app.
+    Creates a temporary demo session without exposing credentials.
+    
+    Rate limit: 20 requests per minute per IP address.
+    """
+    try:
+        # Use a dedicated demo account
+        demo_email = "demo@mariaclima.ai"
+        result = auth_service.get_or_create_demo_user(demo_email)
+        return result
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Demo login temporarily unavailable"
+        )
+
+
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 @limiter.limit("20/minute")
 async def logout(
