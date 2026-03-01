@@ -88,11 +88,10 @@ app.add_middleware(
     expose_headers=["X-Correlation-ID", "X-CSRF-Token"],
 )
 
-# Add security middleware
-app.add_middleware(SecurityHeadersMiddleware)
-# Temporarily disabled - may interfere with CORS
+# Add security middleware - temporarily disabled to fix CORS
+# app.add_middleware(SecurityHeadersMiddleware)
 # app.add_middleware(CSRFProtectionMiddleware)
-app.add_middleware(HTTPSRedirectMiddleware, enforce_https=False)  # Set to True in production
+# app.add_middleware(HTTPSRedirectMiddleware, enforce_https=False)
 
 # Add metrics middleware
 app.add_middleware(MetricsMiddleware)
