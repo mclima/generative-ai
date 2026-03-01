@@ -97,16 +97,45 @@ async def search_stocks(
         # Validate and sanitize search query
         sanitized_query = validate_search_query(q)
         
-        results = await stock_service.searchStocks(sanitized_query, limit)
-        return [
-            {
-                "ticker": r.ticker,
-                "company_name": r.company_name,
-                "exchange": r.exchange,
-                "relevance_score": r.relevance_score
-            }
-            for r in results
-        ]
+        try:
+            results = await stock_service.searchStocks(sanitized_query, limit)
+            return [
+                {
+                    "ticker": r.ticker,
+                    "company_name": r.company_name,
+                    "exchange": r.exchange,
+                    "relevance_score": r.relevance_score
+                }
+                for r in results
+            ]
+        except Exception as mcp_error:
+            # Fallback to static list if MCP is unavailable
+            logger.warning(f"MCP search failed, using fallback: {mcp_error}")
+            
+            # Common stocks for fallback
+            common_stocks = [
+                {"ticker": "AAPL", "company_name": "Apple Inc.", "exchange": "NASDAQ"},
+                {"ticker": "MSFT", "company_name": "Microsoft Corporation", "exchange": "NASDAQ"},
+                {"ticker": "GOOGL", "company_name": "Alphabet Inc.", "exchange": "NASDAQ"},
+                {"ticker": "AMZN", "company_name": "Amazon.com Inc.", "exchange": "NASDAQ"},
+                {"ticker": "TSLA", "company_name": "Tesla Inc.", "exchange": "NASDAQ"},
+                {"ticker": "META", "company_name": "Meta Platforms Inc.", "exchange": "NASDAQ"},
+                {"ticker": "NVDA", "company_name": "NVIDIA Corporation", "exchange": "NASDAQ"},
+                {"ticker": "JPM", "company_name": "JPMorgan Chase & Co.", "exchange": "NYSE"},
+                {"ticker": "V", "company_name": "Visa Inc.", "exchange": "NYSE"},
+                {"ticker": "WMT", "company_name": "Walmart Inc.", "exchange": "NYSE"},
+            ]
+            
+            # Filter by query
+            query_upper = sanitized_query.upper()
+            filtered = [
+                {**stock, "relevance_score": 1.0 if stock["ticker"] == query_upper else 0.8}
+                for stock in common_stocks
+                if query_upper in stock["ticker"] or query_upper in stock["company_name"].upper()
+            ]
+            
+            return filtered[:limit]
+            
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
