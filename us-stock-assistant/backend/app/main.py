@@ -74,33 +74,30 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS configuration
-# Read allowed origins from environment variable, default to localhost for development
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,https://localhost:3000").split(",")
-cors_origins_list = [origin.strip() for origin in cors_origins]
-logger.info(f"CORS Origins configured: {cors_origins_list}")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=cors_origins_list,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allow_headers=["*"],
-    expose_headers=["X-Correlation-ID", "X-CSRF-Token"],
-)
+# Add custom middleware (order matters - last added runs first)
+# app.add_middleware(AuthMiddleware)
+app.add_middleware(LoggingMiddleware)
+app.add_middleware(ErrorHandlerMiddleware)
+
+# Add metrics middleware
+app.add_middleware(MetricsMiddleware)
 
 # Add security middleware - temporarily disabled to fix CORS
 # app.add_middleware(SecurityHeadersMiddleware)
 # app.add_middleware(CSRFProtectionMiddleware)
 # app.add_middleware(HTTPSRedirectMiddleware, enforce_https=False)
 
-# Add metrics middleware
-app.add_middleware(MetricsMiddleware)
-
-# Add custom middleware (order matters - last added runs first)
-app.add_middleware(ErrorHandlerMiddleware)
-app.add_middleware(LoggingMiddleware)
-# Temporarily disabled - may block CORS preflight
-# app.add_middleware(AuthMiddleware)
+# CORS configuration - MUST be added last so it runs first
+# Temporarily allow all origins to debug CORS issue
+logger.info("CORS: Allowing all origins temporarily for debugging")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,  # Must be False when allow_origins is ["*"]
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["X-Correlation-ID", "X-CSRF-Token"],
+)
 
 # Include routers
 app.include_router(auth.router)
