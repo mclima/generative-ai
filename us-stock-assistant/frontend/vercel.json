@@ -58,6 +58,11 @@
   ],
   "redirects": [
     {
+      "source": "/",
+      "destination": "/register",
+      "permanent": false
+    },
+    {
       "source": "/home",
       "destination": "/",
       "permanent": true

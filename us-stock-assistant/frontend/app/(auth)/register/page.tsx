@@ -44,7 +44,8 @@ function calculatePasswordStrength(password: string): {
 export default function RegisterPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { register: registerUser } = useAuth();
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
+  const { register: registerUser, demoLogin } = useAuth();
 
   const {
     register,
@@ -83,6 +84,20 @@ export default function RegisterPage() {
       setError(handleApiError(err));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setError("");
+    setIsDemoLoading(true);
+
+    try {
+      await demoLogin();
+    } catch (err) {
+      console.error("Demo login error:", err);
+      setError(handleApiError(err));
+    } finally {
+      setIsDemoLoading(false);
     }
   };
 
@@ -214,8 +229,28 @@ export default function RegisterPage() {
         </div>
 
         <div>
-          <button type="submit" disabled={isLoading} className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="submit" disabled={isLoading || isDemoLoading} className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
             {isLoading ? "Creating account..." : "Register"}
+          </button>
+        </div>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-700"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-[#0a0a0a] text-gray-400">Or</span>
+          </div>
+        </div>
+
+        <div>
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            disabled={isLoading || isDemoLoading}
+            className="group relative w-full flex justify-center py-2 px-4 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-transparent hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isDemoLoading ? "Loading demo..." : "Try Demo"}
           </button>
         </div>
 

@@ -159,7 +159,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div>
           <button
             type="button"
             onClick={handleDemoLogin}
@@ -168,9 +168,6 @@ export default function LoginPage() {
           >
             {isDemoLoading ? "Loading demo..." : "Try Demo"}
           </button>
-          <p className="text-xs text-gray-500 text-center">
-            Demo data will be erased when your session ends
-          </p>
         </div>
 
         <div className="text-center">

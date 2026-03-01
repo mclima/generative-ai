@@ -3,6 +3,16 @@ const nextConfig = {
   reactStrictMode: true,
   // Enable SWC minification for better performance
   swcMinify: true,
+  // Redirects
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/register",
+        permanent: false,
+      },
+    ];
+  },
   // Optimize images
   images: {
     formats: ["image/avif", "image/webp"],
