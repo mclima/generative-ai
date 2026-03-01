@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# YOLOv8 model files (too large for git, will be generated during setup)
+/public/yolov8n_web_model/
+yolov8n.pt
+yolov8n_web_model/
+
+# Python virtual environment
+.venv-yolo/

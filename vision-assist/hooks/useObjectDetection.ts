@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { DetectedObject, PerformanceMetrics, DetectionSettings } from '@/types/detection';
-import { loadModel, getModel } from '@/lib/detection';
+import { loadModel, getModel, getModelType, detectYOLOv8 } from '@/lib/detection';
 import * as tf from '@tensorflow/tfjs';
+import type * as cocoSsd from '@tensorflow-models/coco-ssd';
 
 export function useObjectDetection(settings: DetectionSettings) {
   const [isModelLoading, setIsModelLoading] = useState(false);
@@ -19,10 +20,19 @@ export function useObjectDetection(settings: DetectionSettings) {
 
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     async function initModel() {
       setIsModelLoading(true);
       setModelError(null);
+      
+      // Set a timeout for model loading (30 seconds)
+      timeoutId = setTimeout(() => {
+        if (mounted && isModelLoading) {
+          setModelError('Model loading timed out. Please refresh the page and try again.');
+          setIsModelLoading(false);
+        }
+      }, 30000);
       
       try {
         const backend = tf.getBackend();
@@ -31,11 +41,13 @@ export function useObjectDetection(settings: DetectionSettings) {
         }
         await loadModel();
         if (mounted) {
+          clearTimeout(timeoutId);
           setMetrics(prev => ({ ...prev, modelLoaded: true }));
           setIsModelLoading(false);
         }
       } catch (error) {
         if (mounted) {
+          clearTimeout(timeoutId);
           setModelError(error instanceof Error ? error.message : 'Failed to load model');
           setIsModelLoading(false);
         }
@@ -46,6 +58,7 @@ export function useObjectDetection(settings: DetectionSettings) {
 
     return () => {
       mounted = false;
+      clearTimeout(timeoutId);
     };
   }, []);
 
@@ -68,16 +81,24 @@ export function useObjectDetection(settings: DetectionSettings) {
     const startTime = performance.now();
     
     try {
-      const predictions = await model.detect(videoElement);
-      const inferenceTime = performance.now() - startTime;
+      const modelType = getModelType();
+      let predictions: DetectedObject[];
 
-      const filtered = predictions
-        .filter(pred => pred.score >= settings.confidenceThreshold)
-        .map(pred => ({
-          bbox: pred.bbox as [number, number, number, number],
-          class: pred.class,
-          score: pred.score,
-        }));
+      if (modelType === 'yolov8') {
+        predictions = await detectYOLOv8(videoElement, settings.confidenceThreshold);
+      } else {
+        const cocoModel = model as cocoSsd.ObjectDetection;
+        const rawPredictions = await cocoModel.detect(videoElement);
+        predictions = rawPredictions
+          .filter(pred => pred.score >= settings.confidenceThreshold)
+          .map(pred => ({
+            bbox: pred.bbox as [number, number, number, number],
+            class: pred.class,
+            score: pred.score,
+          }));
+      }
+
+      const inferenceTime = performance.now() - startTime;
 
       frameCount.current++;
       const now = Date.now();
@@ -94,7 +115,7 @@ export function useObjectDetection(settings: DetectionSettings) {
         lastTime.current = now;
       }
 
-      return filtered;
+      return predictions;
     } catch (error) {
       console.error('Detection error:', error);
       return [];
@@ -123,6 +144,7 @@ export function useObjectDetection(settings: DetectionSettings) {
       cancelAnimationFrame(animationFrameId.current);
       animationFrameId.current = undefined;
     }
+    setDetections([]);
   }, []);
 
   return {

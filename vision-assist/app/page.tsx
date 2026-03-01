@@ -46,7 +46,13 @@ export default function Home() {
   const handleToggleDetection = useCallback(async () => {
     if (isDetecting) {
       stopDetection();
-      speechSynthesis.cancel();
+      try {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          speechSynthesis.cancel();
+        }
+      } catch (error) {
+        console.warn('Failed to cancel speech:', error);
+      }
       if (speechDebounceTimerRef.current) {
         clearTimeout(speechDebounceTimerRef.current);
         speechDebounceTimerRef.current = null;
@@ -65,9 +71,13 @@ export default function Home() {
       
       // Initialize speech synthesis for mobile browsers
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance('');
-        speechSynthesis.speak(utterance);
-        speechSynthesis.cancel();
+        try {
+          const utterance = new SpeechSynthesisUtterance('');
+          speechSynthesis.speak(utterance);
+          speechSynthesis.cancel();
+        } catch (error) {
+          console.warn('Speech synthesis initialization failed:', error);
+        }
       }
       
       setTimeout(() => {
@@ -115,23 +125,35 @@ export default function Home() {
                       return;
                     }
                     
+                    // Check if speech synthesis is available
+                    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+                      console.warn('Speech synthesis not available');
+                      return;
+                    }
+                    
                     isSpeakingRef.current = true;
                     
-                    const text = `Detected ${objectNames.replace(/,/g, ' and')}`;
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.volume = 1.0;
-                    utterance.lang = 'en-US';
-                    utterance.rate = 0.9;
-                    
-                    utterance.onend = () => {
+                    try {
+                      const text = `Detected ${objectNames.replace(/,/g, ' and')}`;
+                      const utterance = new SpeechSynthesisUtterance(text);
+                      utterance.volume = 1.0;
+                      utterance.lang = 'en-US';
+                      utterance.rate = 0.9;
+                      
+                      utterance.onend = () => {
+                        isSpeakingRef.current = false;
+                      };
+                      
+                      utterance.onerror = (event) => {
+                        console.error('Speech synthesis error:', event.error);
+                        isSpeakingRef.current = false;
+                      };
+                      
+                      speechSynthesis.speak(utterance);
+                    } catch (error) {
+                      console.error('Failed to speak:', error);
                       isSpeakingRef.current = false;
-                    };
-                    
-                    utterance.onerror = () => {
-                      isSpeakingRef.current = false;
-                    };
-                    
-                    speechSynthesis.speak(utterance);
+                    }
                   }, 500);
                 }
               }
@@ -152,7 +174,13 @@ export default function Home() {
   const handleStopAll = useCallback(() => {
     stopDetection();
     stopWebcam();
-    speechSynthesis.cancel();
+    try {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        speechSynthesis.cancel();
+      }
+    } catch (error) {
+      console.warn('Failed to cancel speech:', error);
+    }
     if (speechDebounceTimerRef.current) {
       clearTimeout(speechDebounceTimerRef.current);
       speechDebounceTimerRef.current = null;
@@ -251,19 +279,20 @@ export default function Home() {
             <div className="p-6 bg-gray-900 rounded-lg border border-gray-800">
               <h3 className="text-lg font-semibold mb-3">About</h3>
               <p className="text-sm text-gray-400 leading-relaxed">
-                VisionAssist uses TensorFlow.js and the COCO-SSD model to detect objects in real-time. 
+                VisionAssist uses TensorFlow.js and the YOLOv8n model to detect objects in real-time. 
                 All processing happens in your browser - no data is sent to any server.
               </p>
               <div className="mt-4 pt-4 border-t border-gray-800 space-y-3">
                 <p className="text-xs text-gray-500">
-                  Detects 90 common objects including people, vehicles, animals, and household items.
+                  Detects 80 common objects including people, vehicles, animals, and household items with 
+                  superior accuracy (37% mAP vs COCO-SSD&apos;s 22% mAP).
                 </p>
                 <div className="text-xs text-gray-500">
                   <p className="font-semibold text-gray-400 mb-1">Detection Tips:</p>
                   <ul className="space-y-1 list-disc list-inside">
-                    <li>Small objects (spoons, keys, phones) may require good lighting and closer proximity</li>
-                    <li>Lower the confidence threshold to 30-40% for better small object detection</li>
-                    <li>Ensure objects are fully visible and not partially hidden</li>
+                    <li>YOLOv8 excels at detecting small objects (phones, keys, utensils)</li>
+                    <li>Lower the confidence threshold to 30-40% for even better small object detection</li>
+                    <li>Ensure good lighting and objects are fully visible</li>
                   </ul>
                 </div>
               </div>
