@@ -70,14 +70,6 @@ This architecture demonstrates the **"Build Once, Use Everywhere"** vision of MC
 - [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
 - [FastMCP Documentation](https://modelcontextprotocol.io/docs/develop/build-server)
 
-## Using These MCP Servers
-
-Connect to our MCP servers in Claude Desktop or any MCP client:
-
-**News Server:** https://news-server-production-5861.up.railway.app  
-**Stock Data Server:** https://stock-data-server-production.up.railway.app  
-**Market Data Server:** https://market-data-server-production.up.railway.app
-
 ## Quick Start
 
 ### Prerequisites
