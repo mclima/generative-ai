@@ -31,10 +31,12 @@ export const WebcamView = forwardRef<Webcam, WebcamViewProps>(
             screenshotFormat="image/jpeg"
             videoConstraints={{
               facingMode: 'environment',
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
             }}
             className="w-full h-full object-contain"
+            playsInline
+            onUserMediaError={(error) => {
+              console.error('Webcam error:', error);
+            }}
           />
         ) : (
           <div className="text-gray-400 text-center p-8">

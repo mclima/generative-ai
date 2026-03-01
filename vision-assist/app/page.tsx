@@ -80,8 +80,10 @@ export default function Home() {
         }
       }
       
-      setTimeout(() => {
-        if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
+      // Wait longer for mobile devices to initialize video
+      const waitForVideo = () => {
+        if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0 && videoElement.readyState === 4) {
+          console.log('Video ready, starting detection');
           startDetection(videoElement, (newDetections) => {
             setDetections(newDetections);
             
@@ -160,8 +162,18 @@ export default function Home() {
             }
           });
           setIsDetecting(true);
+        } else {
+          console.log('Video not ready, retrying...', {
+            width: videoElement.videoWidth,
+            height: videoElement.videoHeight,
+            readyState: videoElement.readyState
+          });
+          // Retry after a short delay
+          setTimeout(waitForVideo, 200);
         }
-      }, 100);
+      };
+      
+      setTimeout(waitForVideo, 100);
     } else {
       try {
         await startWebcam();
