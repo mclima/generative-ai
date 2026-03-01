@@ -99,7 +99,8 @@ app.add_middleware(MetricsMiddleware)
 # Add custom middleware (order matters - last added runs first)
 app.add_middleware(ErrorHandlerMiddleware)
 app.add_middleware(LoggingMiddleware)
-app.add_middleware(AuthMiddleware)
+# Temporarily disabled - may block CORS preflight
+# app.add_middleware(AuthMiddleware)
 
 # Include routers
 app.include_router(auth.router)
