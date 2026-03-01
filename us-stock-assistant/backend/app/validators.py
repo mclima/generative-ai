@@ -257,7 +257,8 @@ def validate_search_query(query: str) -> str:
         if re.search(pattern, query, re.IGNORECASE):
             raise ValueError("Search query contains invalid characters")
     
-    return sanitize_string(query, max_length=100)
+    # Return query without HTML escaping (stock symbols don't need escaping)
+    return query
 
 
 def validate_json_field(value: dict, max_depth: int = 5) -> dict:
