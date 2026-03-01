@@ -43,7 +43,11 @@ async def authenticate_websocket(
         # Verify token
         redis_client = get_redis()
         auth_service = AuthService(db, redis_client)
-        user = auth_service.verify_session(token)
+        user = auth_service.verify_access_token(token)
+        
+        if not user:
+            logger.warning("WebSocket authentication failed: invalid token")
+            return None
         
         logger.info(f"WebSocket authenticated for user {user.id}")
         return str(user.id)
