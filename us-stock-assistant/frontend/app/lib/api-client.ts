@@ -5,7 +5,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 // Create axios instance with default config
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
-  timeout: 30000, // 30 seconds to accommodate slower endpoints like market overview
+  timeout: 60000, // 60 seconds to accommodate slower endpoints like market overview on initial load
+  withCredentials: true, // Send cookies with CORS requests
   headers: {
     "Content-Type": "application/json",
   },

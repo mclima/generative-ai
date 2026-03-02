@@ -110,27 +110,46 @@ class MarketOverviewService:
         except Exception as e:
             logger.warning(f"Failed to read market overview from cache: {e}")
         
-        # Fetch all components
+        # Fetch all components in parallel for faster loading
         try:
-            # Fetch headlines (top market news)
-            headlines = await self.news_tools.get_market_news(limit=10)
+            import asyncio
+            
+            # Fetch headlines and indices in parallel (both are critical)
+            headlines_task = self.news_tools.get_market_news(limit=10)
+            indices_task = self.getMarketIndices()
+            
+            # Also fetch trending tickers in parallel (non-critical)
+            trending_task = self.getTrendingTickers(limit=10)
+            
+            # Gather all tasks with error handling
+            results = await asyncio.gather(
+                headlines_task,
+                indices_task,
+                trending_task,
+                return_exceptions=True
+            )
+            
+            # Extract results
+            headlines = results[0] if not isinstance(results[0], Exception) else []
+            indices = results[1] if not isinstance(results[1], Exception) else []
+            trending_tickers = results[2] if not isinstance(results[2], Exception) else []
+            
+            # Log any errors
+            if isinstance(results[0], Exception):
+                logger.error(f"Failed to fetch headlines: {results[0]}")
+                raise results[0]  # Headlines are critical
+            if isinstance(results[1], Exception):
+                logger.error(f"Failed to fetch indices: {results[1]}")
+                raise results[1]  # Indices are critical
+            if isinstance(results[2], Exception):
+                logger.warning(f"Failed to get trending tickers, continuing without: {results[2]}")
             
             # Annotate each article with its individual sentiment
             for article in headlines:
                 article.sentiment = self.sentiment_analyzer.analyzeSentiment(article)
             
-            # Get market indices first (needed for sentiment calculation)
-            indices = await self.getMarketIndices()
-            
             # Calculate overall market sentiment from headlines with indices alignment
             sentiment = self._calculate_market_sentiment(headlines, indices)
-            
-            # Get trending tickers (non-fatal if unavailable)
-            try:
-                trending_tickers = await self.getTrendingTickers(limit=10)
-            except Exception as e:
-                logger.warning(f"Failed to get trending tickers, continuing without: {e}")
-                trending_tickers = []
             
             # Get sector performance if requested
             sector_heatmap = None
