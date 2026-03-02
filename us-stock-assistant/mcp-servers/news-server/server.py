@@ -160,7 +160,7 @@ if __name__ == "__main__":
     
     # Check if running with HTTP transport (for Railway)
     port = int(os.getenv("PORT", "8002"))
-    host = os.getenv("HOST", "0.0.0.0")
+    host = os.getenv("HOST") or "0.0.0.0"
     
     # Run with HTTP transport for production deployment
     # This allows the MCP server to be accessed over HTTP while using the MCP protocol
