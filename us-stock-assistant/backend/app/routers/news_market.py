@@ -466,6 +466,118 @@ async def get_market_indices(
         )
 
 
+@router.post("/api/news/stock/{ticker}/sentiment/evaluate", response_model=SentimentEvaluationResponse)
+@limiter.limit("10/minute")
+async def evaluate_stock_sentiment(
+    request: Request,
+    ticker: str,
+    news_service: NewsService = Depends(get_news_service),
+    ai_service: AIAnalysisService = Depends(get_ai_analysis_service)
+):
+    """
+    Evaluate the accuracy of the calculated stock sentiment using LLM analysis.
+    
+    This endpoint uses AI to assess whether the calculated sentiment (based on
+    weighted average of article sentiments) accurately reflects the stock's current conditions.
+    
+    Rate limit: 10 requests per minute (LLM calls are expensive).
+    """
+    try:
+        ticker = ticker.upper()
+        
+        # Get stock sentiment
+        stock_sentiment = await news_service.getStockSentiment(ticker, limit=10)
+        
+        # Format articles for LLM evaluation
+        articles_summary = "\n".join([
+            f"- {article.headline} (Source: {article.source}, Sentiment: {article.sentiment.label if article.sentiment else 'unknown'})"
+            for article in stock_sentiment.recent_articles[:10]
+        ])
+        
+        # Create evaluation prompt
+        evaluation_prompt = f"""You are a financial analyst. Evaluate the accuracy of the following sentiment calculation for {ticker}.
+
+Calculated Stock Sentiment for {ticker}:
+- Label: {stock_sentiment.overall_sentiment.label}
+- Score: {stock_sentiment.overall_sentiment.score:.2f} (range: -1 to 1)
+- Confidence: {stock_sentiment.overall_sentiment.confidence:.2f}
+
+This sentiment was calculated as a weighted average of individual article sentiments from recent news about {ticker}.
+
+Recent News Headlines for {ticker}:
+{articles_summary}
+
+Please evaluate:
+1. Does the calculated sentiment accurately reflect the overall sentiment about {ticker} based on the headlines?
+2. What is your assessment of the accuracy? (Highly Accurate / Moderately Accurate / Somewhat Inaccurate / Highly Inaccurate)
+3. What is your confidence level in this evaluation? (High / Medium / Low)
+4. Provide 2-3 specific recommendations for improving sentiment calculation accuracy for this stock.
+
+Provide your response in the following format:
+EVALUATION: [Your detailed evaluation in 2-3 sentences]
+ACCURACY: [Highly Accurate / Moderately Accurate / Somewhat Inaccurate / Highly Inaccurate]
+CONFIDENCE: [High / Medium / Low]
+RECOMMENDATIONS:
+- [Recommendation 1]
+- [Recommendation 2]
+- [Recommendation 3]"""
+        
+        # Get LLM evaluation
+        llm_response = await ai_service.generate_summary(evaluation_prompt)
+        
+        # Parse LLM response
+        lines = llm_response.strip().split('\n')
+        evaluation = ""
+        accuracy = "Moderately Accurate"
+        confidence = "Medium"
+        recommendations = []
+        
+        current_section = None
+        for line in lines:
+            line = line.strip()
+            if line.startswith("EVALUATION:"):
+                evaluation = line.replace("EVALUATION:", "").strip()
+                current_section = "evaluation"
+            elif line.startswith("ACCURACY:"):
+                accuracy = line.replace("ACCURACY:", "").strip()
+                current_section = "accuracy"
+            elif line.startswith("CONFIDENCE:"):
+                confidence = line.replace("CONFIDENCE:", "").strip()
+                current_section = "confidence"
+            elif line.startswith("RECOMMENDATIONS:"):
+                current_section = "recommendations"
+            elif line.startswith("-") and current_section == "recommendations":
+                recommendations.append(line.lstrip("- ").strip())
+            elif current_section == "evaluation" and line and not line.startswith(("ACCURACY", "CONFIDENCE", "RECOMMENDATIONS")):
+                evaluation += " " + line
+        
+        # Ensure we have at least some recommendations
+        if not recommendations:
+            recommendations = [
+                f"Consider incorporating {ticker}'s price movement into sentiment calculation",
+                "Weight recent news more heavily than older news",
+                "Include analyst ratings and earnings reports in sentiment analysis"
+            ]
+        
+        return {
+            "calculated_sentiment": {
+                "label": stock_sentiment.overall_sentiment.label,
+                "score": stock_sentiment.overall_sentiment.score,
+                "confidence": stock_sentiment.overall_sentiment.confidence
+            },
+            "llm_evaluation": evaluation or f"The calculated sentiment appears to align with the recent news about {ticker}.",
+            "accuracy_assessment": accuracy,
+            "confidence_level": confidence,
+            "recommendations": recommendations
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to evaluate stock sentiment: {str(e)}"
+        )
+
+
 @router.post("/api/market/sentiment/evaluate", response_model=SentimentEvaluationResponse)
 @limiter.limit("10/minute")
 async def evaluate_market_sentiment(

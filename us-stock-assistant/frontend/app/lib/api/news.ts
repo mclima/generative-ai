@@ -23,4 +23,16 @@ export const newsApi = {
     const response = await apiClient.get(`/api/news/stock/${ticker}/sentiment`);
     return response.data;
   },
+
+  // Evaluate stock sentiment with AI
+  evaluateStockSentiment: async (ticker: string): Promise<{
+    calculated_sentiment: { label: string; score: number; confidence: number };
+    llm_evaluation: string;
+    accuracy_assessment: string;
+    confidence_level: string;
+    recommendations: string[];
+  }> => {
+    const response = await apiClient.post(`/api/news/stock/${ticker}/sentiment/evaluate`);
+    return response.data;
+  },
 };

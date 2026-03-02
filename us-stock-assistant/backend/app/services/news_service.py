@@ -134,6 +134,17 @@ class NewsService:
             # Apply limit after deduplication
             limited_articles = deduplicated_articles[:limit]
             
+            # Analyze sentiment for each article in parallel
+            loop = asyncio.get_event_loop()
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                for article in limited_articles:
+                    if not article.sentiment:
+                        article.sentiment = await loop.run_in_executor(
+                            executor,
+                            self.sentiment_analyzer.analyzeSentiment,
+                            article
+                        )
+            
             # Cache the result
             try:
                 data_list = [article.dict() for article in limited_articles]

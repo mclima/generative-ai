@@ -14,6 +14,9 @@ export default function StockNewsSection({ ticker, limit = 5 }: StockNewsSection
   const [sentiment, setSentiment] = useState<StockSentiment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [aiEvaluation, setAiEvaluation] = useState<any>(null);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [showEvaluation, setShowEvaluation] = useState(false);
 
   useEffect(() => {
     if (ticker) {
@@ -82,6 +85,19 @@ export default function StockNewsSection({ ticker, limit = 5 }: StockNewsSection
     }
   };
 
+  const handleEvaluateWithAI = async () => {
+    setIsEvaluating(true);
+    try {
+      const evaluation = await newsApi.evaluateStockSentiment(ticker);
+      setAiEvaluation(evaluation);
+      setShowEvaluation(true);
+    } catch (err) {
+      console.error("Failed to evaluate sentiment:", err);
+    } finally {
+      setIsEvaluating(false);
+    }
+  };
+
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -143,6 +159,75 @@ export default function StockNewsSection({ ticker, limit = 5 }: StockNewsSection
               <p className="text-xs opacity-75">Score (-1 to +1)</p>
             </div>
           </div>
+          
+          {/* AI Evaluation Button */}
+          <div className="mt-4 pt-4 border-t border-current/20">
+            <button
+              onClick={handleEvaluateWithAI}
+              disabled={isEvaluating}
+              className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              {isEvaluating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Evaluating with AI...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  Evaluate with AI
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* AI Evaluation Results */}
+          {showEvaluation && aiEvaluation && (
+            <div className="mt-4 p-4 bg-[#111111] rounded-lg border border-purple-500/30">
+              <div className="flex items-start justify-between mb-3">
+                <h4 className="font-semibold text-white flex items-center gap-2">
+                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  AI Evaluation
+                </h4>
+                <button onClick={() => setShowEvaluation(false)} className="text-gray-400 hover:text-white">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <p className="text-gray-300 text-sm mb-3">{aiEvaluation.llm_evaluation}</p>
+              
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="bg-[#1a1a1a] p-2 rounded">
+                  <p className="text-xs text-gray-500 uppercase">Accuracy</p>
+                  <p className="text-sm font-medium text-white">{aiEvaluation.accuracy_assessment}</p>
+                </div>
+                <div className="bg-[#1a1a1a] p-2 rounded">
+                  <p className="text-xs text-gray-500 uppercase">Confidence</p>
+                  <p className="text-sm font-medium text-white">{aiEvaluation.confidence_level}</p>
+                </div>
+              </div>
+              
+              {aiEvaluation.recommendations && aiEvaluation.recommendations.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase mb-2">Recommendations</p>
+                  <ul className="space-y-1">
+                    {aiEvaluation.recommendations.map((rec: string, idx: number) => (
+                      <li key={idx} className="text-xs text-gray-400 flex items-start gap-2">
+                        <span className="text-purple-400 mt-0.5">•</span>
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

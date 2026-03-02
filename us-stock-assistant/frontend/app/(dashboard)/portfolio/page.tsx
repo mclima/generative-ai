@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useNotifications } from "@/app/contexts/NotificationContext";
 import { portfolioApi } from "@/app/lib/api/portfolio";
@@ -387,7 +388,12 @@ export default function PortfolioPage() {
                 {portfolio.positions.map((position) => (
                   <tr key={position.id} className="hover:bg-[#222222]">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-white">{position.ticker}</div>
+                      <Link href={`/stocks/${position.ticker}`} className="flex items-center gap-2 font-medium text-white hover:text-blue-400 transition-colors group">
+                        {position.ticker}
+                        <svg className="w-3 h-3 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                      </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-300">{position.quantity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-300">${position.purchase_price.toFixed(2)}</td>
