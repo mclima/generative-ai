@@ -22,7 +22,7 @@ export default function TrendingTickers({ tickers }: TrendingTickersProps) {
           <Link key={ticker.ticker} href={`/stocks/${ticker.ticker}`} className="block border border-[#2a2a2a] bg-[#111111] rounded-lg p-4 hover:shadow-lg hover:border-blue-700 transition-all group">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-2 mb-2">
                   <span className="font-bold text-lg text-white group-hover:text-blue-400 transition-colors">{ticker.ticker}</span>
                   <svg className="w-4 h-4 text-blue-500 -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />

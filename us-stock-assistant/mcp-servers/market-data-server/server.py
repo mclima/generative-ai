@@ -147,6 +147,7 @@ if __name__ == "__main__":
     
     # Check if running with HTTP transport (for Railway)
     port = int(os.getenv("PORT", "8003"))
+    host = os.getenv("HOST", "0.0.0.0")
     
-    # Run with HTTP/SSE transport for production deployment
-    mcp.run(transport="sse", port=port)
+    # Run with HTTP transport for production deployment
+    mcp.run(transport="http", host=host, port=port)
