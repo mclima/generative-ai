@@ -94,17 +94,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const demoLogin = async () => {
-    const response = await apiClient.post("/api/auth/demo-login");
+    try {
+      const response = await apiClient.post("/api/auth/demo-login");
 
-    const { access_token, refresh_token } = response.data;
-    localStorage.setItem("access_token", access_token);
-    localStorage.setItem("refresh_token", refresh_token);
+      const { access_token, refresh_token } = response.data;
+      localStorage.setItem("access_token", access_token);
+      localStorage.setItem("refresh_token", refresh_token);
 
-    // Fetch user data
-    const userResponse = await apiClient.get("/api/auth/me");
-    setUser(userResponse.data);
+      // Fetch user data
+      const userResponse = await apiClient.get("/api/auth/me");
+      setUser(userResponse.data);
 
-    router.push("/dashboard");
+      // Wait a tick to ensure state is updated before redirecting
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      router.push("/dashboard");
+    } catch (error) {
+      // Clear any partial state on error
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      setUser(null);
+      throw error; // Re-throw to be handled by the calling component
+    }
   };
 
   const value: AuthContextType = {
