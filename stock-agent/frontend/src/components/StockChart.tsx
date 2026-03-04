@@ -22,12 +22,6 @@ export default function StockChart({ symbol, data: initialData }: StockChartProp
   const [timeframe, setTimeframe] = useState("1M");
 
   useEffect(() => {
-    if (initialData) {
-      setChartData(initialData);
-      setLoading(false);
-      return;
-    }
-
     const fetchChartData = async () => {
       setLoading(true);
       try {
@@ -44,7 +38,7 @@ export default function StockChart({ symbol, data: initialData }: StockChartProp
     };
 
     fetchChartData();
-  }, [symbol, timeframe, initialData]);
+  }, [symbol, timeframe]);
 
   const timeframes = ["1D", "1W", "1M", "3M", "1Y", "5Y"];
 
