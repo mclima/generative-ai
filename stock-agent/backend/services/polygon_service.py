@@ -83,13 +83,31 @@ class PolygonService:
     
     async def get_chart_data(self, symbol: str, timeframe: str = "1M") -> List[ChartData]:
         try:
-            days_map = {"1D": 1, "1W": 7, "1M": 30, "3M": 90, "1Y": 365}
-            days = days_map.get(timeframe, 30)
-            
             end_date = datetime.now()
-            start_date = end_date - timedelta(days=days)
             
-            url = f"{self.base_url}/v2/aggs/ticker/{symbol}/range/1/day/{start_date.strftime('%Y-%m-%d')}/{end_date.strftime('%Y-%m-%d')}"
+            # Use different intervals based on timeframe
+            if timeframe == "1D":
+                # 5-minute intervals for current day only
+                start_date = end_date.replace(hour=0, minute=0, second=0, microsecond=0)
+                multiplier = 5
+                timespan = "minute"
+                date_format = "%Y-%m-%d %H:%M"
+            elif timeframe == "1W":
+                # Hourly intervals for 1 week
+                start_date = end_date - timedelta(days=7)
+                multiplier = 1
+                timespan = "hour"
+                date_format = "%Y-%m-%d %H:%M"
+            else:
+                # Daily intervals for longer periods
+                days_map = {"1M": 30, "3M": 90, "1Y": 365, "5Y": 1825}
+                days = days_map.get(timeframe, 30)
+                start_date = end_date - timedelta(days=days)
+                multiplier = 1
+                timespan = "day"
+                date_format = "%Y-%m-%d"
+            
+            url = f"{self.base_url}/v2/aggs/ticker/{symbol}/range/{multiplier}/{timespan}/{start_date.strftime('%Y-%m-%d')}/{end_date.strftime('%Y-%m-%d')}"
             params = {"apiKey": self.api_key, "adjusted": "true", "sort": "asc"}
             
             response = requests.get(url, params=params)
@@ -110,11 +128,27 @@ class PolygonService:
             chart_data = []
             
             for item in results:
+                timestamp = datetime.fromtimestamp(item["t"] / 1000)
+                
+                # For 1D, filter to regular trading hours (9:30 AM - 4:00 PM EST)
+                if timeframe == "1D":
+                    hour = timestamp.hour
+                    minute = timestamp.minute
+                    # Skip pre-market (before 9:30) and after-hours (after 16:00)
+                    if hour < 9 or (hour == 9 and minute < 30) or hour >= 16:
+                        continue
+                
                 chart_data.append(ChartData(
-                    date=datetime.fromtimestamp(item["t"] / 1000).strftime("%Y-%m-%d"),
+                    date=timestamp.strftime(date_format),
                     price=item["c"],
                     volume=int(item["v"])
                 ))
+            
+            if timeframe == "1D" and chart_data:
+                print(f"1D Chart data: {len(chart_data)} points")
+                print(f"First point: {chart_data[0].date} - ${chart_data[0].price}")
+                print(f"Last point: {chart_data[-1].date} - ${chart_data[-1].price}")
+                print(f"Price range: ${min(d.price for d in chart_data):.2f} - ${max(d.price for d in chart_data):.2f}")
             
             return chart_data
         except Exception as e:

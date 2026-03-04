@@ -29,6 +29,15 @@ export default function StockChart({ symbol, data: initialData }: StockChartProp
         const response = await axios.get(`${apiUrl}/api/stock/${symbol}/chart`, {
           params: { timeframe }
         });
+        
+        if (timeframe === "1D" && response.data.length > 0) {
+          console.log(`1D Chart - Total points: ${response.data.length}`);
+          console.log(`First: ${response.data[0].date} - $${response.data[0].price}`);
+          console.log(`Last: ${response.data[response.data.length - 1].date} - $${response.data[response.data.length - 1].price}`);
+          const prices = response.data.map((d: ChartData) => d.price);
+          console.log(`Price range: $${Math.min(...prices).toFixed(2)} - $${Math.max(...prices).toFixed(2)}`);
+        }
+        
         setChartData(response.data);
       } catch (err) {
         console.error("Failed to fetch chart data:", err);
@@ -39,6 +48,26 @@ export default function StockChart({ symbol, data: initialData }: StockChartProp
 
     fetchChartData();
   }, [symbol, timeframe]);
+
+  const formatXAxis = (dateStr: string) => {
+    const date = new Date(dateStr);
+    
+    switch (timeframe) {
+      case "1D":
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      case "1W":
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      case "1M":
+      case "3M":
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      case "1Y":
+        return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      case "5Y":
+        return date.toLocaleDateString('en-US', { year: 'numeric' });
+      default:
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+  };
 
   const timeframes = ["1D", "1W", "1M", "3M", "1Y", "5Y"];
 
@@ -81,6 +110,7 @@ export default function StockChart({ symbol, data: initialData }: StockChartProp
               dataKey="date" 
               stroke="#9ca3af"
               tick={{ fill: '#9ca3af' }}
+              tickFormatter={formatXAxis}
             />
             <YAxis 
               stroke="#9ca3af"
