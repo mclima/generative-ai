@@ -207,29 +207,8 @@ export default function StockDashboard({ symbol }: StockDashboardProps) {
     return null;
   }
 
-  const hasPartialData = stockData && (
-    chartData.length === 0 || 
-    historicalData.length === 0 || 
-    newsData.length === 0 || 
-    !insightsData
-  );
-
   return (
     <div className="space-y-6">
-      {hasPartialData && (
-        <div className="card bg-yellow-900/20 border border-yellow-700/50">
-          <div className="flex items-start gap-3">
-            <div className="text-yellow-400 text-xl">⚠️</div>
-            <div className="flex-1">
-              <h3 className="text-yellow-300 font-semibold mb-1">Loading Data</h3>
-              <p className="text-yellow-200 text-sm">
-                Some sections are still loading. Missing sections will appear shortly.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       <StockMetrics data={stockData} />
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
