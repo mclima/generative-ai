@@ -16,30 +16,23 @@ class OpenAIAgent:
     
     async def analyze_news_sentiment(self, news: List[NewsArticle]) -> List[NewsArticle]:
         try:
+            if not news:
+                return news
+            
+            # Use FinBERT sentiment analyzer instead of OpenAI for faster performance
+            from services.sentiment_analyzer import SentimentAnalyzer
+            analyzer = SentimentAnalyzer()
+            
+            # Analyze all articles using local FinBERT model
             for article in news:
-                prompt = f"""Analyze the sentiment of this news article about a stock.
-                
-Title: {article.title}
-Description: {article.description}
-
-Respond with only one word: positive, negative, or neutral."""
-
-                messages = [
-                    SystemMessage(content="You are a financial sentiment analysis expert."),
-                    HumanMessage(content=prompt)
-                ]
-                
-                response = self.llm.invoke(messages)
-                sentiment = response.content.strip().lower()
-                
-                if sentiment in ["positive", "negative", "neutral"]:
-                    article.sentiment = sentiment
-                else:
-                    article.sentiment = "neutral"
+                article.sentiment = analyzer.analyze_sentiment(article)
             
             return news
         except Exception as e:
             print(f"Error analyzing sentiment: {str(e)}")
+            # Fallback: set all to neutral on error
+            for article in news:
+                article.sentiment = "neutral"
             return news
     
     async def generate_insights(

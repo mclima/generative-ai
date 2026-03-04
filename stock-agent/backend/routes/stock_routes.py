@@ -67,18 +67,31 @@ async def get_historical_data(symbol: str, limit: int = 30):
 @router.get("/stock/{symbol}/news", response_model=List[NewsArticle])
 async def get_stock_news(symbol: str, request: Request):
     try:
-        print(f"Fetching news for {symbol}")
+        import time
+        start_time = time.time()
+        print(f"[NEWS] Starting news fetch for {symbol}")
+        
         poly_service, ai_agent = get_services()
+        
+        fetch_start = time.time()
         news = await poly_service.get_stock_news(symbol, limit=6)
-        print(f"News retrieved: {len(news)} articles")
+        fetch_time = time.time() - fetch_start
+        print(f"[NEWS] Fetched {len(news)} articles in {fetch_time:.2f}s")
         
+        # Store news articles in vector database for RAG
         vector_service = request.app.state.vector_service
-        for article in news:
-            await vector_service.add_news_article(symbol, article)
+        vector_start = time.time()
+        await vector_service.add_news_articles_batch(symbol, news)
+        vector_time = time.time() - vector_start
+        print(f"[NEWS] Vector store embeddings completed in {vector_time:.2f}s")
         
-        print(f"Analyzing sentiment for {len(news)} articles")
+        sentiment_start = time.time()
         analyzed_news = await ai_agent.analyze_news_sentiment(news)
-        print(f"Sentiment analysis complete")
+        sentiment_time = time.time() - sentiment_start
+        print(f"[NEWS] Sentiment analysis completed in {sentiment_time:.2f}s")
+        
+        total_time = time.time() - start_time
+        print(f"[NEWS] Total time: {total_time:.2f}s")
         return analyzed_news
     except Exception as e:
         print(f"Error in get_stock_news: {type(e).__name__}: {str(e)}")
@@ -91,19 +104,34 @@ async def get_stock_news(symbol: str, request: Request):
 @router.get("/stock/{symbol}/insights")
 async def get_ai_insights(symbol: str, request: Request):
     try:
+        import time
+        start_time = time.time()
+        print(f"[INSIGHTS] Starting insights generation for {symbol}")
+        
         poly_service, ai_agent = get_services()
+        
+        quote_start = time.time()
         stock_data = await poly_service.get_stock_quote(symbol)
+        quote_time = time.time() - quote_start
+        print(f"[INSIGHTS] Stock quote fetched in {quote_time:.2f}s")
         
-        # Get news from vector store (already cached from news endpoint)
-        # This avoids hitting rate limits by not fetching news again
+        # Retrieve relevant context from vector store for RAG
         vector_service = request.app.state.vector_service
+        context_start = time.time()
         context = await vector_service.get_relevant_context(symbol)
+        context_time = time.time() - context_start
+        print(f"[INSIGHTS] Vector store context retrieved in {context_time:.2f}s")
         
-        # Use empty news list since context already contains news info
-        # Or fetch minimal news only if absolutely needed
+        # Use empty news list to avoid additional API calls
         news = []
         
+        insights_start = time.time()
         insights = await ai_agent.generate_insights(symbol, stock_data, news, context)
+        insights_time = time.time() - insights_start
+        print(f"[INSIGHTS] AI insights generated in {insights_time:.2f}s")
+        
+        total_time = time.time() - start_time
+        print(f"[INSIGHTS] Total time: {total_time:.2f}s")
         return insights
     except Exception as e:
         print(f"Error in get_ai_insights: {type(e).__name__}: {str(e)}")

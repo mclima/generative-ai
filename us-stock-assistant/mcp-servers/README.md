@@ -39,6 +39,34 @@ cp .env.example .env
 
 ### 2. Run the servers locally
 
+#### Option A: Start all servers at once (Recommended)
+
+```bash
+cd mcp-servers
+./start-all-servers.sh
+```
+
+This will start all three servers in the background:
+- Stock Data Server on port **8001** (PID saved to logs/stock-data-server.pid)
+- News Server on port **8002** (PID saved to logs/news-server.pid)
+- Market Data Server on port **8003** (PID saved to logs/market-data-server.pid)
+
+Logs are saved in the `logs/` directory.
+
+**To stop all servers:**
+```bash
+./stop-all-servers.sh
+```
+
+**To view logs:**
+```bash
+tail -f logs/stock-data-server.log
+tail -f logs/news-server.log
+tail -f logs/market-data-server.log
+```
+
+#### Option B: Start servers individually
+
 Open three terminal windows and start each server:
 
 **Terminal 1 - Stock Data Server:**
@@ -46,8 +74,8 @@ Open three terminal windows and start each server:
 ```bash
 cd mcp-servers/stock-data-server
 source venv/bin/activate
-python3 main.py
-# Server will run on http://localhost:8001
+python3 server.py
+# Server will run on http://0.0.0.0:8001
 ```
 
 **Terminal 2 - News Server:**
@@ -55,8 +83,8 @@ python3 main.py
 ```bash
 cd mcp-servers/news-server
 source venv/bin/activate
-python3 main.py
-# Server will run on http://localhost:8002
+python3 server.py
+# Server will run on http://0.0.0.0:8002
 ```
 
 **Terminal 3 - Market Data Server:**
@@ -64,8 +92,8 @@ python3 main.py
 ```bash
 cd mcp-servers/market-data-server
 source venv/bin/activate
-python3 main.py
-# Server will run on http://localhost:8003
+python3 server.py
+# Server will run on http://0.0.0.0:8003
 ```
 
 ### 3. Update your backend .env file
@@ -166,6 +194,23 @@ For production use, consider:
 - The ticker symbol might be invalid
 - The market might be closed (Polygon provides delayed data)
 - Try a well-known ticker like "AAPL" or "MSFT"
+
+**"Port already in use" error:**
+
+- Another process is using the port (likely port 8000)
+- Use the start script which assigns specific ports (8001, 8002, 8003)
+- Or manually kill the process: `lsof -ti :8000 | xargs kill -9`
+
+**Servers not starting:**
+
+- Make sure you've installed dependencies in each venv: `pip install -r requirements.txt`
+- Check logs in the `logs/` directory for error messages
+- Verify virtual environments exist: `ls -la */venv`
+
+**"ModuleNotFoundError" when starting servers:**
+
+- Activate the virtual environment first: `source venv/bin/activate`
+- Reinstall dependencies: `pip install -r requirements.txt`
 
 ## Alternative: Using Docker
 

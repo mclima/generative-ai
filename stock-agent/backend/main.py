@@ -26,8 +26,15 @@ app.include_router(stock_routes.router, prefix="/api")
 
 @app.on_event("startup")
 async def startup_event():
+    # Initialize vector store
     vector_service = VectorStoreService()
     app.state.vector_service = vector_service
+    
+    # Preload FinBERT model during startup to avoid delay on first request
+    print("Preloading FinBERT model...")
+    from services.sentiment_analyzer import SentimentAnalyzer
+    analyzer = SentimentAnalyzer()
+    print("FinBERT model loaded successfully")
 
 @app.get("/")
 async def root():

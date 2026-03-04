@@ -18,7 +18,7 @@ export default function Header() {
           </div>
           <div className="hidden md:flex items-center space-x-4">
             <div className="text-sm text-gray-400">
-              <span className="text-green-400">●</span> Free Tier
+              <span className="text-green-400">●</span> Live
             </div>
           </div>
         </div>

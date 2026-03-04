@@ -22,15 +22,12 @@ export default function InfoBanner() {
         <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
         <div className="flex-1">
           <h3 className="text-blue-300 font-semibold mb-2 flex items-center gap-2">
-            Free Tier Rate Limits Apply
+            Supported Markets
           </h3>
           <div className="text-sm text-gray-300 space-y-1.5">
-            <p><strong>• US Stocks Only:</strong> AAPL, TSLA, GOOGL, MSFT, AMZN, NVDA, etc.</p>
-            <p><strong>• Rate Limit:</strong> Search ONE stock per minute</p>
-            <p><strong>• Not Supported:</strong> Futures (GC00), Options, Forex, or Crypto</p>
-            <p className="text-xs text-gray-400 mt-2">
-              💡 Wait 60 seconds between searches to avoid rate limit errors
-            </p>
+            <p><strong>• US Stocks:</strong> AAPL, TSLA, GOOGL, MSFT, AMZN, NVDA</p>
+            <p><strong>• Crypto:</strong> BTC, ETH, and other cryptocurrencies</p>
+            <p className="text-xs text-gray-400 mt-1">Futures, options, and forex are not available</p>
           </div>
         </div>
       </div>

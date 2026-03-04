@@ -8,6 +8,8 @@ interface AIInsightsProps {
   symbol: string;
   data?: AIInsightsData | null;
   isLoading?: boolean;
+  onFetchInsights?: () => void;
+  insightsRequested?: boolean;
 }
 
 interface Insight {
@@ -21,35 +23,16 @@ interface AIInsightsData {
   summary: string;
 }
 
-export default function AIInsights({ symbol, data: initialData, isLoading: externalLoading }: AIInsightsProps) {
+export default function AIInsights({ symbol, data: initialData, isLoading: externalLoading, onFetchInsights, insightsRequested }: AIInsightsProps) {
   const [insights, setInsights] = useState<Insight[]>(initialData?.insights || []);
   const [summary, setSummary] = useState<string>(initialData?.summary || "");
-  const [loading, setLoading] = useState(!initialData);
 
   useEffect(() => {
     if (initialData) {
       setInsights(initialData.insights || []);
       setSummary(initialData.summary || "");
-      setLoading(false);
-      return;
     }
-
-    const fetchInsights = async () => {
-      setLoading(true);
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const response = await axios.get(`${apiUrl}/api/stock/${symbol}/insights`);
-        setInsights(response.data.insights || []);
-        setSummary(response.data.summary || "");
-      } catch (err) {
-        console.error("Failed to fetch AI insights:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInsights();
-  }, [symbol, initialData]);
+  }, [initialData]);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -62,8 +45,6 @@ export default function AIInsights({ symbol, data: initialData, isLoading: exter
     }
   };
 
-  const isLoading = externalLoading !== undefined ? externalLoading : loading;
-
   return (
     <div className="card h-full">
       <div className="flex items-center mb-4">
@@ -71,9 +52,23 @@ export default function AIInsights({ symbol, data: initialData, isLoading: exter
         <h3 className="text-xl font-semibold">AI Insights</h3>
       </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      {!insightsRequested ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <Sparkles className="w-12 h-12 text-purple-500 mb-4 opacity-50" />
+          <p className="text-gray-400 mb-4 text-center">Generate AI-powered insights for {symbol}</p>
+          <button
+            onClick={onFetchInsights}
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-semibold transition-all transform hover:scale-105 flex items-center gap-2"
+          >
+            <Sparkles className="w-5 h-5" />
+            Generate AI Insights
+          </button>
+          <p className="text-xs text-gray-500 mt-3">Takes ~7-10 seconds</p>
+        </div>
+      ) : externalLoading ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
+          <p className="text-sm text-gray-400">Generating insights...</p>
         </div>
       ) : (
         <div className="space-y-4">

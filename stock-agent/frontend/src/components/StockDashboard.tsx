@@ -66,7 +66,9 @@ export default function StockDashboard({ symbol }: StockDashboardProps) {
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
   const [newsData, setNewsData] = useState<NewsArticle[]>([]);
-  const [insightsData, setInsightsData] = useState<AIInsightsData | null>(null);
+  const [insightsData, setInsightsData] = useState<any>(null);
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [insightsRequested, setInsightsRequested] = useState(false);
   const [loading, setLoading] = useState(true);
   const [secondaryLoading, setSecondaryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,8 @@ export default function StockDashboard({ symbol }: StockDashboardProps) {
     setHistoricalData([]);
     setNewsData([]);
     setInsightsData(null);
+    setInsightsRequested(false);
+    setInsightsLoading(false);
     setError(null);
     
     const fetchAllData = async () => {
@@ -123,11 +127,10 @@ export default function StockDashboard({ symbol }: StockDashboardProps) {
 
         const secondaryResults = await Promise.allSettled([
           axios.get(`${apiUrl}/api/stock/${symbol}/historical`),
-          axios.get(`${apiUrl}/api/stock/${symbol}/news`),
-          axios.get(`${apiUrl}/api/stock/${symbol}/insights`)
+          axios.get(`${apiUrl}/api/stock/${symbol}/news`)
         ]);
 
-        const [historicalRes, newsRes, insightsRes] = secondaryResults;
+        const [historicalRes, newsRes] = secondaryResults;
 
         if (historicalRes.status === 'fulfilled') {
           setHistoricalData(historicalRes.value.data);
@@ -141,12 +144,6 @@ export default function StockDashboard({ symbol }: StockDashboardProps) {
           console.error("News data error:", newsRes.reason);
         }
 
-        if (insightsRes.status === 'fulfilled') {
-          setInsightsData(insightsRes.value.data);
-        } else {
-          console.error("Insights data error:", insightsRes.reason);
-        }
-
         setSecondaryLoading(false);
       } catch (err: any) {
         const errorMessage = err.response?.data?.detail || err.message || "Failed to fetch stock data. Please try again.";
@@ -158,6 +155,23 @@ export default function StockDashboard({ symbol }: StockDashboardProps) {
 
     fetchAllData();
   }, [symbol]);
+
+  const fetchInsights = async () => {
+    if (insightsLoading || insightsData) return;
+    
+    setInsightsLoading(true);
+    setInsightsRequested(true);
+    
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const response = await axios.get(`${apiUrl}/api/stock/${symbol}/insights`);
+      setInsightsData(response.data);
+    } catch (err: any) {
+      console.error("Insights error:", err);
+    } finally {
+      setInsightsLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -179,14 +193,8 @@ export default function StockDashboard({ symbol }: StockDashboardProps) {
             {error.includes("No data found") && (
               <div className="bg-red-950/50 border border-red-800 rounded p-3 text-sm text-red-100">
                 <p className="font-semibold mb-1">💡 Tip:</p>
-                <p>The free tier only supports US stocks like AAPL, TSLA, GOOGL, MSFT, AMZN, NVDA, etc.</p>
+                <p>Only US stocks are supported like AAPL, TSLA, GOOGL, MSFT, AMZN, NVDA, etc.</p>
                 <p className="mt-1">Futures, options, forex, and crypto are not available.</p>
-              </div>
-            )}
-            {error.includes("Rate limit") && (
-              <div className="bg-red-950/50 border border-red-800 rounded p-3 text-sm text-red-100">
-                <p className="font-semibold mb-1">⏱️ Rate Limit:</p>
-                <p>The free tier allows 5 API calls per minute. Please wait 60 seconds before trying again.</p>
               </div>
             )}
           </div>
@@ -215,8 +223,7 @@ export default function StockDashboard({ symbol }: StockDashboardProps) {
             <div className="flex-1">
               <h3 className="text-yellow-300 font-semibold mb-1">Loading Data</h3>
               <p className="text-yellow-200 text-sm">
-                Some sections are still loading. Free tier has slower response times and rate limits (5 calls/min). 
-                Missing sections will appear shortly.
+                Some sections are still loading. Missing sections will appear shortly.
               </p>
             </div>
           </div>
@@ -230,7 +237,13 @@ export default function StockDashboard({ symbol }: StockDashboardProps) {
           <StockChart symbol={symbol} data={chartData} />
         </div>
         <div>
-          <AIInsights symbol={symbol} data={insightsData} isLoading={secondaryLoading && !insightsData} />
+          <AIInsights 
+            symbol={symbol} 
+            data={insightsData} 
+            isLoading={insightsLoading}
+            onFetchInsights={fetchInsights}
+            insightsRequested={insightsRequested}
+          />
         </div>
       </div>
 

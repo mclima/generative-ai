@@ -4,10 +4,8 @@ Uses the Model Context Protocol SDK for proper protocol compliance
 """
 import logging
 from typing import Any, Dict, List, Optional
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
 import httpx
-from contextlib import asynccontextmanager
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -34,23 +32,25 @@ class MCPSDKClient:
     async def connect(self) -> None:
         """
         Connect to the MCP server.
-        For HTTP/SSE transport, we'll use httpx to communicate.
+        For SSE transport, we just verify the server is reachable.
         """
         try:
-            # Test connection
+            # Test connection to SSE endpoint
             async with httpx.AsyncClient() as client:
-                response = await client.get(self.server_url, timeout=10.0)
-                response.raise_for_status()
+                response = await client.get(f"{self.server_url}/sse", timeout=10.0)
+                # SSE endpoints return 200 even without Accept: text/event-stream
+                if response.status_code not in [200, 404]:  # 404 is ok, means different path
+                    response.raise_for_status()
             
             logger.info(f"Connected to MCP server {self.server_name} at {self.server_url}")
         except Exception as e:
-            logger.error(f"Failed to connect to MCP server {self.server_name}: {e}")
-            raise
+            logger.warning(f"Could not verify MCP server {self.server_name}: {e}")
+            # Don't fail - server might still work
     
     async def list_tools(self) -> List[Dict[str, Any]]:
         """
         List available tools from the MCP server.
-        Uses the MCP protocol's tools/list method.
+        Uses the MCP protocol's tools/list method via SSE.
         
         Returns:
             List of tool definitions with name, description, and input schema
@@ -59,42 +59,53 @@ class MCPSDKClient:
             return self._tools_cache
         
         try:
-            async with httpx.AsyncClient() as client:
-                # MCP servers expose tools via SSE endpoint
-                # For now, we'll use a simple HTTP endpoint to get tool list
-                response = await client.get(f"{self.server_url}/mcp/tools", timeout=10.0)
-                
-                if response.status_code == 404:
-                    # Fallback: server might expose tools differently
-                    # Try to infer from root endpoint
-                    response = await client.get(self.server_url, timeout=10.0)
-                    data = response.json()
-                    
-                    # Convert simple tool list to MCP format
-                    tools = []
-                    for tool_name in data.get("tools", []):
-                        tools.append({
-                            "name": tool_name,
-                            "description": f"MCP tool: {tool_name}",
-                            "inputSchema": {"type": "object", "properties": {}}
-                        })
-                    
-                    self._tools_cache = tools
-                    return tools
-                
-                response.raise_for_status()
-                tools = response.json().get("tools", [])
-                self._tools_cache = tools
-                return tools
-                
+            # Send tools/list request via SSE
+            result = await self._send_mcp_request("tools/list", {})
+            tools = result.get("tools", [])
+            self._tools_cache = tools
+            return tools
         except Exception as e:
             logger.warning(f"Failed to list tools from {self.server_name}: {e}")
             return []
     
+    async def _send_mcp_request(self, method: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Send an MCP request via SSE transport.
+        
+        Args:
+            method: MCP method name (e.g., "tools/call", "tools/list")
+            params: Method parameters
+            
+        Returns:
+            Response data
+        """
+        request_data = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": method,
+            "params": params
+        }
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                f"{self.server_url}/sse",
+                json=request_data,
+                headers={"Content-Type": "application/json"}
+            )
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            # Handle JSON-RPC response
+            if "error" in data:
+                raise Exception(f"MCP error: {data['error']}")
+            
+            return data.get("result", {})
+    
     async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Any:
         """
         Call a tool on the MCP server.
-        Uses the MCP protocol's tools/call method.
+        Uses the MCP protocol's tools/call method via SSE.
         
         Args:
             tool_name: Name of the tool to call
@@ -104,35 +115,28 @@ class MCPSDKClient:
             Tool execution result
         """
         try:
-            async with httpx.AsyncClient() as client:
-                # Call the tool using the MCP server's endpoint
-                # MCP servers expose tools at /tools/{tool_name}
-                response = await client.post(
-                    f"{self.server_url}/tools/{tool_name}",
-                    json=arguments,
-                    timeout=30.0
-                )
-                response.raise_for_status()
+            result = await self._send_mcp_request("tools/call", {
+                "name": tool_name,
+                "arguments": arguments
+            })
+            
+            # Extract content from MCP response
+            if isinstance(result, dict) and "content" in result:
+                content = result["content"]
+                if isinstance(content, list) and len(content) > 0:
+                    # Return the text content from the first item
+                    first_content = content[0]
+                    if isinstance(first_content, dict) and "text" in first_content:
+                        text_data = first_content["text"]
+                        # Try to parse as JSON
+                        try:
+                            return json.loads(text_data)
+                        except:
+                            return text_data
+                return content
+            
+            return result
                 
-                data = response.json()
-                
-                # Handle MCP response format
-                if isinstance(data, dict):
-                    # Check for MCP standard response
-                    if "success" in data:
-                        if data["success"]:
-                            return data.get("data")
-                        else:
-                            raise Exception(f"Tool execution failed: {data.get('error', 'Unknown error')}")
-                    # Direct data return (FastMCP format)
-                    return data
-                
-                # Direct list/value return
-                return data
-                
-        except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error calling tool {tool_name}: {e.response.status_code}")
-            raise Exception(f"Tool {tool_name} failed: HTTP {e.response.status_code}")
         except Exception as e:
             logger.error(f"Error calling tool {tool_name}: {e}")
             raise

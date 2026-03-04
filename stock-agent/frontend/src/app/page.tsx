@@ -1,19 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import StockSearch from "@/components/StockSearch";
 import StockDashboard from "@/components/StockDashboard";
 import InfoBanner from "@/components/InfoBanner";
-import RateLimitAlert from "@/components/RateLimitAlert";
 
 export default function Home() {
   const [selectedSymbol, setSelectedSymbol] = useState<string>("");
-  const [showAlert, setShowAlert] = useState(false);
-
-  useEffect(() => {
-    // Show alert when page loads
-    setShowAlert(true);
-  }, []);
 
   return (
     <div className="min-h-screen">
@@ -27,7 +20,6 @@ export default function Home() {
           </p>
         </div>
 
-        <RateLimitAlert show={showAlert} onClose={() => setShowAlert(false)} />
         <InfoBanner />
         <StockSearch onSymbolSelect={setSelectedSymbol} />
 

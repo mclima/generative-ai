@@ -52,6 +52,39 @@ class VectorStoreService:
         except Exception as e:
             print(f"Error adding article to vector store: {str(e)}")
     
+    async def add_news_articles_batch(self, symbol: str, articles: List[NewsArticle]):
+        """Batch add multiple articles with a single embedding API call"""
+        try:
+            if not articles:
+                return
+            
+            # Prepare all texts
+            texts = [f"{article.title}\n\n{article.description}" for article in articles]
+            
+            # Batch embed all texts in one API call
+            embeddings = self.embeddings.embed_documents(texts)
+            
+            # Prepare metadata and IDs
+            metadatas = [{
+                "symbol": symbol,
+                "title": article.title,
+                "url": article.url,
+                "published_at": article.published_at,
+                "source": article.source
+            } for article in articles]
+            
+            ids = [f"{symbol}_{article.published_at}_{hash(article.title)}" for article in articles]
+            
+            # Add all at once
+            self.collection.add(
+                embeddings=embeddings,
+                documents=texts,
+                metadatas=metadatas,
+                ids=ids
+            )
+        except Exception as e:
+            print(f"Error batch adding articles to vector store: {str(e)}")
+    
     async def get_relevant_context(self, symbol: str, query: str = "", limit: int = 5) -> str:
         try:
             if not query:

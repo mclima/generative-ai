@@ -157,10 +157,13 @@ async def get_trending_tickers(limit: int = 10) -> list[dict[str, Any]]:
 if __name__ == "__main__":
     import sys
     import os
+    import uvicorn
     
-    # Check if running with HTTP transport (for Railway)
+    # Get port from environment variable (for Railway) or use default
     port = int(os.getenv("PORT", "8002"))
     
-    # Run with HTTP/SSE transport for production deployment
-    # This allows the MCP server to be accessed over HTTP while using the MCP protocol
-    mcp.run(transport="sse", port=port)
+    # Create ASGI app with SSE transport
+    app = mcp.sse_app()
+    
+    # Run with uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=port)

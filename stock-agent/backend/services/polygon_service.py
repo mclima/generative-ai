@@ -30,21 +30,21 @@ class PolygonService:
             print(f"Response status: {response.status_code}")
             
             if response.status_code == 429:
-                raise Exception("Rate limit exceeded. Free tier allows 5 calls/minute. Please wait 60 seconds.")
+                raise Exception("Rate limit exceeded. Please wait 60 seconds before trying again.")
             
             if response.status_code != 200:
                 error_data = response.json() if response.text else {}
                 print(f"Error response: {error_data}")
                 error_msg = error_data.get('error', error_data.get('message', response.text))
                 if 'exceeded the maximum requests' in str(error_msg):
-                    raise Exception("Rate limit exceeded. Free tier allows 5 calls/minute. Please wait 60 seconds.")
+                    raise Exception("Rate limit exceeded. Please wait 60 seconds before trying again.")
                 raise Exception(f"Polygon API error: {error_msg}")
             
             data = response.json()
             print(f"Response data: {data}")
             
             if "results" not in data or not data["results"]:
-                raise Exception(f"No data found for {symbol}. Please use US stock symbols (e.g., AAPL, TSLA, GOOGL). Futures and options are not supported on the free tier.")
+                raise Exception(f"No data found for {symbol}. Supported: US stocks (e.g., AAPL, TSLA, GOOGL) and crypto (e.g., BTC, ETH). Futures, options, and forex are not available.")
             
             result = data["results"][0]
             current_price = result.get("c", 0)
@@ -95,13 +95,13 @@ class PolygonService:
             response = requests.get(url, params=params)
             
             if response.status_code == 429:
-                raise Exception("Rate limit exceeded. Free tier allows 5 calls/minute. Please wait 60 seconds before searching again.")
+                raise Exception("Rate limit exceeded. Please wait 60 seconds before searching again.")
             
             if response.status_code != 200:
                 error_data = response.json() if response.text else {}
                 error_msg = error_data.get('error', error_data.get('message', response.text))
                 if 'exceeded the maximum requests' in str(error_msg):
-                    raise Exception("Rate limit exceeded. Free tier allows 5 calls/minute. Please wait 60 seconds before searching again.")
+                    raise Exception("Rate limit exceeded. Please wait 60 seconds before searching again.")
                 raise Exception(f"Polygon API error: {error_msg}")
             
             data = response.json()
@@ -113,7 +113,7 @@ class PolygonService:
                 chart_data.append(ChartData(
                     date=datetime.fromtimestamp(item["t"] / 1000).strftime("%Y-%m-%d"),
                     price=item["c"],
-                    volume=item["v"]
+                    volume=int(item["v"])
                 ))
             
             return chart_data
@@ -131,13 +131,13 @@ class PolygonService:
             response = requests.get(url, params=params)
             
             if response.status_code == 429:
-                raise Exception("Rate limit exceeded. Free tier allows 5 calls/minute. Please wait 60 seconds before searching again.")
+                raise Exception("Rate limit exceeded. Please wait 60 seconds before searching again.")
             
             if response.status_code != 200:
                 error_data = response.json() if response.text else {}
                 error_msg = error_data.get('error', error_data.get('message', response.text))
                 if 'exceeded the maximum requests' in str(error_msg):
-                    raise Exception("Rate limit exceeded. Free tier allows 5 calls/minute. Please wait 60 seconds before searching again.")
+                    raise Exception("Rate limit exceeded. Please wait 60 seconds before searching again.")
                 raise Exception(f"Polygon API error: {error_msg}")
             
             data = response.json()
@@ -155,7 +155,7 @@ class PolygonService:
                     high=item["h"],
                     low=item["l"],
                     close=item["c"],
-                    volume=item["v"],
+                    volume=int(item["v"]),
                     change_percent=change_percent
                 ))
             
@@ -178,14 +178,14 @@ class PolygonService:
             response = requests.get(url, params=params)
             
             if response.status_code == 429:
-                raise Exception("Rate limit exceeded. Free tier allows 5 calls/minute. Please wait 60 seconds before searching again.")
+                raise Exception("Rate limit exceeded. Please wait 60 seconds before searching again.")
             
             if response.status_code != 200:
                 error_data = response.json() if response.text else {}
                 print(f"News API error response: {error_data}")
                 error_msg = error_data.get('error', error_data.get('message', response.text))
                 if 'exceeded the maximum requests' in str(error_msg):
-                    raise Exception("Rate limit exceeded. Free tier allows 5 calls/minute. Please wait 60 seconds before searching again.")
+                    raise Exception("Rate limit exceeded. Please wait 60 seconds before searching again.")
                 raise Exception(f"Polygon API error: {error_msg}")
             
             data = response.json()
