@@ -18,9 +18,12 @@ def download_finbert():
     try:
         logger.info("=" * 60)
         logger.info(f"Cache directory: {cache_dir}")
+        logger.info(f"Cache directory exists: {os.path.exists(cache_dir)}")
         logger.info("=" * 60)
         
+        logger.info("Importing transformers...")
         from transformers import AutoTokenizer, AutoModelForSequenceClassification
+        logger.info("✓ Transformers imported successfully")
         
         logger.info("Downloading FinBERT model (ProsusAI/finbert)...")
         logger.info("This may take a few minutes (~500MB download)...")
@@ -47,9 +50,24 @@ def download_finbert():
         
         return True
     except Exception as e:
-        logger.error(f"Failed to download FinBERT model: {e}")
+        import traceback
+        logger.error("=" * 60)
+        logger.error(f"FAILED to download FinBERT model!")
+        logger.error(f"Error type: {type(e).__name__}")
+        logger.error(f"Error message: {e}")
+        logger.error("Full traceback:")
+        logger.error(traceback.format_exc())
+        logger.error("=" * 60)
         logger.error("The application will fall back to keyword-based sentiment analysis.")
         return False
 
 if __name__ == "__main__":
-    download_finbert()
+    import sys
+    logger.info("Starting FinBERT model download script...")
+    success = download_finbert()
+    if success:
+        logger.info("Script completed successfully!")
+        sys.exit(0)
+    else:
+        logger.error("Script failed!")
+        sys.exit(1)
