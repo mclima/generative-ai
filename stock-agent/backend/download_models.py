@@ -6,26 +6,35 @@ import os
 import logging
 
 # Set HuggingFace cache to /app/.cache so it persists in deployment
-os.environ['HF_HOME'] = '/app/.cache/huggingface'
-os.environ['TRANSFORMERS_CACHE'] = '/app/.cache/huggingface'
+cache_dir = '/app/.cache/huggingface'
+os.makedirs(cache_dir, exist_ok=True)
+os.environ['HF_HOME'] = cache_dir
+os.environ['TRANSFORMERS_CACHE'] = cache_dir
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 def download_finbert():
     """Download FinBERT model and tokenizer to cache."""
     try:
+        logger.info("=" * 60)
+        logger.info(f"Cache directory: {cache_dir}")
+        logger.info("=" * 60)
+        
         from transformers import AutoTokenizer, AutoModelForSequenceClassification
         
         logger.info("Downloading FinBERT model (ProsusAI/finbert)...")
         logger.info("This may take a few minutes (~500MB download)...")
+        logger.info("Please wait...")
         
         # Download tokenizer
-        tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
+        logger.info("Downloading tokenizer...")
+        tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert", cache_dir=cache_dir)
         logger.info("✓ Tokenizer downloaded successfully")
         
         # Download model
-        model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
+        logger.info("Downloading model weights (~500MB)...")
+        model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert", cache_dir=cache_dir)
         logger.info("✓ Model downloaded successfully")
         
         # Verify model works
