@@ -5,6 +5,10 @@ This script should be run during the build phase.
 import os
 import logging
 
+# Set HuggingFace cache to /app/.cache so it persists in deployment
+os.environ['HF_HOME'] = '/app/.cache/huggingface'
+os.environ['TRANSFORMERS_CACHE'] = '/app/.cache/huggingface'
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 

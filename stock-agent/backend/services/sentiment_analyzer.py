@@ -1,10 +1,15 @@
 """
 Sentiment Analyzer using FinBERT for financial news.
 """
+import os
 import logging
 import threading
 from typing import List
 from models.stock_models import NewsArticle
+
+# Set HuggingFace cache to same location as build phase
+os.environ['HF_HOME'] = '/app/.cache/huggingface'
+os.environ['TRANSFORMERS_CACHE'] = '/app/.cache/huggingface'
 
 logger = logging.getLogger(__name__)
 
