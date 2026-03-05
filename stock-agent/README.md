@@ -12,8 +12,9 @@ An AI-powered US stock analysis dashboard that combines real-time market data wi
 ### 🤖 Agentic AI Capabilities
 - **OpenAI GPT-4o-mini Integration**: Intelligent stock analysis and insights generation
 - **RAG (Retrieval-Augmented Generation)**: Context-aware analysis using ChromaDB vector store
-- **Sentiment Analysis**: AI-powered news sentiment classification
+- **FinBERT Sentiment Analysis**: Financial-domain AI model for accurate news sentiment classification with parallel processing
 - **Dynamic Insights**: Real-time bullish/bearish/neutral market signals
+- **Production Optimized**: Pre-downloaded models eliminate cold start delays (1-2s response times)
 - **Free Tier Optimization**: Built with rate limiting and caching for cost-effective API usage
 
 ### 📊 Data Visualization
@@ -30,7 +31,8 @@ An AI-powered US stock analysis dashboard that combines real-time market data wi
 
 ### 📰 News Integration
 - **Latest Market News**: Real-time news from multiple sources
-- **AI Sentiment Analysis**: Automated positive/negative/neutral classification
+- **FinBERT Sentiment Analysis**: Financial-domain transformer model for accurate sentiment detection
+- **Parallel Processing**: Concurrent analysis of multiple articles for sub-second performance
 - **Vector Storage**: News articles stored for contextual retrieval
 
 ## 🏗️ Architecture

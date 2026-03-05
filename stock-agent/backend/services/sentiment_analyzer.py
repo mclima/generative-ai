@@ -107,7 +107,27 @@ class SentimentAnalyzer:
         return self._keyword_score(text)
     
     def analyze_batch(self, articles: List[NewsArticle]) -> List[NewsArticle]:
-        """Analyze sentiment for multiple articles."""
-        for article in articles:
-            article.sentiment = self.analyze_sentiment(article)
+        """Analyze sentiment for multiple articles in parallel."""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        
+        if not articles:
+            return articles
+        
+        # Process articles in parallel using thread pool
+        with ThreadPoolExecutor(max_workers=min(len(articles), 4)) as executor:
+            # Submit all articles for processing
+            future_to_article = {
+                executor.submit(self.analyze_sentiment, article): article 
+                for article in articles
+            }
+            
+            # Collect results as they complete
+            for future in as_completed(future_to_article):
+                article = future_to_article[future]
+                try:
+                    article.sentiment = future.result()
+                except Exception as e:
+                    logger.warning(f"Failed to analyze sentiment for article: {e}")
+                    article.sentiment = "neutral"
+        
         return articles
