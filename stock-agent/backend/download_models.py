@@ -5,9 +5,8 @@ This script should be run during the build phase.
 import os
 import logging
 
-# Set HuggingFace cache to /app/.cache so it persists in deployment
-cache_dir = '/app/.cache/huggingface'
-os.makedirs(cache_dir, exist_ok=True)
+# Set HuggingFace cache to ~/.cache/huggingface (default HF location that persists on Railway)
+cache_dir = os.path.expanduser("~/.cache/huggingface")
 os.environ['HF_HOME'] = cache_dir
 os.environ['TRANSFORMERS_CACHE'] = cache_dir
 

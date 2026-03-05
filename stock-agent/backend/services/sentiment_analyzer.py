@@ -8,8 +8,8 @@ from typing import List
 from models.stock_models import NewsArticle
 
 # Set HuggingFace cache to same location as build phase
-os.environ['HF_HOME'] = '/app/.cache/huggingface'
-os.environ['TRANSFORMERS_CACHE'] = '/app/.cache/huggingface'
+os.environ['HF_HOME'] = os.path.expanduser("~/.cache/huggingface")
+os.environ['TRANSFORMERS_CACHE'] = os.path.expanduser("~/.cache/huggingface")
 
 logger = logging.getLogger(__name__)
 
