@@ -2,4 +2,4 @@
 NIXPACKS_PYTHON_VERSION = "3.11"
 
 [phases.build]
-cmds = ["python download_models.py"]
+cmds = [". /opt/venv/bin/activate && python download_models.py"]
