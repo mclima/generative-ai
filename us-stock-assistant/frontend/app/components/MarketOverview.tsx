@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { MarketOverview as MarketOverviewType } from "@/app/types/market";
 import { marketApi } from "@/app/lib/api/market";
 import MarketIndices from "./MarketIndices";
@@ -13,8 +13,13 @@ export default function MarketOverview() {
   const [marketData, setMarketData] = useState<MarketOverviewType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
+    // Prevent duplicate initial fetch in React Strict Mode (dev)
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
     loadMarketOverview();
 
     // Refresh market data every 15 minutes

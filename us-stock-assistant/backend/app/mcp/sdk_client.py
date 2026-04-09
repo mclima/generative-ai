@@ -5,7 +5,9 @@ Uses the Model Context Protocol SDK for proper protocol compliance
 import logging
 from typing import Any, Dict, List, Optional
 import httpx
-import json
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from mcp.client.sse import sse_client
 
 logger = logging.getLogger(__name__)
 
@@ -27,30 +29,50 @@ class MCPSDKClient:
         self.server_url = server_url
         self.server_name = server_name
         self._session: Optional[ClientSession] = None
+        self._session_context = None
         self._tools_cache: Optional[List[Dict[str, Any]]] = None
+        self._read_stream = None
+        self._write_stream = None
+        self._streams_context = None
+
+    def _get_sse_url(self) -> str:
+        """Build SSE endpoint URL, supporting base URL or explicit /sse URL."""
+        base = (self.server_url or "").rstrip("/")
+        if not base:
+            raise ValueError(f"MCP server URL is empty for {self.server_name}")
+        return base if base.endswith("/sse") else f"{base}/sse"
         
     async def connect(self) -> None:
         """
-        Connect to the MCP server.
-        For SSE transport, we just verify the server is reachable.
+        Connect to the MCP server using official MCP SDK.
         """
         try:
-            # Test connection to SSE endpoint
-            async with httpx.AsyncClient() as client:
-                response = await client.get(f"{self.server_url}/sse", timeout=10.0)
-                # SSE endpoints return 200 even without Accept: text/event-stream
-                if response.status_code not in [200, 404]:  # 404 is ok, means different path
-                    response.raise_for_status()
+            # Use official MCP SDK SSE client as context manager
+            # The sse_client expects the full SSE endpoint URL.
+            sse_url = self._get_sse_url()
+            self._streams_context = sse_client(sse_url)
+            self._read_stream, self._write_stream = await self._streams_context.__aenter__()
             
-            logger.info(f"Connected to MCP server {self.server_name} at {self.server_url}")
+            # Create ClientSession with the streams and enter context
+            # to ensure background message handling lifecycle is managed.
+            self._session_context = ClientSession(self._read_stream, self._write_stream)
+            self._session = await self._session_context.__aenter__()
+            
+            # Initialize the session
+            await self._session.initialize()
+            
+            logger.info(f"Connected to MCP server {self.server_name} via SSE")
+            
         except Exception as e:
-            logger.warning(f"Could not verify MCP server {self.server_name}: {e}")
-            # Don't fail - server might still work
+            logger.error(
+                f"Failed to connect to MCP server {self.server_name} at {self.server_url}: {e}"
+            )
+            await self.disconnect()
+            raise
     
     async def list_tools(self) -> List[Dict[str, Any]]:
         """
         List available tools from the MCP server.
-        Uses the MCP protocol's tools/list method via SSE.
         
         Returns:
             List of tool definitions with name, description, and input schema
@@ -58,54 +80,33 @@ class MCPSDKClient:
         if self._tools_cache:
             return self._tools_cache
         
+        if not self._session:
+            raise Exception("Not connected to MCP server")
+        
         try:
-            # Send tools/list request via SSE
-            result = await self._send_mcp_request("tools/list", {})
-            tools = result.get("tools", [])
+            # Use official SDK to list tools
+            result = await self._session.list_tools()
+            
+            # Convert to dict format
+            tools = []
+            for tool in result.tools:
+                tools.append({
+                    "name": tool.name,
+                    "description": tool.description,
+                    "inputSchema": tool.inputSchema
+                })
+            
             self._tools_cache = tools
+            logger.info(f"Listed {len(tools)} tools from {self.server_name}")
             return tools
+            
         except Exception as e:
             logger.warning(f"Failed to list tools from {self.server_name}: {e}")
             return []
     
-    async def _send_mcp_request(self, method: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Send an MCP request via SSE transport.
-        
-        Args:
-            method: MCP method name (e.g., "tools/call", "tools/list")
-            params: Method parameters
-            
-        Returns:
-            Response data
-        """
-        request_data = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": method,
-            "params": params
-        }
-        
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                f"{self.server_url}/sse",
-                json=request_data,
-                headers={"Content-Type": "application/json"}
-            )
-            response.raise_for_status()
-            
-            data = response.json()
-            
-            # Handle JSON-RPC response
-            if "error" in data:
-                raise Exception(f"MCP error: {data['error']}")
-            
-            return data.get("result", {})
-    
     async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Any:
         """
-        Call a tool on the MCP server.
-        Uses the MCP protocol's tools/call method via SSE.
+        Call a tool on the MCP server using official SDK.
         
         Args:
             tool_name: Name of the tool to call
@@ -114,28 +115,34 @@ class MCPSDKClient:
         Returns:
             Tool execution result
         """
+        if not self._session:
+            raise Exception("Not connected to MCP server")
+        
         try:
-            result = await self._send_mcp_request("tools/call", {
-                "name": tool_name,
-                "arguments": arguments
-            })
+            # Use official SDK to call tool
+            result = await self._session.call_tool(tool_name, arguments)
             
             # Extract content from MCP response
-            if isinstance(result, dict) and "content" in result:
-                content = result["content"]
-                if isinstance(content, list) and len(content) > 0:
-                    # Return the text content from the first item
-                    first_content = content[0]
-                    if isinstance(first_content, dict) and "text" in first_content:
-                        text_data = first_content["text"]
-                        # Try to parse as JSON
+            if result.content:
+                # Get first content item
+                first_content = result.content[0]
+                if hasattr(first_content, 'text'):
+                    text_data = first_content.text
+                    # Try to parse as JSON
+                    try:
+                        import json
+                        return json.loads(text_data)
+                    except Exception:
+                        # FastMCP may return Python-literal-like payload strings
+                        # (single quotes) that are not strict JSON.
                         try:
-                            return json.loads(text_data)
-                        except:
+                            import ast
+                            return ast.literal_eval(text_data)
+                        except Exception:
                             return text_data
-                return content
+                return first_content
             
-            return result
+            return None
                 
         except Exception as e:
             logger.error(f"Error calling tool {tool_name}: {e}")
@@ -143,5 +150,17 @@ class MCPSDKClient:
     
     async def disconnect(self) -> None:
         """Close connection to MCP server."""
+        if self._streams_context:
+            try:
+                await self._streams_context.__aexit__(None, None, None)
+            except Exception:
+                pass
+
+        self._session = None
+        self._session_context = None
+        self._streams_context = None
+
+        self._read_stream = None
+        self._write_stream = None
         self._tools_cache = None
         logger.info(f"Disconnected from MCP server {self.server_name}")

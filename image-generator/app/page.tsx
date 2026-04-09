@@ -102,7 +102,7 @@ export default function Home() {
             Transform your creative ideas into stunning visual images. 
             Enter a detailed text prompt to generate bespoke images for banners and posters. 
           </p>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">Powered by OpenAI DALL-E 2.</p>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">Powered by OpenAI Image Generation.</p>
         </div>
 
         {/* Main Content - Side by Side */}

@@ -1,5 +1,7 @@
 """News MCP Server tools wrapper."""
 
+import ast
+import json
 import logging
 from typing import List, Optional
 from datetime import datetime
@@ -55,6 +57,22 @@ class NewsMCPTools:
             client: MCP client instance
         """
         self.client = client
+
+    @staticmethod
+    def _normalize_items(payload):
+        """Normalize MCP payload into a list of dict-like items."""
+        data = payload
+        if isinstance(data, str):
+            stripped = data.strip()
+            # Try strict JSON first; fall back to Python literal repr format.
+            try:
+                data = json.loads(stripped)
+            except Exception:
+                try:
+                    data = ast.literal_eval(stripped)
+                except Exception:
+                    return []
+        return data if isinstance(data, list) else []
     
     async def get_stock_news(self, ticker: str, limit: int = 10) -> List[NewsArticle]:
         """
@@ -86,7 +104,7 @@ class NewsMCPTools:
             # Validate and parse response
             try:
                 articles = []
-                for item in response.data:
+                for item in self._normalize_items(response.data):
                     articles.append(NewsArticle(
                         id=item.get("id", ""),
                         headline=item.get("headline", ""),
@@ -140,7 +158,7 @@ class NewsMCPTools:
             # Validate and parse response
             try:
                 articles = []
-                for item in response.data:
+                for item in self._normalize_items(response.data):
                     articles.append(NewsArticle(
                         id=item.get("id", ""),
                         headline=item.get("headline", ""),
@@ -193,7 +211,7 @@ class NewsMCPTools:
             # Validate and parse response
             try:
                 tickers = []
-                for item in response.data:
+                for item in self._normalize_items(response.data):
                     tickers.append(TrendingTicker(
                         ticker=item.get("ticker", ""),
                         company_name=item.get("company_name") or item.get("companyName", ""),

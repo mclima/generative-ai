@@ -98,15 +98,20 @@ class MarketOverviewService:
                 logger.debug("Cache hit for market overview")
                 data = json.loads(cached_data)
                 overview = MarketOverview(**data)
-                
-                # If sector heatmap is requested but not in cache, fetch it
-                if include_sector_heatmap and overview.sector_heatmap is None:
-                    try:
-                        overview.sector_heatmap = await self.getSectorPerformance()
-                    except Exception as e:
-                        logger.warning(f"Failed to get sector performance: {e}")
-                
-                return overview
+
+                # Guard against serving stale empty payloads that can be cached
+                # after transient MCP/parsing failures.
+                if not overview.headlines and not overview.indices:
+                    logger.info("Ignoring empty cached market overview and refetching")
+                else:
+                    # If sector heatmap is requested but not in cache, fetch it
+                    if include_sector_heatmap and overview.sector_heatmap is None:
+                        try:
+                            overview.sector_heatmap = await self.getSectorPerformance()
+                        except Exception as e:
+                            logger.warning(f"Failed to get sector performance: {e}")
+
+                    return overview
         except Exception as e:
             logger.warning(f"Failed to read market overview from cache: {e}")
         
@@ -171,14 +176,19 @@ class MarketOverviewService:
             
             # Cache the result (without sector heatmap to keep cache size small)
             try:
-                cache_data = overview.dict()
-                cache_data['sector_heatmap'] = None  # Don't cache sector heatmap
-                self.redis.setex(
-                    cache_key,
-                    self.MARKET_OVERVIEW_CACHE_TTL,
-                    json.dumps(cache_data, default=str)
-                )
-                logger.debug("Cached market overview")
+                # Avoid caching empty payloads to prevent static-looking data
+                # from persisting after transient upstream issues.
+                if overview.headlines or overview.indices:
+                    cache_data = overview.dict()
+                    cache_data['sector_heatmap'] = None  # Don't cache sector heatmap
+                    self.redis.setex(
+                        cache_key,
+                        self.MARKET_OVERVIEW_CACHE_TTL,
+                        json.dumps(cache_data, default=str)
+                    )
+                    logger.debug("Cached market overview")
+                else:
+                    logger.info("Skipping cache for empty market overview payload")
             except Exception as e:
                 logger.warning(f"Failed to cache market overview: {e}")
             

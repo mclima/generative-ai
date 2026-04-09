@@ -47,8 +47,9 @@ services:
       - "8001:8001"
     environment:
       - PORT=8001
+      - POLYGON_API_KEY=${POLYGON_API_KEY}
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8001), 2).close()"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -64,8 +65,9 @@ services:
       - "8002:8002"
     environment:
       - PORT=8002
+      - POLYGON_API_KEY=${POLYGON_API_KEY}
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8002/health')"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8002), 2).close()"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -81,8 +83,9 @@ services:
       - "8003:8003"
     environment:
       - PORT=8003
+      - POLYGON_API_KEY=${POLYGON_API_KEY}
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8003/health')"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8003), 2).close()"]
       interval: 30s
       timeout: 10s
       retries: 3

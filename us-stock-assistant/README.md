@@ -99,26 +99,6 @@ uvicorn app.main:app --reload
 
 3. Set up MCP servers:
 
-```bash
-# News server (official MCP protocol)
-cd mcp-servers/news-server
-source venv/bin/activate
-pip install -r requirements.txt
-python server.py
-
-# Stock data server (official MCP protocol)
-cd mcp-servers/stock-data-server
-source venv/bin/activate
-pip install -r requirements.txt
-python server.py
-
-# Market data server (official MCP protocol)
-cd mcp-servers/market-data-server
-source venv/bin/activate
-pip install -r requirements.txt
-python server.py
-```
-
 See [mcp-servers/README.md](mcp-servers/README.md) for detailed setup instructions.
 
 4. Set up frontend:

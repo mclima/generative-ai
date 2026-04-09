@@ -106,7 +106,7 @@ class StockDataService:
                 self.redis.setex(
                     cache_key,
                     self.PRICE_CACHE_TTL,
-                    json.dumps(price_data.dict())
+                    json.dumps(price_data.dict(), default=str)
                 )
                 logger.debug(f"Cached price for {ticker}")
             except Exception as e:
@@ -319,7 +319,7 @@ class StockDataService:
                 self.redis.setex(
                     cache_key,
                     self.COMPANY_INFO_CACHE_TTL,
-                    json.dumps(company_info.dict())
+                    json.dumps(company_info.dict(), default=str)
                 )
                 logger.debug(f"Cached company info for {ticker}")
             except Exception as e:
@@ -366,7 +366,7 @@ class StockDataService:
                 self.redis.setex(
                     cache_key,
                     self.FINANCIAL_METRICS_CACHE_TTL,
-                    json.dumps(financial_metrics.dict())
+                    json.dumps(financial_metrics.dict(), default=str)
                 )
                 logger.debug(f"Cached financial metrics for {ticker}")
             except Exception as e:

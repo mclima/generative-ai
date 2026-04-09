@@ -48,9 +48,10 @@ services:
     container_name: stock_data_server_prod
     environment:
       - PORT=8001
+      - POLYGON_API_KEY=${POLYGON_API_KEY}
       - ENVIRONMENT=production
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8001), 2).close()"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -73,9 +74,10 @@ services:
     container_name: news_server_prod
     environment:
       - PORT=8002
+      - POLYGON_API_KEY=${POLYGON_API_KEY}
       - ENVIRONMENT=production
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8002/health')"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8002), 2).close()"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -98,9 +100,10 @@ services:
     container_name: market_data_server_prod
     environment:
       - PORT=8003
+      - POLYGON_API_KEY=${POLYGON_API_KEY}
       - ENVIRONMENT=production
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8003/health')"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 8003), 2).close()"]
       interval: 30s
       timeout: 10s
       retries: 3

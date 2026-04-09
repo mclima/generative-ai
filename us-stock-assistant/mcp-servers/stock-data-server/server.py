@@ -349,10 +349,10 @@ if __name__ == "__main__":
     import os
     import uvicorn
     
-    # Get port from environment variable (for Railway) or use default
-    port = int(os.getenv("PORT", "8001"))
+    # Support both PORT (platforms like Railway) and SERVER_PORT (local .env)
+    port = int(os.getenv("PORT") or os.getenv("SERVER_PORT", "8001"))
     
-    # Create ASGI app with SSE transport
+    # Create ASGI app with SSE transport (pure MCP protocol)
     app = mcp.sse_app()
     
     # Run with uvicorn

@@ -14,12 +14,26 @@ class MCPClientFactory:
     def __init__(self):
         self._clients: Dict[str, MCPClient] = {}
         self._settings = get_settings()
+
+    @staticmethod
+    def _require_server_url(server_url: str, env_var_name: str) -> str:
+        """Validate that a required MCP server URL is configured."""
+        normalized = (server_url or "").strip()
+        if not normalized:
+            raise ValueError(
+                f"Missing required MCP server URL: set {env_var_name} in backend environment"
+            )
+        return normalized
     
     def get_stock_data_client(self) -> MCPClient:
         """Get or create stock data MCP client."""
         if "stock_data" not in self._clients:
+            server_url = self._require_server_url(
+                self._settings.mcp_stock_data_url,
+                "MCP_STOCK_DATA_URL",
+            )
             config = MCPConfig(
-                server_url=self._settings.mcp_stock_data_url,
+                server_url=server_url,
                 timeout=30,
                 retry_attempts=3,
                 retry_delay=1.0,
@@ -31,8 +45,12 @@ class MCPClientFactory:
     def get_news_client(self) -> MCPClient:
         """Get or create news MCP client."""
         if "news" not in self._clients:
+            server_url = self._require_server_url(
+                self._settings.mcp_news_url,
+                "MCP_NEWS_URL",
+            )
             config = MCPConfig(
-                server_url=self._settings.mcp_news_url,
+                server_url=server_url,
                 timeout=30,
                 retry_attempts=3,
                 retry_delay=1.0,
@@ -44,8 +62,12 @@ class MCPClientFactory:
     def get_market_data_client(self) -> MCPClient:
         """Get or create market data MCP client."""
         if "market_data" not in self._clients:
+            server_url = self._require_server_url(
+                self._settings.mcp_market_data_url,
+                "MCP_MARKET_DATA_URL",
+            )
             config = MCPConfig(
-                server_url=self._settings.mcp_market_data_url,
+                server_url=server_url,
                 timeout=30,
                 retry_attempts=3,
                 retry_delay=1.0,

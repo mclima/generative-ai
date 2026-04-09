@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'AI Image Generator',
-  description: 'Transform your creative ideas into stunning visual images using AI. Powered by OpenAI DALL-E 2.',
+  description: 'Transform your creative ideas into stunning visual images using AI. Powered by OpenAI Image Generation.',
 };
 
 export default function RootLayout({

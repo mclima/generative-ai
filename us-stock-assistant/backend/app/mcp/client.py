@@ -65,7 +65,7 @@ class MCPClient:
         self._tools_cache: Optional[List[MCPTool]] = None
         self._lock = asyncio.Lock()
         
-        # Initialize SDK client for MCP protocol support
+        # Initialize SDK client for MCP SSE protocol support
         server_name = config.server_url.split("//")[-1].split(".")[0]
         self._sdk_client = MCPSDKClient(config.server_url, server_name)
     
@@ -100,8 +100,8 @@ class MCPClient:
                     timeout=timeout,
                 )
                 
-                # Test connection
-                await self._test_connection()
+                # Skip connection test for pure MCP SSE servers (no root endpoint)
+                # await self._test_connection()
                 
                 # Connect SDK client
                 if self._sdk_client:
@@ -137,6 +137,7 @@ class MCPClient:
             MCPConnectionError: If connection test fails
         """
         try:
+            # Test root endpoint (now available with REST endpoints)
             response = await self._client.get("/")
             response.raise_for_status()
         except Exception as e:

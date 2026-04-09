@@ -1,5 +1,7 @@
 """Stock Data MCP Server tools wrapper."""
 
+import ast
+import json
 import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime, date
@@ -104,6 +106,21 @@ class StockDataMCPTools:
             client: MCP client instance
         """
         self.client = client
+
+    @staticmethod
+    def _normalize_items(payload):
+        """Normalize MCP payload into a list of dict-like items."""
+        data = payload
+        if isinstance(data, str):
+            stripped = data.strip()
+            try:
+                data = json.loads(stripped)
+            except Exception:
+                try:
+                    data = ast.literal_eval(stripped)
+                except Exception:
+                    return []
+        return data if isinstance(data, list) else []
     
     async def get_stock_price(self, ticker: str) -> StockPrice:
         """
@@ -202,7 +219,7 @@ class StockDataMCPTools:
             # Validate and parse response
             try:
                 data_points = []
-                for item in response.data:
+                for item in self._normalize_items(response.data):
                     data_points.append(HistoricalDataPoint(**item))
                 
                 # Sort by date
@@ -359,7 +376,7 @@ class StockDataMCPTools:
             try:
                 results = []
                 query_upper = query.upper()
-                for item in response.data:
+                for item in self._normalize_items(response.data):
                     ticker = item.get("ticker", "")
                     # Boost exact ticker match to 3.0, prefix match to 2.0, else 1.0
                     if ticker.upper() == query_upper:
@@ -420,7 +437,7 @@ class StockDataMCPTools:
             # Validate and parse response
             try:
                 indices = []
-                for item in response.data:
+                for item in self._normalize_items(response.data):
                     indices.append(MarketIndex(
                         name=item.get("name", ""),
                         symbol=item.get("symbol", ""),
