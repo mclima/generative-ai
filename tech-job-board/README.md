@@ -6,7 +6,7 @@ A full-stack web application that aggregates remote tech job listings in the Uni
 
 ### Job Listings
 - **Automated Job Aggregation**: Fetches jobs from multiple sources (Jobicy, JSearch, Jobs API)
-- **Smart Refresh Strategy**: Scheduled refresh twice daily + manual refresh option
+- **Smart Refresh Strategy**: Scheduled refresh weekly on Wednesdays + manual refresh option
 - **Salary Information**: Displays salary ranges when available from job sources
 - **AI-Powered Resume Matching**: Uses Sentence Transformers (all-MiniLM-L6-v2) for intelligent semantic job matching
 - **Resume Parsing**: Supports PDF, DOCX, and TXT formats
@@ -219,11 +219,11 @@ Frontend will be available at `http://localhost:3000`
 
 ## 🔄 Job Refresh Strategy
 
-Jobs synced daily via scheduled task to optimize API usage and provide instant search results.
+Jobs synced weekly via scheduled task to optimize API usage and provide instant search results.
 
 The application implements a simple and efficient refresh strategy:
 
-1. **Scheduled Daily Refresh**: Automated refresh runs daily via GitHub Actions (see below)
+1. **Scheduled Weekly Refresh**: Automated refresh runs every Wednesday via GitHub Actions (see below)
 2. **Manual Refresh**: Users can manually trigger a refresh using the "Refresh Jobs" button
 3. **Background Processing**: Job descriptions are fetched in the background for optimal performance
 4. **Deduplication**: Only adds new jobs, prevents duplicates
@@ -238,7 +238,7 @@ This project schedules refresh runs via GitHub Actions:
 - Workflow: `.github/workflows/refresh-jobs.yml`
 - Endpoint called: `POST /api/jobs/refresh`
 - Schedule (UTC):
-  - `0 20 * * *` (3pm EST)
+  - `0 20 * * 3` (3pm EST on Wednesdays)
 
 If you prefer a local cron for development, you can still use `backend/setup_cron.sh`.
 
