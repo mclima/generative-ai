@@ -1,0 +1,14 @@
+name: Refresh Jobs
+
+on:
+  schedule:
+    - cron: "0 20 * * 3"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger refresh
+        run: |
+          curl -sS -f -X POST "${{ secrets.BACKEND_URL }}/api/jobs/refresh" -w "\nHTTP %{http_code}\n"
