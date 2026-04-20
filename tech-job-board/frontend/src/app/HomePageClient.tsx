@@ -162,12 +162,6 @@ export default function HomePageClient() {
           <p className="text-gray-400 text-base md:text-lg mb-4">
             Discover the latest remote opportunities in AI and Engineering
           </p>
-          <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 mb-4 flex gap-3">
-          <Info size={20} className="text-primary flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-300">
-              Showing jobs posted within the last week.
-            </p>
-          </div>
 
           {showingCachedData && cacheTime && (
             <div className="bg-gradient-to-r from-orange-900/30 to-red-900/30 border border-orange-700 rounded-lg p-4 mb-4">
