@@ -2,7 +2,7 @@ name: Refresh Jobs
 
 on:
   schedule:
-    - cron: "0 20 * * *"  # 3pm EST = 20:00 UTC
+    - cron: "0 20 * * 3"  # 3pm EST on Wednesdays = 20:00 UTC on day 3
   workflow_dispatch:
 
 jobs:
